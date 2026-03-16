@@ -135,19 +135,22 @@ function calcola() {
 
     prodotti.forEach((p, i) => {
         let pzzoN = parseFloat(p.prezzo) || 0;
-        let teo = (p.qi||0) + (p.carico||0) - (p.venduto||0) - (p.omaggi||0);
+        // FORMULA CORRETTA: Scaliamo subito anche l'invenduto giornaliero dalla teoria
+        let teo = (p.qi||0) + (p.carico||0) - (p.venduto||0) - (p.oggi||0) - (p.oggiPendo||0) - (p.omaggi||0);
         let diff = (p.reali||0) - teo;
         let dEuro = diff * pzzoN;
         tVendutoTeo += (p.venduto||0) * pzzoN;
         tCarico += (p.carico||0) * pzzoN;
         tDiffEuro += dEuro;
+        
+        // Valore di ciò che è stato venduto oggi (Passeggeri)
         tOggiVal += (p.oggi||0) * pzzoN;
 
         bInv.innerHTML += `<tr><td style="text-align:left"><b>${p.nome}</b></td>
             <td style="background:#fff9db"><div class="val-box" onclick="apriPad(this,${i},'prezzo')">${pzzoN}</div></td>
             <td><div class="val-box" onclick="apriPad(this,${i},'qi')">${p.qi||0}</div></td>
             <td><div class="val-box" onclick="apriPad(this,${i},'carico')">${p.carico||0}</div></td>
-            <td><b>${p.venduto||0}</b></td><td><div class="val-box" onclick="apriPad(this,${i},'omaggi')">${p.omaggi||0}</div></td>
+            <td><b>${(p.venduto||0) + (p.oggi||0) + (p.oggiPendo||0)}</b></td><td><div class="val-box" onclick="apriPad(this,${i},'omaggi')">${p.omaggi||0}</div></td>
             <td>${teo}</td><td><div class="val-box" onclick="apriPad(this,${i},'reali')">${p.reali||0}</div></td>
             <td style="color:${diff<0?'red':'green'}"><b>${diff}</b></td><td><b>${dEuro.toFixed(2)}€</b></td></tr>`;
 
@@ -159,6 +162,7 @@ function calcola() {
     listinoPendo.forEach((item) => {
         let pIdx = prodotti.findIndex(px => px.nome === item.link);
         if(pIdx !== -1) {
+            // Aggiungiamo valore pendolari al presunto totale
             tOggiVal += (prodotti[pIdx].oggiPendo||0) * item.prezzo;
             bPen.innerHTML += `<tr><td style="text-align:left"><b>${item.label}</b><br><small>${item.prezzo.toFixed(2)}€</small></td><td>
                 <div class="marcia-ctrl"><button class="btn-v btn-minus" onclick="cambia(${pIdx},-1,'oggiPendo')">-</button>
@@ -231,4 +235,3 @@ function caricaJSON(e) {
 </script>
 </body>
 </html>
-
