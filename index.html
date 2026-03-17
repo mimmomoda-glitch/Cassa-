@@ -3,80 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NAV-PRO V46: ALLINEAMENTO REALE</title>
+    <title>NAV-PRO V49: FIX PENDOLARI</title>
     <style>
         :root {
-            --bg: #000; --card: #0d0d0d; --txt: #e2e8f0;
+            --bg: #000; --card: #111; --txt: #e2e8f0;
             --cyan: #00f2ff; --lime: #39ff14; --red: #ff003c; 
             --gold: #ffb700; --magenta: #bc13fe;
         }
-        * { box-sizing: border-box; font-family: 'Courier New', monospace; outline: none; }
-        body { margin: 0; background: var(--bg); color: var(--txt); padding-top: 250px; user-select: none; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; outline: none; }
+        body { margin: 0; background: var(--bg); color: var(--txt); padding-top: 230px; }
         header { position: fixed; top: 0; left: 0; width: 100%; background: #000; z-index: 2000; border-bottom: 2px solid var(--cyan); }
-        .info-bar { background: #111; color: var(--gold); padding: 5px; text-align: center; font-size: 10px; font-weight: bold; border-bottom: 1px solid #222; }
         .nav-tabs { display: flex; background: #111; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; font-size: 11px; text-transform: uppercase; cursor: pointer; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .tab-btn.active { color: var(--cyan); border-bottom: 3px solid var(--cyan); background: rgba(0,242,255,0.1); }
-        .rect-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px; }
-        .rect { padding: 6px; border-radius: 6px; background: #050505; text-align: center; border: 1px solid #222; }
-        .rect b { font-size: 7px; display: block; margin-bottom: 3px; text-transform: uppercase; }
-        .rect span { font-size: 11px; font-weight: 800; }
-        .page { display: none; padding: 10px; }
+        .rect-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px; }
+        .rect { padding: 5px; border-radius: 4px; background: #080808; text-align: center; border: 1px solid #222; }
+        .rect b { font-size: 8px; display: block; color: #888; text-transform: uppercase; }
+        .rect span { font-size: 11px; font-weight: bold; }
+        .page { display: none; padding: 10px; padding-bottom: 100px; }
         .page.active { display: block; }
-        .table-wrapper { max-height: calc(100vh - 270px); overflow: auto; border: 1px solid #222; border-radius: 8px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 950px; font-size: 11px; }
-        thead th { position: sticky; top: 0; background: #1a1a1a; z-index: 100; padding: 12px 5px; }
-        .sticky-col { position: sticky; left: 0; background: #0d0d0d !important; z-index: 110; font-weight: bold; border-right: 2px solid #333; }
-        td { padding: 10px 5px; border-bottom: 1px solid #1a1a1a; text-align: center; background: #0d0d0d; }
-        .input-std { width: 50px; padding: 4px; background: #111; border: 1px solid #333; color: #fff; text-align: center; }
-        .input-reale { width: 55px; padding: 6px; background: #000; border: 1px solid var(--cyan); color: var(--cyan); font-weight: bold; text-align: center; }
-        .card { background: var(--card); border-radius: 10px; padding: 12px; border: 1px solid #222; margin-bottom: 8px; }
-        .btn-action { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; border: none; text-transform: uppercase; margin-top: 8px; cursor: pointer; }
+        .prod-card { background: var(--card); border-radius: 8px; border: 1px solid #222; margin-bottom: 10px; padding: 12px; }
+        .prod-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 8px; }
+        .prod-name { font-weight: bold; color: var(--cyan); font-size: 14px; }
+        .prod-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .prod-item { text-align: center; }
+        .prod-item label { font-size: 9px; color: #777; display: block; text-transform: uppercase; }
+        .prod-item span { font-size: 14px; font-weight: bold; display: block; padding: 4px 0; }
+        .input-box { width: 100%; background: #000; border: 1px solid #333; color: #fff; text-align: center; padding: 8px; border-radius: 4px; font-size: 14px; }
+        .input-reale { border-color: var(--cyan); color: var(--cyan); font-weight: bold; }
+        .btn-qty { width: 50px; height: 50px; border-radius: 10px; border: 2px solid; font-size: 24px; font-weight: bold; background: none; color: var(--txt); }
+        .btn-action { width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; border: none; margin-top: 10px; font-size: 14px; text-transform: uppercase; cursor: pointer; }
         .qty-row { display: flex; justify-content: space-between; align-items: center; }
-        .controls { display: flex; align-items: center; gap: 8px; }
-        .btn-qty { width: 45px; height: 45px; border-radius: 8px; border: 2px solid; font-size: 20px; font-weight: bold; background: none; color: var(--txt); cursor: pointer; }
-        .storico-box { background: rgba(188, 19, 254, 0.1); border: 1px dashed var(--magenta); color: var(--magenta); padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-weight: bold; }
+        .controls { display: flex; align-items: center; gap: 12px; }
+        #cal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
     </style>
 </head>
 <body onload="inizializza()">
 
     <header>
-        <div class="info-bar" id="data-info">CALCOLO...</div>
         <nav class="nav-tabs">
-            <button type="button" class="tab-btn active" onclick="tab('tab-inv', this)">Magazzino</button>
-            <button type="button" class="tab-btn" onclick="tab('tab-pass', this)">Pass.</button>
-            <button type="button" class="tab-btn" onclick="tab('tab-pend', this)">Pend.</button>
-            <button type="button" class="tab-btn" onclick="tab('tab-rep', this)">Report</button>
+            <button class="tab-btn active" onclick="tab('tab-inv', this)">📦 Magazzino</button>
+            <button class="tab-btn" onclick="tab('tab-pass', this)">🚶 Pass.</button>
+            <button class="tab-btn" onclick="tab('tab-pend', this)">🚌 Pend.</button>
+            <button class="tab-btn" onclick="tab('tab-rep', this)">📊 Report</button>
         </nav>
         <div class="rect-container">
-            <div class="rect" style="border-color:var(--gold)"><b>Val. Merce</b><span id="m-val">0€</span></div>
-            <div class="rect" style="border-color:var(--cyan)"><b>Teo. Cassa OGGI</b><span id="m-cassa">0€</span></div>
-            <div class="rect" style="border-color:var(--magenta)"><b>Pz. Omaggi</b><span id="m-oma">0</span></div>
-            <div class="rect" style="border-color:var(--lime)"><b>Incasso REALE</b><span id="m-inc-reale">0€</span></div>
-            <div class="rect" style="border-color:var(--lime); background: rgba(57,255,20,0.1)"><b>STIPENDIO TOT</b><span id="m-mese-tot">0€</span></div>
-            <div class="rect" style="border-color:var(--red)"><b>Diff. Euro</b><span id="m-diff">0€</span></div>
+            <div class="rect" style="border-color:var(--gold)"><b>Merce</b><span id="m-val">0€</span></div>
+            <div class="rect" style="border-color:var(--cyan)"><b>Teo Cassa</b><span id="m-cassa">0€</span></div>
+            <div class="rect" style="border-color:var(--magenta)"><b>Omaggi</b><span id="m-oma">0</span></div>
+            <div class="rect" style="border-color:var(--lime)"><b>Inc. Reale</b><span id="m-inc-reale">0€</span></div>
+            <div class="rect" style="border-color:var(--lime); background: rgba(57,255,20,0.1)"><b>Stipendio</b><span id="m-mese-tot">0€</span></div>
+            <div class="rect" style="border-color:var(--red)"><b>Diff.</b><span id="m-diff">0€</span></div>
         </div>
     </header>
 
-    <div id="tab-inv" class="page active"><div class="table-wrapper"><table><thead><tr><th class="sticky-col">Prodotto</th><th>€</th><th>Iniz</th><th>Caric</th><th>Vend</th><th style="color:var(--magenta)">Oma</th><th>Teo</th><th>REALE</th><th>D.Pz</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
+    <div id="tab-inv" class="page active"><div id="schede-magazzino"></div></div>
     <div id="tab-pass" class="page"><div id="list-pass"></div></div>
     <div id="tab-pend" class="page"><div id="list-pend"></div></div>
     <div id="tab-rep" class="page">
-        <div class="card">
-            <div class="storico-box">
-                <small>STORICO PRECEDENTE:</small><br>
-                <span id="valore-storico">521.65</span>€
-            </div>
-            <h3 style="text-align:center; color:var(--gold); margin:0 0 10px 0; font-size:14px">CALENDARIO REALE</h3>
-            <div id="cal-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px; margin-bottom:15px"></div>
-            <button type="button" onclick="chiudiGiorno()" class="btn-action" style="background:var(--lime); color:#000">🏁 CHIUDI GIORNATA</button>
-            <button type="button" onclick="chiudiQuindicinaManuale()" class="btn-action" style="background:var(--cyan); color:#000">⚠️ CHIUDI INVENTARIO</button>
+        <div class="prod-card">
+            <h3 style="text-align:center; color:var(--gold); margin-top:0">INCASSI REALI (CALENDARIO)</h3>
+            <div id="cal-grid"></div>
+            <button onclick="chiudiGiorno()" class="btn-action" style="background:var(--lime); color:#000">🏁 CHIUDI GIORNATA</button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px">
-                <button type="button" onclick="exportJSON()" class="btn-action" style="background:var(--gold); color:#000; margin:0">💾 BACKUP</button>
-                <button type="button" onclick="document.getElementById('fIn').click()" class="btn-action" style="background:#444; color:#fff; margin:0">📂 CARICA</button>
+                <button onclick="exportJSON()" class="btn-action" style="background:var(--gold); color:#000; margin:0">💾 SALVA JSON</button>
+                <button onclick="document.getElementById('fIn').click()" class="btn-action" style="background:#444; color:#fff; margin:0">📂 CARICA</button>
             </div>
             <input type="file" id="fIn" style="display:none" onchange="importJSON(event)">
-            <button type="button" onclick="resetTotaleForzato()" class="btn-action" style="background:var(--red); color:#fff; margin-top:20px; font-size:10px">🗑️ RESET TOTALE</button>
         </div>
     </div>
 
@@ -87,115 +80,114 @@ const listPendo = [
     {l:"ACQUA",p:1.0,k:"ACQUA"}, {l:"ARACHIDI",p:1.0,k:"ARACHIDI"}, {l:"BIRRA",p:1.5,k:"PERONI"}, {l:"BISCOTTI",p:1.0,k:"PAVESINI"}, {l:"CAFFÈ",p:1.0,k:"CIALDE"}, {l:"CAPPUCCINO",p:1.5,k:"LATTE"}, {l:"CARAMELLA",p:1.0,k:"CARAMELLE / GOM"}, {l:"CHOCO CHIPS",p:2.0,k:"CHOCO CHIPS"}, {l:"CIOCCOLATA",p:1.0,k:"TWIX / KIT KAT / N"}, {l:"CIPSTER",p:2.5,k:"RITZ / CIPSTER"}, {l:"FONZIES",p:1.0,k:"FONZIES / PATATI"}, {l:"GATORADE",p:2.5,k:"RED BULL / GATOR"}, {l:"GOMME",p:1.0,k:"CARAMELLE / GOM"}, {l:"LATTINE",p:1.5,k:"LATTINE"}, {l:"MIKADO",p:1.5,k:"MIKADO"}, {l:"PATATINE",p:1.0,k:"FONZIES / PATATI"}, {l:"PRINGLES",p:2.0,k:"PRINGLES"}, {l:"PROSECCO",p:3.0,k:"PROSECCO / VINO"}, {l:"RED BULL",p:2.5,k:"RED BULL / GATOR"}, {l:"RITZ",p:3.0,k:"RITZ / CIPSTER"}, {l:"SUCCHI FRUTTA",p:2.0,k:"SUCCO"}, {l:"TUC",p:2.5,k:"TUC"}, {l:"VINO",p:3.0,k:"PROSECCO / VINO"}
 ];
 
-let db = JSON.parse(localStorage.getItem('NAVE_V46')) || {
-    prodotti: nomiMagazzino.map(n => ({nome:n, qi:0, ca:0, ve:0, og:0, op:0, om:0, re:0, pr:2.50})),
+let db = JSON.parse(localStorage.getItem('NAVE_V49')) || {
+    prodotti: nomiMagazzino.map(n => ({nome:n, qi:0, ca:0, ve:0, veP:0, og:0, op:0, om:0, re:0, pr:2.50})),
     incassi: Array(31).fill(null),
     stipendioGiaChiuso: 521.65
 };
 
 function calcola() {
     let vMerce=0, pzOma=0, tIncReale15=0, tCassaOggi=0, diffEuroPura=0, ggLav15=0;
-    const giorno = new Date().getDate();
-    const range = giorno <= 15 ? [0, 14] : [15, 30];
+    const range = new Date().getDate() <= 15 ? [0, 14] : [15, 30];
 
-    for(let i=range[0]; i<=range[1]; i++) { 
-        if(db.incassi[i] !== null) { tIncReale15 += db.incassi[i]; ggLav15++; } 
-    }
+    db.incassi.forEach((val, i) => { if(i >= range[0] && i <= range[1] && val !== null) { tIncReale15 += val; ggLav15++; } });
 
     db.prodotti.forEach((item, i) => {
         let vTot = (item.ve||0) + (item.og||0) + (item.op||0);
         let teo = (item.qi + item.ca) - vTot - (item.om||0);
-        
-        // CALCOLO CASSA TEORICA DINAMICO
         let pRef = listPendo.find(lp => lp.k === item.nome);
-        let prezzoP = pRef ? pRef.p : 1.0; // Prezzo pendolare
+        let pPend = pRef ? pRef.p : 1.0;
         
-        // Cassa = (Pezzi Passaggi * Prezzo Pieno) + (Pezzi Pendolari * Prezzo Pendolare)
-        tCassaOggi += (item.og * item.pr) + (item.op * prezzoP);
+        // Cassa di OGGI
+        tCassaOggi += (item.og * item.pr) + (item.op * pPend);
         
+        // Valore Merce Rimanente (sempre a prezzo pieno)
         vMerce += teo * item.pr;
         pzOma += (item.om||0);
         
         let dp = item.re - teo;
         if(dp < 0) diffEuroPura += (dp * item.pr);
 
-        if(document.getElementById(`vt-${i}`)) document.getElementById(`vt-${i}`).textContent = vTot;
-        if(document.getElementById(`te-${i}`)) document.getElementById(`te-${i}`).textContent = teo;
-        if(document.getElementById(`dz-${i}`)) {
-            document.getElementById(`dz-${i}`).textContent = dp;
-            document.getElementById(`dz-${i}`).style.color = dp < 0 ? 'var(--red)' : 'var(--lime)';
+        if(document.getElementById(`info-vtot-${i}`)) document.getElementById(`info-vtot-${i}`).textContent = vTot;
+        if(document.getElementById(`info-teo-${i}`)) document.getElementById(`info-teo-${i}`).textContent = teo;
+        if(document.getElementById(`info-diff-${i}`)) {
+            document.getElementById(`info-diff-${i}`).textContent = dp;
+            document.getElementById(`info-diff-${i}`).style.color = dp < 0 ? 'var(--red)' : 'var(--lime)';
         }
         if(document.getElementById(`cog-${i}`)) document.getElementById(`cog-${i}`).textContent = item.og || 0;
         if(document.getElementById(`cop-${i}`)) document.getElementById(`cop-${i}`).textContent = item.op || 0;
     });
 
-    let pagaAttuale = (tIncReale15 * 0.05) + (ggLav15 * 26);
     document.getElementById('m-inc-reale').textContent = tIncReale15.toFixed(2)+"€";
-    document.getElementById('m-mese-tot').textContent = (db.stipendioGiaChiuso + pagaAttuale).toFixed(2)+"€";
+    document.getElementById('m-mese-tot').textContent = (db.stipendioGiaChiuso + (tIncReale15 * 0.05) + (ggLav15 * 26)).toFixed(2)+"€";
     document.getElementById('m-val').textContent = vMerce.toFixed(2)+"€";
     document.getElementById('m-cassa').textContent = tCassaOggi.toFixed(2)+"€";
     document.getElementById('m-oma').textContent = pzOma;
     document.getElementById('m-diff').textContent = diffEuroPura.toFixed(0) + "€";
-    document.getElementById('valore-storico').textContent = db.stipendioGiaChiuso.toFixed(2);
     
-    document.getElementById('data-info').innerHTML = `DATA: ${new Date().toLocaleDateString()}`;
-    localStorage.setItem('NAVE_V46', JSON.stringify(db));
+    localStorage.setItem('NAVE_V49', JSON.stringify(db));
 }
 
 function chiudiGiorno() {
-    if(confirm("Chiudi la giornata? I pezzi verranno scaricati dal magazzino.")){
+    if(confirm("Vuoi scaricare la merce di oggi?")){
         db.prodotti.forEach(p => {
+            // Aggiorna venduto totale e venduto pendolare
             p.ve = (p.ve || 0) + (p.og || 0) + (p.op || 0);
-            p.og = 0; p.op = 0;
+            p.veP = (p.veP || 0) + (p.op || 0); 
+            p.og = 0; p.op = 0; // Azzera i bottoni di oggi
         });
-        renderTabella();
+        calcola(); renderMagazzino(); renderVeloci();
+        alert("Scarico completato correttamente!");
     }
 }
 
-function cambia(idx, delta, campo) { db.prodotti[idx][campo] = Math.max(0, (db.prodotti[idx][campo] || 0) + delta); calcola(); }
-function u(i,f,v) { db.prodotti[i][f] = parseFloat(v)||0; calcola(); }
-
-function renderTabella() {
-    const b = document.getElementById('tbody'); b.innerHTML = '';
+function renderMagazzino() {
+    const cont = document.getElementById('schede-magazzino');
+    cont.innerHTML = '';
     db.prodotti.forEach((item, i) => {
-        b.innerHTML += `<tr><td class="sticky-col">${item.nome}</td>
-        <td><input type="number" step="0.01" value="${item.pr}" oninput="u(${i},'pr',this.value)" class="input-std"></td>
-        <td><input type="number" value="${item.qi}" oninput="u(${i},'qi',this.value)" class="input-std"></td>
-        <td><input type="number" value="${item.ca}" oninput="u(${i},'ca',this.value)" class="input-std"></td>
-        <td id="vt-${i}" style="color:var(--cyan)">0</td>
-        <td><input type="number" value="${item.om||0}" oninput="u(${i},'om',this.value)" style="width:40px; background:#000; border:1px solid var(--magenta); color:var(--magenta); text-align:center"></td>
-        <td id="te-${i}">0</td>
-        <td><input type="number" value="${item.re||0}" oninput="u(${i},'re',this.value)" class="input-reale"></td>
-        <td id="dz-${i}">0</td></tr>`;
+        cont.innerHTML += `
+        <div class="prod-card">
+            <div class="prod-header"><span class="prod-name">${item.nome}</span>
+            <span style="font-size:12px; color:var(--gold)">€ <input type="number" step="0.1" value="${item.pr}" oninput="u(${i},'pr',this.value)" style="width:45px; background:none; border:none; color:var(--gold); border-bottom:1px solid #444"></span></div>
+            <div class="prod-grid">
+                <div class="prod-item"><label>Iniz</label><input type="number" value="${item.qi}" oninput="u(${i},'qi',this.value)" class="input-box"></div>
+                <div class="prod-item"><label>Carico</label><input type="number" value="${item.ca}" oninput="u(${i},'ca',this.value)" class="input-box"></div>
+                <div class="prod-item"><label>Oma</label><input type="number" value="${item.om}" oninput="u(${i},'om',this.value)" class="input-box" style="color:var(--magenta)"></div>
+                <div class="prod-item"><label>Vend</label><span id="info-vtot-${i}" style="color:var(--cyan)">0</span></div>
+                <div class="prod-item"><label>Teo</label><span id="info-teo-${i}">0</span></div>
+                <div class="prod-item"><label>Diff</label><span id="info-diff-${i}">0</span></div>
+            </div>
+            <div style="margin-top:10px;"><input type="number" value="${item.re}" oninput="u(${i},'re',this.value)" class="input-box input-reale" placeholder="REALE"></div>
+        </div>`;
     });
-    renderSchede(); calcola();
 }
 
-function renderSchede() {
+function renderVeloci() {
     const p = document.getElementById('list-pass'); p.innerHTML = '';
     const d = document.getElementById('list-pend'); d.innerHTML = '';
     db.prodotti.forEach((item, i) => {
-        p.innerHTML += `<div class="card"><div class="qty-row"><span><b>${item.nome}</b></span><div class="controls"><button type="button" class="btn-qty" style="color:var(--red); border-color:var(--red)" onclick="cambia(${i},-1,'og')">-</button><span id="cog-${i}" style="font-size:20px; width:40px; text-align:center">${item.og}</span><button type="button" class="btn-qty" style="color:var(--cyan); border-color:var(--cyan)" onclick="cambia(${i},1,'og')">+</button></div></div></div>`;
+        p.innerHTML += `<div class="prod-card"><div class="qty-row"><span><b>${item.nome}</b></span><div class="controls"><button class="btn-qty" style="color:var(--red); border-color:var(--red)" onclick="cambia(${i},-1,'og')">-</button><span id="cog-${i}" style="font-size:22px; width:40px; text-align:center">${item.og}</span><button class="btn-qty" style="color:var(--cyan); border-color:var(--cyan)" onclick="cambia(${i},1,'og')">+</button></div></div></div>`;
         let ref = listPendo.find(lp => lp.k === item.nome);
         if(ref) {
-            d.innerHTML += `<div class="card"><div class="qty-row"><span><b>${ref.l}</b><br><small style="color:var(--gold)">€ ${ref.p.toFixed(2)}</small></span><div class="controls"><button type="button" class="btn-qty" style="color:var(--red); border-color:var(--red)" onclick="cambia(${i},-1,'op')">-</button><span id="cop-${i}" style="font-size:20px; width:40px; text-align:center">${item.op}</span><button type="button" class="btn-qty" style="color:var(--magenta); border-color:var(--magenta)" onclick="cambia(${i},1,'op')">+</button></div></div></div>`;
+            d.innerHTML += `<div class="prod-card"><div class="qty-row"><span><b>${ref.l}</b><br><small style="color:var(--gold)">€ ${ref.p.toFixed(2)}</small></span><div class="controls"><button class="btn-qty" style="color:var(--red); border-color:var(--red)" onclick="cambia(${i},-1,'op')">-</button><span id="cop-${i}" style="font-size:22px; width:40px; text-align:center">${item.op}</span><button class="btn-qty" style="color:var(--magenta); border-color:var(--magenta)" onclick="cambia(${i},1,'op')">+</button></div></div></div>`;
         }
     });
 }
 
 function renderCalendario() {
     const g = document.getElementById('cal-grid'); g.innerHTML='';
-    const giorno = new Date().getDate();
-    const range = giorno <= 15 ? [0, 14] : [15, 30];
+    const range = new Date().getDate() <= 15 ? [0, 14] : [15, 30];
     for(let i=range[0]; i<=range[1]; i++) {
-        g.innerHTML += `<div>G${i+1}<input type="number" step="0.01" value="${db.incassi[i]!==null?db.incassi[i]:''}" oninput="db.incassi[${i}]=this.value===''?null:parseFloat(this.value);calcola()" style="width:100%; background:#111; border:1px solid #333; color:var(--lime); text-align:center; border-radius:4px; padding:5px"></div>`;
+        g.innerHTML += `<div style="text-align:center; font-size:10px">G${i+1}<input type="number" step="0.01" value="${db.incassi[i]!==null?db.incassi[i]:''}" oninput="db.incassi[${i}]=this.value===''?null:parseFloat(this.value);calcola()" class="input-box" style="color:var(--lime); padding:5px"></div>`;
     }
 }
+
+function u(i,f,v) { db.prodotti[i][f] = parseFloat(v)||0; calcola(); }
+function cambia(idx, delta, campo) { db.prodotti[idx][campo] = Math.max(0, (db.prodotti[idx][campo] || 0) + delta); calcola(); }
 function tab(id, btn) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
-function exportJSON() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='backup_nave.json'; a.click(); }
-function importJSON(e) { const r=new FileReader(); r.onload=(x)=>{db=JSON.parse(x.target.result); renderTabella(); renderCalendario();}; r.readAsText(e.target.files[0]); }
-function resetTotaleForzato() { if(confirm("RESET TOTALE?")){ localStorage.clear(); location.reload(); }}
-function inizializza() { renderCalendario(); renderTabella(); }
+function exportJSON() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download=`nave_backup.json`; a.click(); }
+function importJSON(e) { const r=new FileReader(); r.onload=(x)=>{db=JSON.parse(x.target.result); inizializza(); alert("Dati Caricati!");}; r.readAsText(e.target.files[0]); }
+function inizializza() { renderMagazzino(); renderVeloci(); renderCalendario(); calcola(); }
 </script>
 </body>
 </html>
