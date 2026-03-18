@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NAV-PRO V62.7: CALCOLO STIPENDIO CORRETTO</title>
+    <title>NAV-PRO V63.3: FIX TOTALE OMAGGI</title>
     <style>
         :root {
             --bg: #000; --card: #111; --txt: #e2e8f0;
@@ -11,19 +11,20 @@
             --gold: #ffb700; --magenta: #bc13fe;
         }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--txt); padding-top: 285px; }
+        body { margin: 0; background: var(--bg); color: var(--txt); padding-top: 310px; }
         header { position: fixed; top: 0; left: 0; width: 100%; background: #000; z-index: 2000; border-bottom: 2px solid var(--cyan); }
         .date-bar { background: #111; color: var(--gold); text-align: center; padding: 6px; font-size: 11px; font-weight: bold; border-bottom: 1px solid #222; }
         .day-selector { background: #000; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; border-bottom: 1px solid #333; }
-        .day-selector label { font-size: 10px; color: #888; text-transform: uppercase; }
-        .day-selector select { background: #111; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 4px; padding: 4px 10px; font-weight: bold; }
+        .day-selector select { background: #111; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 4px; padding: 4px; font-weight: bold; }
         .nav-tabs { display: flex; background: #111; }
         .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; font-size: 11px; text-transform: uppercase; }
         .tab-btn.active { color: var(--cyan); border-bottom: 3px solid var(--cyan); background: rgba(0,242,255,0.1); }
-        .rect-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px; }
-        .rect { padding: 5px; border-radius: 4px; background: #080808; text-align: center; border: 1px solid #222; }
-        .rect b { font-size: 8px; display: block; color: #888; text-transform: uppercase; }
-        .rect span { font-size: 11px; font-weight: bold; }
+        
+        .rect-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; }
+        .rect { padding: 4px 2px; border-radius: 4px; background: #080808; text-align: center; border: 1px solid #222; min-height: 42px; }
+        .rect b { font-size: 7px; display: block; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+        .rect span { font-size: 10px; font-weight: bold; }
+
         .page { display: none; padding: 10px; padding-bottom: 120px; }
         .page.active { display: block; }
         .prod-card { background: var(--card); border-radius: 8px; border: 1px solid #222; margin-bottom: 10px; padding: 12px; }
@@ -31,16 +32,15 @@
         .btn-qty { width: 55px; height: 55px; border-radius: 12px; border: 2px solid; font-size: 26px; font-weight: bold; background: none; color: var(--txt); cursor: pointer; }
         .btn-action { width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; border: none; margin-top: 10px; font-size: 12px; text-transform: uppercase; }
         .cal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
-        .q-title { color: var(--gold); font-size: 11px; font-weight: bold; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px; text-transform: uppercase; }
-        .q-tot-box { background: #0a0a0a; border: 1px solid #333; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .q-title { color: var(--gold); font-size: 11px; font-weight: bold; margin: 15px 0 8px; border-left: 3px solid var(--gold); padding-left: 8px; text-transform: uppercase; }
+        .q-tot-box { background: #0a0a0a; border: 1px solid #333; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; }
     </style>
 </head>
 <body onload="inizializza()">
 
     <header>
-        <div class="date-bar" id="current-date">CARICAMENTO...</div>
+        <div class="date-bar" id="current-date">SISTEMA V63.3</div>
         <div class="day-selector">
-            <label>Giorno selezionato:</label>
             <select id="select-giorno" onchange="calcola()"></select>
         </div>
         <nav class="nav-tabs">
@@ -50,12 +50,14 @@
             <button class="tab-btn" onclick="tab('tab-rep', this)">📊 Report</button>
         </nav>
         <div class="rect-container">
-            <div class="rect" style="border-color:var(--gold)"><b>Merce Reale</b><span id="m-val">0€</span></div>
-            <div class="rect" style="border-color:var(--cyan)" id="box-cassa"><b>Teo Cassa</b><span id="m-cassa">0€</span></div>
-            <div class="rect" style="border-color:var(--magenta)"><b>Omaggi</b><span id="m-oma">0</span></div>
+            <div class="rect" style="border-color:var(--magenta)"><b>Valore Carico</b><span id="m-val-carico" style="color:var(--magenta)">0€</span></div>
+            <div class="rect" style="border-color:var(--cyan)"><b>Carico+Mezzo</b><span id="m-val-totale" style="color:var(--cyan)">0€</span></div>
+            <div class="rect" style="border-color:var(--gold)"><b>Teo Cassa</b><span id="m-cassa">0€</span></div>
             <div class="rect" style="border-color:var(--lime)"><b>Inc. Reale</b><span id="m-inc-reale">0€</span></div>
-            <div class="rect" style="border-color:var(--lime); background: rgba(57,255,20,0.1)"><b>Stipendio Tot</b><span id="m-mese-tot">0€</span></div>
-            <div class="rect" id="rect-diff-box"><b>Diff. Merce</b><span id="m-diff">0€</span></div>
+            
+            <div class="rect" id="rect-diff-box"><b>Diff. Cassa</b><span id="m-diff">0€</span></div>
+            <div class="rect" style="border-color:var(--magenta)"><b>Omaggi</b><span id="m-oma" style="color:var(--magenta)">0</span></div>
+            <div class="rect" style="border-color:var(--lime); background: rgba(57,255,20,0.1); grid-column: span 2;"><b>Stipendio (Diaria + 5%)</b><span id="m-mese-tot">0€</span></div>
         </div>
     </header>
 
@@ -67,13 +69,15 @@
         <div class="prod-card">
             <div class="q-title">PRIMA QUINDICINA (1-15)</div>
             <div id="grid-q1" class="cal-grid"></div>
-            <div class="q-tot-box"><b>TOTALE Q1:</b> <span id="tot-q1" style="color:var(--lime);font-weight:bold">0.00€</span></div>
+            <div class="q-tot-box"><b>TOTALE Q1:</b> <span id="tot-q1" style="color:var(--lime)">0.00€</span></div>
 
             <div class="q-title" style="border-color:var(--cyan); color:var(--cyan)">SECONDA QUINDICINA (16-31)</div>
             <div id="grid-q2" class="cal-grid"></div>
-            <div class="q-tot-box" style="border-color:var(--cyan)"><b>TOTALE Q2:</b> <span id="tot-q2" style="color:var(--cyan);font-weight:bold">0.00€</span></div>
+            <div class="q-tot-box" style="border-color:var(--cyan)"><b>TOTALE Q2:</b> <span id="tot-q2" style="color:var(--cyan)">0.00€</span></div>
 
-            <button onclick="chiudiGiorno()" class="btn-action" style="background:var(--lime); color:#000">🏁 SCARICA VENDUTO OGGI</button>
+            <button onclick="chiudiGiorno()" class="btn-action" style="background:var(--cyan); color:#000">🏁 SCARICA VENDUTO OGGI</button>
+            <button onclick="chiudiQuindicina()" class="btn-action" style="background:var(--red); color:#fff">⚠️ CHIUDI 15-INA (SOLO REALE)</button>
+            <hr style="border:0; border-top:1px solid #333; margin:15px 0">
             <button onclick="exportJSON()" class="btn-action" style="background:var(--gold); color:#000">💾 SALVA BACKUP (JSON)</button>
             <button onclick="document.getElementById('fIn').click()" class="btn-action" style="background:#444; color:#fff">📂 CARICA BACKUP</button>
             <input type="file" id="fIn" style="display:none" onchange="importJSON(event)">
@@ -86,72 +90,65 @@ const listPendo = [{l:"ACQUA",p:1.0,k:"ACQUA"},{l:"ARACHIDI",p:1.0,k:"ARACHIDI"}
 
 let db;
 
-function popolaGiorni() {
-    const sel = document.getElementById('select-giorno');
-    if(!sel) return;
-    sel.innerHTML = '';
-    const oggi = new Date().getDate();
-    for(let i=1; i<=31; i++) {
-        let opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = "Giorno " + i;
-        if(i === oggi) opt.selected = true;
-        sel.appendChild(opt);
-    }
-}
-
 function caricaDati() {
-    let saved = localStorage.getItem('NAVE_V62');
-    db = saved ? JSON.parse(saved) : { prodotti: nomiMagazzino.map(n => ({nome:n, qi:0, ca:0, ve:0, og:0, op:0, om:0, re:0, pr:2.50})), incassi: Array(31).fill(null), stipendioGiaChiuso: 0 };
-    nomiMagazzino.forEach(n => { if(!db.prodotti.find(p => p.nome === n)) db.prodotti.push({nome:n, qi:0, ca:0, ve:0, og:0, op:0, om:0, re:0, pr:2.50}); });
+    let saved = localStorage.getItem('NAVE_V63_3');
+    db = saved ? JSON.parse(saved) : { prodotti: nomiMagazzino.map(n => ({nome:n, qi:0, ca:0, ve:0, og:0, op:0, om:0, re:0, pr:n==="ACQUA"?2.0:2.50})), incassi: Array(31).fill(null) };
 }
 
 function calcola() {
-    let vMerceReale=0, pzOma=0, tIncMese=0, tQ1=0, tQ2=0, tCassaOggi=0, ggLavorati=0;
-    const selG = document.getElementById('select-giorno');
-    const giornoSelezionato = selG ? parseInt(selG.value) : new Date().getDate();
+    let vCarico=0, vCaricoMezzo=0, pzOma=0, tIncMese=0, tQ1=0, tQ2=0, tCassaOggi=0, ggLavorati=0;
+    const giornoSelezionato = parseInt(document.getElementById('select-giorno').value);
 
-    // CALCOLO INCASSI TOTALI E GIORNI LAVORATI
+    // Calcolo Incassi e Stipendio
     db.incassi.forEach((val, i) => { 
-        if(val !== null && val !== "") { 
+        if(val !== null && val !== "" && parseFloat(val) > 0) { 
             let v = parseFloat(val);
-            tIncMese += v; 
-            ggLavorati++; // Conta il giorno come lavorato se c'è un valore
+            tIncMese += v; ggLavorati++;
             if(i < 15) tQ1 += v; else tQ2 += v;
         } 
     });
 
+    // Calcolo Magazzino e Valori
     db.prodotti.forEach((item, i) => {
         let pRef = listPendo.find(lp => lp.k === item.nome);
         let pPend = pRef ? pRef.p : 1.0;
-        tCassaOggi += ((item.og||0) * (item.pr||0)) + ((item.op||0) * pPend);
-        let teoPezzi = (item.qi + item.ca) - (item.ve + item.og + item.op + item.om);
-        vMerceReale += (item.re || 0) * (item.pr||0);
-        pzOma += (item.om||0);
-        if(document.getElementById(`info-teo-${i}`)) document.getElementById(`info-teo-${i}`).textContent = Math.round(teoPezzi);
-        if(document.getElementById(`cog-${i}`)) document.getElementById(`cog-${i}`).textContent = item.og || 0;
-        if(document.getElementById(`cop-${i}`)) document.getElementById(`cop-${i}`).textContent = item.op || 0;
+        
+        let pr = parseFloat(item.pr) || 0;
+        let qi = parseFloat(item.qi) || 0;
+        let ca = parseFloat(item.ca) || 0;
+        let om = parseFloat(item.om) || 0;
+        let ve = parseFloat(item.ve) || 0;
+        let og = parseFloat(item.og) || 0;
+        let op = parseFloat(item.op) || 0;
+
+        // VALORE CARICO (solo quello caricato oggi)
+        vCarico += (ca * pr);
+        
+        // VALORE CARICO+MEZZO (Iniziale + Carico - Omaggi - Venduti)
+        // Usiamo (qi + ca - om) per avere il valore della merce disponibile al netto degli omaggi
+        vCaricoMezzo += (qi + ca - om) * pr;
+
+        let teo = (qi + ca) - (ve + og + op + om);
+        tCassaOggi += (og * pr) + (op * pPend);
+        pzOma += om;
+
+        // Aggiorna etichette nelle schede
+        if(document.getElementById(`info-teo-${i}`)) document.getElementById(`info-teo-${i}`).textContent = Math.round(teo);
     });
 
+    // Aggiorna Quadrati Intestazione
     let incGiorno = parseFloat(db.incassi[giornoSelezionato-1]) || 0;
     document.getElementById('m-inc-reale').textContent = incGiorno.toFixed(2)+"€";
     document.getElementById('m-cassa').textContent = tCassaOggi.toFixed(2)+"€";
-    document.getElementById('m-val').textContent = vMerceReale.toFixed(2)+"€";
+    document.getElementById('m-val-carico').textContent = vCarico.toFixed(2)+"€";
+    document.getElementById('m-val-totale').textContent = vCaricoMezzo.toFixed(2)+"€";
     document.getElementById('m-oma').textContent = pzOma;
-    
-    let diffCassaGiorno = incGiorno - tCassaOggi;
-    document.getElementById('m-diff').textContent = diffCassaGiorno.toFixed(2) + "€";
-    document.getElementById('rect-diff-box').style.borderColor = Math.abs(diffCassaGiorno) < 0.1 ? '#222' : (diffCassaGiorno < 0 ? 'var(--red)' : 'var(--lime)');
-    
+    document.getElementById('m-diff').textContent = (incGiorno - tCassaOggi).toFixed(2) + "€";
     document.getElementById('tot-q1').textContent = tQ1.toFixed(2) + "€";
     document.getElementById('tot-q2').textContent = tQ2.toFixed(2) + "€";
+    document.getElementById('m-mese-tot').textContent = ((ggLavorati * 26) + (tIncMese * 0.05)).toFixed(2) + "€";
 
-    // NUOVA FORMULA STIPENDIO: (Giorni * 26) + (Totale Incassi * 0.05)
-    let stipendioCalcolato = (ggLavorati * 26) + (tIncMese * 0.05);
-    document.getElementById('m-mese-tot').textContent = stipendioCalcolato.toFixed(2) + "€";
-
-    document.getElementById('current-date').textContent = new Date().toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase();
-    localStorage.setItem('NAVE_V62', JSON.stringify(db));
+    localStorage.setItem('NAVE_V63_3', JSON.stringify(db));
 }
 
 function renderMagazzino() {
@@ -164,12 +161,11 @@ function renderMagazzino() {
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
                 <div><label style="font-size:9px;color:#777">Iniz</label><input type="number" value="${item.qi}" oninput="db.prodotti[${i}].qi=parseFloat(this.value)||0;calcola()" class="input-box"></div>
-                <div><label style="font-size:9px;color:#777">Carico</label><input type="number" value="${item.ca}" oninput="db.prodotti[${i}].ca=parseFloat(this.value)||0;calcola()" class="input-box"></div>
-                <div><label style="font-size:9px;color:var(--magenta)">OMA</label><input type="number" value="${item.om}" oninput="db.prodotti[${i}].om=parseFloat(this.value)||0;calcola()" class="input-box" style="border-color:var(--magenta);color:var(--magenta)"></div>
+                <div><label style="font-size:9px;color:var(--gold)">Carico</label><input type="number" value="${item.ca}" oninput="db.prodotti[${i}].ca=parseFloat(this.value)||0;calcola()" class="input-box" style="border-color:var(--gold)"></div>
+                <div><label style="font-size:9px;color:var(--magenta)">OMA</label><input type="number" value="${item.om}" oninput="db.prodotti[${i}].om=parseFloat(this.value)||0;calcola()" class="input-box" style="border-color:var(--magenta); color:var(--magenta)"></div>
                 <div style="grid-column: span 3; display:flex; justify-content:space-around; align-items:center; background:#000; padding:5px; border-radius:4px; margin-top:5px">
-                   <div><label style="font-size:8px;color:#555">VEND. TOT</label><br><b>${item.ve + (item.og||0) + (item.op||0)}</b></div>
                    <div><label style="font-size:8px;color:#555">TEO.</label><br><b id="info-teo-${i}">0</b></div>
-                   <div><label style="font-size:8px;color:var(--lime)">REALE</label><br><input type="number" value="${item.re}" oninput="db.prodotti[${i}].re=parseFloat(this.value)||0;calcola()" class="input-box" style="width:60px; height:30px; border-color:var(--lime); color:var(--lime)"></div>
+                   <div><label style="font-size:8px;color:var(--lime)">REALE</label><br><input type="number" value="${item.re}" oninput="db.prodotti[${i}].re=parseFloat(this.value)||0;calcola()" class="input-box" style="width:65px; border-color:var(--lime); color:var(--lime)"></div>
                 </div>
             </div>
         </div>`;
@@ -180,9 +176,9 @@ function renderVeloci() {
     const p = document.getElementById('list-pass'); p.innerHTML = '';
     const d = document.getElementById('list-pend'); d.innerHTML = '';
     db.prodotti.forEach((item, i) => {
-        p.innerHTML += `<div class="prod-card"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${item.nome}</b></span><div style="display:flex;align-items:center;gap:12px"><button class="btn-qty" style="color:var(--red);border-color:var(--red)" onclick="cambia(${i},-1,'og')">-</button><span id="cog-${i}" style="font-size:22px;width:40px;text-align:center">0</span><button class="btn-qty" style="color:var(--cyan);border-color:var(--cyan)" onclick="cambia(${i},1,'og')">+</button></div></div></div>`;
+        p.innerHTML += `<div class="prod-card"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${item.nome}</b></span><div style="display:flex;align-items:center;gap:12px"><button class="btn-qty" style="color:var(--red);border-color:var(--red)" onclick="cambia(${i},-1,'og')">-</button><span id="cog-${i}" style="font-size:22px;width:40px;text-align:center">${item.og||0}</span><button class="btn-qty" style="color:var(--cyan);border-color:var(--cyan)" onclick="cambia(${i},1,'og')">+</button></div></div></div>`;
         let ref = listPendo.find(lp => lp.k === item.nome);
-        if(ref) d.innerHTML += `<div class="prod-card"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${ref.l}</b></span><div style="display:flex;align-items:center;gap:12px"><button class="btn-qty" style="color:var(--red);border-color:var(--red)" onclick="cambia(${i},-1,'op')">-</button><span id="cop-${i}" style="font-size:22px;width:40px;text-align:center">0</span><button class="btn-qty" style="color:var(--magenta);border-color:var(--magenta)" onclick="cambia(${i},1,'op')">+</button></div></div></div>`;
+        if(ref) d.innerHTML += `<div class="prod-card"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${ref.l}</b></span><div style="display:flex;align-items:center;gap:12px"><button class="btn-qty" style="color:var(--red);border-color:var(--red)" onclick="cambia(${i},-1,'op')">-</button><span id="cop-${i}" style="font-size:22px;width:40px;text-align:center">${item.op||0}</span><button class="btn-qty" style="color:var(--magenta);border-color:var(--magenta)" onclick="cambia(${i},1,'op')">+</button></div></div></div>`;
     });
 }
 
@@ -196,11 +192,35 @@ function renderCalendario() {
     }
 }
 
-function cambia(idx, delta, campo) { db.prodotti[idx][campo] = Math.max(0, (db.prodotti[idx][campo] || 0) + delta); calcola(); }
+function cambia(idx, delta, campo) { 
+    db.prodotti[idx][campo] = Math.max(0, (db.prodotti[idx][campo] || 0) + delta); 
+    document.getElementById(`c${campo}-${idx}`).textContent = db.prodotti[idx][campo];
+    calcola(); 
+}
+
 function tab(id, btn) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 function exportJSON() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download=`backup_nave.json`; a.click(); }
-function importJSON(e) { const reader = new FileReader(); reader.onload = (event) => { try { const tempDb = JSON.parse(event.target.result); localStorage.setItem('NAVE_V62', JSON.stringify(tempDb)); location.reload(); } catch(err) { alert("Errore file!"); }}; reader.readAsText(e.target.files[0]);}
-function chiudiGiorno() { if(confirm("Scarichi il venduto?")){ db.prodotti.forEach(p=>{p.ve+=(p.og||0)+(p.op||0); p.og=0; p.op=0;}); calcola(); alert("Fatto!"); location.reload(); }}
+function importJSON(e) { const r = new FileReader(); r.onload = (ev) => { db = JSON.parse(ev.target.result); localStorage.setItem('NAVE_V63_3', JSON.stringify(db)); location.reload(); }; r.readAsText(e.target.files[0]);}
+function chiudiGiorno() { if(confirm("Scarichi il venduto?")){ db.prodotti.forEach(p=>{p.ve+=(p.og||0)+(p.op||0); p.og=0; p.op=0;}); calcola(); location.reload(); }}
+function chiudiQuindicina() {
+    if(confirm("Chiudi 15-ina? I valori REALI diventeranno i nuovi INIZIALI.")){
+        db.prodotti.forEach(p => {
+            let teo = (p.qi + p.ca) - (p.ve + p.og + p.op + p.om);
+            p.qi = Math.max(0, Math.round((p.re > 0) ? p.re : teo));
+            p.ca=0; p.ve=0; p.og=0; p.op=0; p.om=0; p.re=0;
+        });
+        db.incassi = Array(31).fill(null);
+        calcola(); location.reload();
+    }
+}
+function popolaGiorni() {
+    const sel = document.getElementById('select-giorno'); sel.innerHTML = '';
+    for(let i=1; i<=31; i++) {
+        let opt = document.createElement('option'); opt.value = i; opt.textContent = "Giorno " + i;
+        if(i === new Date().getDate()) opt.selected = true;
+        sel.appendChild(opt);
+    }
+}
 function inizializza() { caricaDati(); popolaGiorni(); renderMagazzino(); renderVeloci(); renderCalendario(); calcola(); }
 </script>
 </body>
