@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NAV-PRO V128: FULL FEATURE</title>
+    <title>NAV-PRO V129: PRICE EDIT</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -22,8 +22,10 @@
         .accordion { background: var(--card); border-radius: 12px; margin: 10px; border: 1px solid #333; overflow: hidden; }
         .acc-header { padding: 15px; background: #2c2c2e; display: flex; justify-content: space-between; align-items: center; }
         .acc-body { display: none; padding: 10px 15px; background: #1c1c1e; }
-        .edit-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; }
-        .edit-row input { background: #333; border: none; color: var(--cyan); text-align: right; font-size: 16px; font-weight: bold; width: 75px; border-radius: 4px; padding: 5px; }
+        .edit-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #2c2c2e; }
+        .edit-row span { font-size: 13px; color: #ccc; }
+        .edit-row input { background: #333; border: 1px solid #444; color: var(--cyan); text-align: right; font-size: 15px; font-weight: bold; width: 80px; border-radius: 6px; padding: 4px; }
+        .edit-row input.price-input { color: var(--gold); }
         
         .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 70px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); }
         .footer button { flex: 1; background: none; border: none; color: #888; font-weight: bold; font-size: 10px; }
@@ -42,7 +44,7 @@
 <div id="page-cassa" class="grid"></div>
 
 <div id="page-menu" style="display:none; overflow-y:auto; flex-grow:1; padding-bottom:150px;">
-    <h3 style="color:var(--cyan); margin: 15px;">📊 Report & Opzioni</h3>
+    <h3 style="color:var(--cyan); margin: 15px;">📊 Report & Listino</h3>
     
     <div style="padding:0 10px 15px 10px;">
         <button onclick="chiudiGiornata()" style="width:100%; padding:20px; background:var(--lime); color:#000; border:none; border-radius:12px; font-weight:bold; font-size:16px;">☀️ INIZIO NUOVA GIORNATA</button>
@@ -80,7 +82,7 @@
     </div>
     <button onclick="conferma('pas')" style="width:100%; padding:20px; border-radius:12px; border:2px solid var(--gold); background:none; color:var(--gold); font-weight:bold; margin-bottom:10px; font-size:16px;">VENDITA PASSEGGERO</button>
     <button onclick="conferma('pen')" style="width:100%; padding:20px; border-radius:12px; border:2px solid var(--apple-blue); background:none; color:var(--apple-blue); font-weight:bold; margin-bottom:10px; font-size:16px;">VENDITA PENDOLARE</button>
-    <button onclick="conferma('omaggio')" style="width:100%; padding:20px; border-radius:12px; border:2px solid var(--purple); background:none; color:var(--purple); font-weight:bold; font-size:16px;">🎁 REGALA (OMAGGIO)</button>
+    <button onclick="conferma('omaggio')" style="width:100%; padding:20px; border-radius:12px; border:2px solid var(--purple); background:none; color:var(--purple); font-weight:bold; font-size:16px;">🎁 OMAGGIO (SCARICA)</button>
 </div>
 
 <div class="footer">
@@ -113,7 +115,7 @@ let db = { prodotti: [], history: {} };
 let cur = -1, qty = 1;
 
 function init() {
-    const saved = localStorage.getItem('NAV_V128');
+    const saved = localStorage.getItem('NAV_V129');
     if(saved) { db = JSON.parse(saved); repairData(); } 
     else { hardReset(); }
     render();
@@ -124,16 +126,14 @@ function repairData() {
     db.prodotti.forEach(p => {
         p.q = Number(p.q)||0; p.c = Number(p.c)||0;
         p.vePas = Number(p.vePas)||0; p.vePen = Number(p.vePen)||0;
-        p.omaggio = Number(p.omaggio)||0; // Fix per vecchi dati senza omaggio
+        p.omaggio = Number(p.omaggio)||0;
+        p.pas = Number(p.pas)||0;
     });
 }
 
 function chiudiGiornata() {
-    if(!confirm("Azzero l'incasso odierno? Le rimanenze restano aggiornate.")) return;
-    db.prodotti.forEach(p => {
-        p.q = calcF(p);
-        p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0;
-    });
+    if(!confirm("Azzero l'incasso app?")) return;
+    db.prodotti.forEach(p => { p.q = calcF(p); p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; });
     save(); render();
 }
 
@@ -143,8 +143,8 @@ function hardReset() {
     save(); render();
 }
 
-function save() { localStorage.setItem('NAV_V128', JSON.stringify(db)); }
-function calcF(p) { return p.q + p.c - p.vePas - p.vePen - (p.omaggio||0); }
+function save() { localStorage.setItem('NAV_V129', JSON.stringify(db)); }
+function calcF(p) { return p.q + p.c - p.vePas - p.vePen - p.omaggio; }
 
 function render() {
     document.getElementById('page-cassa').innerHTML = db.prodotti.map((p,i) => `
@@ -163,12 +163,13 @@ function render() {
         <div class="accordion">
             <div class="acc-header" onclick="toggleAcc(${i})"><b>${p.n}</b> <b style="color:var(--gold)">${(fine*p.pas).toFixed(2)}€</b></div>
             <div id="acc-${i}" class="acc-body">
-                <div class="edit-row"><span>Giacenza Inizio:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
-                <div class="edit-row"><span>Carico (+):</span> <input type="number" value="${p.c||0}" onchange="up(${i},'c',this.value)"></div>
-                <div class="edit-row"><span>Venduto Pas:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
-                <div class="edit-row"><span>Venduto Pen:</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
-                <div class="edit-row"><span>Omaggi (-):</span> <input type="number" value="${p.omaggio||0}" onchange="up(${i},'omaggio',this.value)"></div>
-                <div style="padding-top:10px; color:var(--purple); font-size:12px; font-weight:bold;">RIMANENZA: ${fine} pz</div>
+                <div class="edit-row"><span>💰 Prezzo Pas (€):</span> <input type="number" class="price-input" step="0.5" value="${p.pas}" onchange="up(${i},'pas',this.value)"></div>
+                <div class="edit-row"><span>🏠 Inizio Quindicina:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
+                <div class="edit-row"><span>🚛 Carico (+):</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
+                <div class="edit-row"><span>🎟️ Vendite Pas (-):</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
+                <div class="edit-row"><span>🚉 Vendite Pen (-):</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
+                <div class="edit-row"><span>🎁 Omaggi (-):</span> <input type="number" value="${p.omaggio}" onchange="up(${i},'omaggio',this.value)"></div>
+                <div style="padding-top:8px; color:var(--lime); font-size:12px; font-weight:bold; text-align:center;">RIMANENZA: ${fine} pz</div>
             </div>
         </div>`;
     }).join('');
@@ -177,8 +178,7 @@ function render() {
     const grid = document.getElementById('calendar-body');
     grid.innerHTML = "";
     for(let d=1; d<=31; d++) {
-        let v = Number(db.history[d]) || 0;
-        totR += v;
+        let v = Number(db.history[d]) || 0; totR += v;
         grid.innerHTML += `<div onclick="setDay(${d})" style="aspect-ratio:1; background:#2c2c2e; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; border:1px solid ${v>0?'var(--lime)':'#444'}"><b>${d}</b><span>${v>0?v+'€':''}</span></div>`;
     }
 
@@ -193,7 +193,7 @@ function setDay(d) {
     if(r!==null) { db.history[d] = parseFloat(r.replace(',','.')) || 0; render(); }
 }
 
-function up(i,f,v) { db.prodotti[i][f] = Number(v)||0; render(); }
+function up(i,f,v) { db.prodotti[i][f] = parseFloat(v)||0; render(); }
 function toggleAcc(i) { let e=document.getElementById('acc-'+i); e.style.display=e.style.display==='block'?'none':'block'; }
 function switchTab(t) {
     document.getElementById('page-cassa').style.display = t=='c'?'grid':'none';
@@ -209,26 +209,18 @@ function changeQty(v) { qty=Math.max(1, qty+v); document.getElementById('g-qty')
 function conferma(t) { 
     if(t==='pas') db.prodotti[cur].vePas+=qty; 
     else if(t==='pen') db.prodotti[cur].vePen+=qty;
-    else if(t==='omaggio') db.prodotti[cur].omaggio = (db.prodotti[cur].omaggio || 0) + qty;
+    else if(t==='omaggio') db.prodotti[cur].omaggio += qty;
     closeGest(); render(); 
 }
 
 function exportJSON() {
     const blob = new Blob([JSON.stringify(db)], {type:'application/json'});
-    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="NAV_V128.json"; a.click();
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="NAV_V129_PREZZI.json"; a.click();
 }
 function importAndRepair(e) {
     const f=e.target.files[0]; if(!f) return;
     const r=new FileReader();
-    r.onload=(ev)=>{ 
-        try {
-            let content = ev.target.result;
-            content = content.replace(/\[object Object\]/g, "0");
-            db = JSON.parse(content);
-            repairData(); render();
-            alert("Backup Caricato con Omaggi!");
-        } catch(err) { alert("Errore caricamento."); }
-    };
+    r.onload=(ev)=>{ try { let content = ev.target.result.replace(/\[object Object\]/g, "0"); db = JSON.parse(content); repairData(); render(); alert("Backup Caricato!"); } catch(err) { alert("Errore!"); } };
     r.readAsText(f);
 }
 </script>
