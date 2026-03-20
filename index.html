@@ -2,226 +2,235 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NAV-PRO V63.3: FIX TOTALE OMAGGI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NAV-PRO V128: FULL FEATURE</title>
     <style>
-        :root {
-            --bg: #000; --card: #111; --txt: #e2e8f0;
-            --cyan: #00f2ff; --lime: #39ff14; --red: #ff003c; 
-            --gold: #ffb700; --magenta: #bc13fe;
-        }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--txt); padding-top: 310px; }
-        header { position: fixed; top: 0; left: 0; width: 100%; background: #000; z-index: 2000; border-bottom: 2px solid var(--cyan); }
-        .date-bar { background: #111; color: var(--gold); text-align: center; padding: 6px; font-size: 11px; font-weight: bold; border-bottom: 1px solid #222; }
-        .day-selector { background: #000; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; border-bottom: 1px solid #333; }
-        .day-selector select { background: #111; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 4px; padding: 4px; font-weight: bold; }
-        .nav-tabs { display: flex; background: #111; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; font-size: 11px; text-transform: uppercase; }
-        .tab-btn.active { color: var(--cyan); border-bottom: 3px solid var(--cyan); background: rgba(0,242,255,0.1); }
+        :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
+        * { box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--txt); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        .rect-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; }
-        .rect { padding: 4px 2px; border-radius: 4px; background: #080808; text-align: center; border: 1px solid #222; min-height: 42px; }
-        .rect b { font-size: 7px; display: block; color: #888; text-transform: uppercase; margin-bottom: 2px; }
-        .rect span { font-size: 10px; font-weight: bold; }
+        .header { background: #000; padding: 10px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .header b { font-size: 18px; color: var(--lime); }
+        .header small { color: #888; text-transform: uppercase; }
 
-        .page { display: none; padding: 10px; padding-bottom: 120px; }
-        .page.active { display: block; }
-        .prod-card { background: var(--card); border-radius: 8px; border: 1px solid #222; margin-bottom: 10px; padding: 12px; }
-        .input-box { width: 100%; background: #000; border: 1px solid #333; color: #fff; text-align: center; padding: 8px; border-radius: 4px; font-size: 16px; font-weight: bold; }
-        .btn-qty { width: 55px; height: 55px; border-radius: 12px; border: 2px solid; font-size: 26px; font-weight: bold; background: none; color: var(--txt); cursor: pointer; }
-        .btn-action { width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; border: none; margin-top: 10px; font-size: 12px; text-transform: uppercase; }
-        .cal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
-        .q-title { color: var(--gold); font-size: 11px; font-weight: bold; margin: 15px 0 8px; border-left: 3px solid var(--gold); padding-left: 8px; text-transform: uppercase; }
-        .q-tot-box { background: #0a0a0a; border: 1px solid #333; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; overflow-y: auto; flex-grow: 1; padding-bottom: 100px; }
+        .product-btn { background: var(--card); height: 85px; border-radius: 12px; display: flex; align-items: center; padding: 10px; border: 1px solid #333; }
+        .product-btn i { font-size: 24px; margin-right: 10px; width: 30px; text-align: center; }
+        .product-btn b { font-size: 10px; text-transform: uppercase; }
+        .product-btn .stock { font-size: 13px; font-weight: bold; color: var(--cyan); display: block; }
+
+        .accordion { background: var(--card); border-radius: 12px; margin: 10px; border: 1px solid #333; overflow: hidden; }
+        .acc-header { padding: 15px; background: #2c2c2e; display: flex; justify-content: space-between; align-items: center; }
+        .acc-body { display: none; padding: 10px 15px; background: #1c1c1e; }
+        .edit-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; }
+        .edit-row input { background: #333; border: none; color: var(--cyan); text-align: right; font-size: 16px; font-weight: bold; width: 75px; border-radius: 4px; padding: 5px; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 70px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); }
+        .footer button { flex: 1; background: none; border: none; color: #888; font-weight: bold; font-size: 10px; }
+        .footer button.active { color: var(--cyan); }
+
+        .gestionale { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; padding: 20px; flex-direction: column; }
     </style>
 </head>
-<body onload="inizializza()">
+<body onload="init()">
 
-    <header>
-        <div class="date-bar" id="current-date">SISTEMA V63.3</div>
-        <div class="day-selector">
-            <select id="select-giorno" onchange="calcola()"></select>
-        </div>
-        <nav class="nav-tabs">
-            <button class="tab-btn active" onclick="tab('tab-inv', this)">📦 Mag.</button>
-            <button class="tab-btn" onclick="tab('tab-pass', this)">🚶 Pass.</button>
-            <button class="tab-btn" onclick="tab('tab-pend', this)">🚌 Pend.</button>
-            <button class="tab-btn" onclick="tab('tab-rep', this)">📊 Report</button>
-        </nav>
-        <div class="rect-container">
-            <div class="rect" style="border-color:var(--magenta)"><b>Valore Carico</b><span id="m-val-carico" style="color:var(--magenta)">0€</span></div>
-            <div class="rect" style="border-color:var(--cyan)"><b>Carico+Mezzo</b><span id="m-val-totale" style="color:var(--cyan)">0€</span></div>
-            <div class="rect" style="border-color:var(--gold)"><b>Teo Cassa</b><span id="m-cassa">0€</span></div>
-            <div class="rect" style="border-color:var(--lime)"><b>Inc. Reale</b><span id="m-inc-reale">0€</span></div>
-            
-            <div class="rect" id="rect-diff-box"><b>Diff. Cassa</b><span id="m-diff">0€</span></div>
-            <div class="rect" style="border-color:var(--magenta)"><b>Omaggi</b><span id="m-oma" style="color:var(--magenta)">0</span></div>
-            <div class="rect" style="border-color:var(--lime); background: rgba(57,255,20,0.1); grid-column: span 2;"><b>Stipendio (Diaria + 5%)</b><span id="m-mese-tot">0€</span></div>
-        </div>
-    </header>
+<div class="header">
+    <div><small>Incasso App</small><br><b id="tot-incasso">0.00€</b></div>
+    <div style="text-align:right"><small>Valore Bordo</small><br><b id="header-val-carico" style="color:var(--gold)">0.00€</b></div>
+</div>
 
-    <div id="tab-inv" class="page active"><div id="schede-magazzino"></div></div>
-    <div id="tab-pass" class="page"><div id="list-pass"></div></div>
-    <div id="tab-pend" class="page"><div id="list-pend"></div></div>
+<div id="page-cassa" class="grid"></div>
+
+<div id="page-menu" style="display:none; overflow-y:auto; flex-grow:1; padding-bottom:150px;">
+    <h3 style="color:var(--cyan); margin: 15px;">📊 Report & Opzioni</h3>
     
-    <div id="tab-rep" class="page">
-        <div class="prod-card">
-            <div class="q-title">PRIMA QUINDICINA (1-15)</div>
-            <div id="grid-q1" class="cal-grid"></div>
-            <div class="q-tot-box"><b>TOTALE Q1:</b> <span id="tot-q1" style="color:var(--lime)">0.00€</span></div>
-
-            <div class="q-title" style="border-color:var(--cyan); color:var(--cyan)">SECONDA QUINDICINA (16-31)</div>
-            <div id="grid-q2" class="cal-grid"></div>
-            <div class="q-tot-box" style="border-color:var(--cyan)"><b>TOTALE Q2:</b> <span id="tot-q2" style="color:var(--cyan)">0.00€</span></div>
-
-            <button onclick="chiudiGiorno()" class="btn-action" style="background:var(--cyan); color:#000">🏁 SCARICA VENDUTO OGGI</button>
-            <button onclick="chiudiQuindicina()" class="btn-action" style="background:var(--red); color:#fff">⚠️ CHIUDI 15-INA (SOLO REALE)</button>
-            <hr style="border:0; border-top:1px solid #333; margin:15px 0">
-            <button onclick="exportJSON()" class="btn-action" style="background:var(--gold); color:#000">💾 SALVA BACKUP (JSON)</button>
-            <button onclick="document.getElementById('fIn').click()" class="btn-action" style="background:#444; color:#fff">📂 CARICA BACKUP</button>
-            <input type="file" id="fIn" style="display:none" onchange="importJSON(event)">
-        </div>
+    <div style="padding:0 10px 15px 10px;">
+        <button onclick="chiudiGiornata()" style="width:100%; padding:20px; background:var(--lime); color:#000; border:none; border-radius:12px; font-weight:bold; font-size:16px;">☀️ INIZIO NUOVA GIORNATA</button>
     </div>
 
+    <div id="accordion-list"></div>
+    
+    <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
+        <button onclick="document.getElementById('fileInput').click()" style="padding:15px; background:var(--orange); border:none; border-radius:10px; color:#000; font-weight:bold;">📤 CARICA BACKUP</button>
+        <button onclick="exportJSON()" style="padding:15px; background:var(--apple-blue); border:none; border-radius:10px; color:#fff; font-weight:bold;">📥 SALVA BACKUP</button>
+        <input type="file" id="fileInput" style="display:none" onchange="importAndRepair(event)">
+    </div>
+</div>
+
+<div id="page-history" style="display:none; overflow-y:auto; flex-grow:1; padding-bottom:120px;">
+    <h3 style="color:var(--apple-blue); margin: 15px;">📅 Storico Buste</h3>
+    <div id="calendar-body" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; padding:10px;"></div>
+    <div style="margin:15px; padding:20px; background:var(--card); border-radius:15px; border:2px solid var(--lime); text-align:center;">
+        <small style="color:#888;">TOTALE REALE (CALENDARIO)</small>
+        <div id="tot-reale-somma" style="font-size:32px; font-weight:bold; color:var(--txt);">0.00€</div>
+    </div>
+</div>
+
+<div id="gestionale" class="gestionale">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 id="g-nome" style="color:var(--cyan); margin:0;">NOME</h2>
+        <button onclick="closeGest()" style="background:none; border:none; color:var(--red); font-size:40px">&times;</button>
+    </div>
+    <div style="text-align:center; margin-bottom:20px;">
+        <div style="display:flex; justify-content:center; align-items:center; gap:30px;">
+            <button onclick="changeQty(-1)" style="width:60px; height:60px; border-radius:30px; background:#333; color:white; font-size:25px; border:none;">-</button>
+            <b id="g-qty" style="font-size:50px">1</b>
+            <button onclick="changeQty(1)" style="width:60px; height:60px; border-radius:30px; background:#333; color:white; font-size:25px; border:none;">+</button>
+        </div>
+    </div>
+    <button onclick="conferma('pas')" style="width:100%; padding:20px; border-radius:12px; border:2px solid var(--gold); background:none; color:var(--gold); font-weight:bold; margin-bottom:10px; font-size:16px;">VENDITA PASSEGGERO</button>
+    <button onclick="conferma('pen')" style="width:100%; padding:20px; border-radius:12px; border:2px solid var(--apple-blue); background:none; color:var(--apple-blue); font-weight:bold; margin-bottom:10px; font-size:16px;">VENDITA PENDOLARE</button>
+    <button onclick="conferma('omaggio')" style="width:100%; padding:20px; border-radius:12px; border:2px solid var(--purple); background:none; color:var(--purple); font-weight:bold; font-size:16px;">🎁 REGALA (OMAGGIO)</button>
+</div>
+
+<div class="footer">
+    <button id="btn-c" class="active" onclick="switchTab('c')">🛒 CASSA</button>
+    <button id="btn-m" onclick="switchTab('m')">📊 REPORT</button>
+    <button id="btn-h" onclick="switchTab('h')">📅 STORICO</button>
+</div>
+
 <script>
-const nomiMagazzino = ["ACQUA","ARACHIDI","BORSE","BORSE GRANDI","BORSE MEDIE","BORSE PICCOLE","BUENO / B READY","CAPPELLI","CARAMELLE / GOM","CHOCO CHIPS","CIALDE","DECA","DIETOR","FITNESS / CEREAL","FONZIES / PATATI","GINSENG","IMPERMEABILI","KINDER CARDS","LATTE","LATTINE","MAGLIE","MIKADO","MUFFIN","NIK NOK","PAVESINI","PERONI","PERONI CAPRI","PRINGLES","PROSECCO / VINO","RED BULL / GATOR","RINGO / OREO / B","RITZ / CIPSTER","SPRITZ","SUCCO","THE / CAMOMILLA","TUC","TWIX / KIT KAT / N"].sort();
-const listPendo = [{l:"ACQUA",p:1.0,k:"ACQUA"},{l:"ARACHIDI",p:1.0,k:"ARACHIDI"},{l:"BIRRA",p:1.5,k:"PERONI"},{l:"BISCOTTI",p:1.0,k:"PAVESINI"},{l:"CAFFÈ",p:1.0,k:"CIALDE"},{l:"CAPPUCCINO",p:1.5,k:"LATTE"},{l:"CARAMELLA",p:1.0,k:"CARAMELLE / GOM"},{l:"CHOCO CHIPS",p:2.0,k:"CHOCO CHIPS"},{l:"CIOCCOLATA",p:1.0,k:"TWIX / KIT KAT / N"},{l:"CIPSTER",p:2.5,k:"RITZ / CIPSTER"},{l:"FONZIES",p:1.0,k:"FONZIES / PATATI"},{l:"GATORADE",p:2.5,k:"RED BULL / GATOR"},{l:"GOMME",p:1.0,k:"CARAMELLE / GOM"},{l:"LATTINE",p:1.5,k:"LATTINE"},{l:"MIKADO",p:1.5,k:"MIKADO"},{l:"PATATINE",p:1.0,k:"FONZIES / PATATI"},{l:"PRINGLES",p:2.0,k:"PRINGLES"},{l:"PROSECCO",p:3.0,k:"PROSECCO / VINO"},{l:"RED BULL",p:2.5,k:"RED BULL / GATOR"},{l:"RITZ",p:3.0,k:"RITZ / CIPSTER"},{l:"SUCCHI FRUTTA",p:2.0,k:"SUCCO"},{l:"TUC",p:2.5,k:"TUC"},{l:"VINO",p:3.0,k:"PROSECCO / VINO"}];
+const masterList = [
+    {n:"ACQUA", i:"💧", q:112, c:0, pas:2.0, pen:1.0}, {n:"ARACHIDI+", i:"🥜", q:11, c:0, pas:2.5, pen:1.0},
+    {n:"BORSE G", i:"👜", q:17, c:0, pas:10.0, pen:10.0}, {n:"BORSE M", i:"🛍️", q:3, c:0, pas:7.0, pen:7.0},
+    {n:"BUENO/BISC", i:"🍫", q:36, c:0, pas:3.0, pen:1.0}, {n:"CAPPELLI", i:"🧢", q:175, c:0, pas:5.0, pen:5.0},
+    {n:"CARAMELLE", i:"🍬", q:119, c:0, pas:2.5, pen:1.0}, {n:"CHOCO CHIPS", i:"🍪", q:10, c:0, pas:3.5, pen:2.0},
+    {n:"CIALDE", i:"☕", q:160, c:0, pas:2.0, pen:1.0}, {n:"DECA", i:"☕", q:5, c:0, pas:2.0, pen:1.0},
+    {n:"FITNESS", i:"🌾", q:3, c:0, pas:2.5, pen:1.5}, {n:"FONZIES", i:"🍟", q:66, c:0, pas:2.5, pen:1.0},
+    {n:"GINSENG", i:"☕", q:10, c:0, pas:2.0, pen:1.0}, {n:"IMPERMEAB", i:"🧥", q:57, c:0, pas:5.0, pen:5.0},
+    {n:"KINDER CARDS", i:"🃏", q:12, c:0, pas:3.0, pen:1.5}, {n:"LATTINE", i:"🥤", q:245, c:0, pas:2.5, pen:1.5},
+    {n:"M&M", i:"🍫", q:24, c:0, pas:2.5, pen:1.5}, {n:"MAGLIE", i:"👕", q:99, c:0, pas:5.0, pen:5.0},
+    {n:"NIK NOK", i:"🥜", q:8, c:0, pas:2.5, pen:1.5}, {n:"PAVESINI", i:"🍪", q:15, c:0, pas:2.5, pen:1.0},
+    {n:"PERONI", i:"🍺", q:35, c:0, pas:4.5, pen:1.5}, {n:"PERONI C.", i:"🍋", q:15, c:0, pas:7.5, pen:5.5},
+    {n:"PRINGLES", i:"🥔", q:17, c:0, pas:3.5, pen:2.0}, {n:"PROSECCO", i:"🍷", q:30, c:0, pas:6.0, pen:3.0},
+    {n:"RED BULL", i:"⚡", q:64, c:0, pas:4.5, pen:2.5}, {n:"RINGO/OREO", i:"🍪", q:64, c:0, pas:2.5, pen:1.0},
+    {n:"RITZ", i:"🥨", q:9, c:0, pas:4.5, pen:3.0}, {n:"SPRITZ", i:"🍹", q:10, c:0, pas:8.0, pen:5.0},
+    {n:"SUCCO", i:"🧃", q:59, c:0, pas:3.5, pen:2.0}, {n:"THE/CAMOM", i:"🍵", q:125, c:0, pas:2.5, pen:1.5},
+    {n:"TUC", i:"🍪", q:7, c:0, pas:3.5, pen:2.5}, {n:"TWIX/KIT KAT", i:"🍫", q:81, c:0, pas:2.5, pen:1.5}
+];
 
-let db;
+let db = { prodotti: [], history: {} };
+let cur = -1, qty = 1;
 
-function caricaDati() {
-    let saved = localStorage.getItem('NAVE_V63_3');
-    db = saved ? JSON.parse(saved) : { prodotti: nomiMagazzino.map(n => ({nome:n, qi:0, ca:0, ve:0, og:0, op:0, om:0, re:0, pr:n==="ACQUA"?2.0:2.50})), incassi: Array(31).fill(null) };
+function init() {
+    const saved = localStorage.getItem('NAV_V128');
+    if(saved) { db = JSON.parse(saved); repairData(); } 
+    else { hardReset(); }
+    render();
 }
 
-function calcola() {
-    let vCarico=0, vCaricoMezzo=0, pzOma=0, tIncMese=0, tQ1=0, tQ2=0, tCassaOggi=0, ggLavorati=0;
-    const giornoSelezionato = parseInt(document.getElementById('select-giorno').value);
-
-    // Calcolo Incassi e Stipendio
-    db.incassi.forEach((val, i) => { 
-        if(val !== null && val !== "" && parseFloat(val) > 0) { 
-            let v = parseFloat(val);
-            tIncMese += v; ggLavorati++;
-            if(i < 15) tQ1 += v; else tQ2 += v;
-        } 
+function repairData() {
+    if(!db.history || Array.isArray(db.history)) db.history = {};
+    db.prodotti.forEach(p => {
+        p.q = Number(p.q)||0; p.c = Number(p.c)||0;
+        p.vePas = Number(p.vePas)||0; p.vePen = Number(p.vePen)||0;
+        p.omaggio = Number(p.omaggio)||0; // Fix per vecchi dati senza omaggio
     });
-
-    // Calcolo Magazzino e Valori
-    db.prodotti.forEach((item, i) => {
-        let pRef = listPendo.find(lp => lp.k === item.nome);
-        let pPend = pRef ? pRef.p : 1.0;
-        
-        let pr = parseFloat(item.pr) || 0;
-        let qi = parseFloat(item.qi) || 0;
-        let ca = parseFloat(item.ca) || 0;
-        let om = parseFloat(item.om) || 0;
-        let ve = parseFloat(item.ve) || 0;
-        let og = parseFloat(item.og) || 0;
-        let op = parseFloat(item.op) || 0;
-
-        // VALORE CARICO (solo quello caricato oggi)
-        vCarico += (ca * pr);
-        
-        // VALORE CARICO+MEZZO (Iniziale + Carico - Omaggi - Venduti)
-        // Usiamo (qi + ca - om) per avere il valore della merce disponibile al netto degli omaggi
-        vCaricoMezzo += (qi + ca - om) * pr;
-
-        let teo = (qi + ca) - (ve + og + op + om);
-        tCassaOggi += (og * pr) + (op * pPend);
-        pzOma += om;
-
-        // Aggiorna etichette nelle schede
-        if(document.getElementById(`info-teo-${i}`)) document.getElementById(`info-teo-${i}`).textContent = Math.round(teo);
-    });
-
-    // Aggiorna Quadrati Intestazione
-    let incGiorno = parseFloat(db.incassi[giornoSelezionato-1]) || 0;
-    document.getElementById('m-inc-reale').textContent = incGiorno.toFixed(2)+"€";
-    document.getElementById('m-cassa').textContent = tCassaOggi.toFixed(2)+"€";
-    document.getElementById('m-val-carico').textContent = vCarico.toFixed(2)+"€";
-    document.getElementById('m-val-totale').textContent = vCaricoMezzo.toFixed(2)+"€";
-    document.getElementById('m-oma').textContent = pzOma;
-    document.getElementById('m-diff').textContent = (incGiorno - tCassaOggi).toFixed(2) + "€";
-    document.getElementById('tot-q1').textContent = tQ1.toFixed(2) + "€";
-    document.getElementById('tot-q2').textContent = tQ2.toFixed(2) + "€";
-    document.getElementById('m-mese-tot').textContent = ((ggLavorati * 26) + (tIncMese * 0.05)).toFixed(2) + "€";
-
-    localStorage.setItem('NAVE_V63_3', JSON.stringify(db));
 }
 
-function renderMagazzino() {
-    const cont = document.getElementById('schede-magazzino'); cont.innerHTML = '';
-    db.prodotti.forEach((item, i) => {
-        cont.innerHTML += `<div class="prod-card">
-            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #222;padding-bottom:5px;margin-bottom:8px">
-                <span style="font-weight:bold;color:var(--cyan)">${item.nome}</span>
-                <span style="color:var(--gold)">€ <input type="number" step="0.1" value="${item.pr}" oninput="db.prodotti[${i}].pr=parseFloat(this.value)||0;calcola()" style="width:50px;background:none;border:none;color:var(--gold);text-align:right"></span>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
-                <div><label style="font-size:9px;color:#777">Iniz</label><input type="number" value="${item.qi}" oninput="db.prodotti[${i}].qi=parseFloat(this.value)||0;calcola()" class="input-box"></div>
-                <div><label style="font-size:9px;color:var(--gold)">Carico</label><input type="number" value="${item.ca}" oninput="db.prodotti[${i}].ca=parseFloat(this.value)||0;calcola()" class="input-box" style="border-color:var(--gold)"></div>
-                <div><label style="font-size:9px;color:var(--magenta)">OMA</label><input type="number" value="${item.om}" oninput="db.prodotti[${i}].om=parseFloat(this.value)||0;calcola()" class="input-box" style="border-color:var(--magenta); color:var(--magenta)"></div>
-                <div style="grid-column: span 3; display:flex; justify-content:space-around; align-items:center; background:#000; padding:5px; border-radius:4px; margin-top:5px">
-                   <div><label style="font-size:8px;color:#555">TEO.</label><br><b id="info-teo-${i}">0</b></div>
-                   <div><label style="font-size:8px;color:var(--lime)">REALE</label><br><input type="number" value="${item.re}" oninput="db.prodotti[${i}].re=parseFloat(this.value)||0;calcola()" class="input-box" style="width:65px; border-color:var(--lime); color:var(--lime)"></div>
-                </div>
+function chiudiGiornata() {
+    if(!confirm("Azzero l'incasso odierno? Le rimanenze restano aggiornate.")) return;
+    db.prodotti.forEach(p => {
+        p.q = calcF(p);
+        p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0;
+    });
+    save(); render();
+}
+
+function hardReset() {
+    db.prodotti = masterList.map(p => ({...p, vePas:0, vePen:0, c:0, omaggio:0}));
+    db.history = {};
+    save(); render();
+}
+
+function save() { localStorage.setItem('NAV_V128', JSON.stringify(db)); }
+function calcF(p) { return p.q + p.c - p.vePas - p.vePen - (p.omaggio||0); }
+
+function render() {
+    document.getElementById('page-cassa').innerHTML = db.prodotti.map((p,i) => `
+        <div class="product-btn" onclick="openGest(${i})">
+            <i>${p.i}</i>
+            <div><b>${p.n}</b><span class="stock">Disp: ${calcF(p)}</span></div>
+        </div>
+    `).join('');
+
+    let tInc = 0, tVal = 0;
+    document.getElementById('accordion-list').innerHTML = db.prodotti.map((p,i) => {
+        let fine = calcF(p);
+        tInc += (p.vePas * p.pas) + (p.vePen * p.pen);
+        tVal += fine * p.pas;
+        return `
+        <div class="accordion">
+            <div class="acc-header" onclick="toggleAcc(${i})"><b>${p.n}</b> <b style="color:var(--gold)">${(fine*p.pas).toFixed(2)}€</b></div>
+            <div id="acc-${i}" class="acc-body">
+                <div class="edit-row"><span>Giacenza Inizio:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
+                <div class="edit-row"><span>Carico (+):</span> <input type="number" value="${p.c||0}" onchange="up(${i},'c',this.value)"></div>
+                <div class="edit-row"><span>Venduto Pas:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
+                <div class="edit-row"><span>Venduto Pen:</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
+                <div class="edit-row"><span>Omaggi (-):</span> <input type="number" value="${p.omaggio||0}" onchange="up(${i},'omaggio',this.value)"></div>
+                <div style="padding-top:10px; color:var(--purple); font-size:12px; font-weight:bold;">RIMANENZA: ${fine} pz</div>
             </div>
         </div>`;
-    });
-}
+    }).join('');
 
-function renderVeloci() {
-    const p = document.getElementById('list-pass'); p.innerHTML = '';
-    const d = document.getElementById('list-pend'); d.innerHTML = '';
-    db.prodotti.forEach((item, i) => {
-        p.innerHTML += `<div class="prod-card"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${item.nome}</b></span><div style="display:flex;align-items:center;gap:12px"><button class="btn-qty" style="color:var(--red);border-color:var(--red)" onclick="cambia(${i},-1,'og')">-</button><span id="cog-${i}" style="font-size:22px;width:40px;text-align:center">${item.og||0}</span><button class="btn-qty" style="color:var(--cyan);border-color:var(--cyan)" onclick="cambia(${i},1,'og')">+</button></div></div></div>`;
-        let ref = listPendo.find(lp => lp.k === item.nome);
-        if(ref) d.innerHTML += `<div class="prod-card"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${ref.l}</b></span><div style="display:flex;align-items:center;gap:12px"><button class="btn-qty" style="color:var(--red);border-color:var(--red)" onclick="cambia(${i},-1,'op')">-</button><span id="cop-${i}" style="font-size:22px;width:40px;text-align:center">${item.op||0}</span><button class="btn-qty" style="color:var(--magenta);border-color:var(--magenta)" onclick="cambia(${i},1,'op')">+</button></div></div></div>`;
-    });
-}
-
-function renderCalendario() {
-    const q1 = document.getElementById('grid-q1'); q1.innerHTML='';
-    const q2 = document.getElementById('grid-q2'); q2.innerHTML='';
-    for(let i=0; i<31; i++) {
-        let val = db.incassi[i] === null ? '' : db.incassi[i];
-        let html = `<div style="text-align:center; font-size:9px">G${i+1}<input type="number" step="0.01" value="${val}" oninput="db.incassi[${i}]=this.value===''?null:this.value;calcola()" class="input-box" style="color:var(--lime); padding:4px; font-size:12px"></div>`;
-        if(i < 15) q1.innerHTML += html; else q2.innerHTML += html;
+    let totR = 0;
+    const grid = document.getElementById('calendar-body');
+    grid.innerHTML = "";
+    for(let d=1; d<=31; d++) {
+        let v = Number(db.history[d]) || 0;
+        totR += v;
+        grid.innerHTML += `<div onclick="setDay(${d})" style="aspect-ratio:1; background:#2c2c2e; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; border:1px solid ${v>0?'var(--lime)':'#444'}"><b>${d}</b><span>${v>0?v+'€':''}</span></div>`;
     }
+
+    document.getElementById('tot-incasso').textContent = tInc.toFixed(2) + "€";
+    document.getElementById('header-val-carico').textContent = tVal.toFixed(2) + "€";
+    document.getElementById('tot-reale-somma').textContent = totR.toFixed(2) + "€";
+    save();
 }
 
-function cambia(idx, delta, campo) { 
-    db.prodotti[idx][campo] = Math.max(0, (db.prodotti[idx][campo] || 0) + delta); 
-    document.getElementById(`c${campo}-${idx}`).textContent = db.prodotti[idx][campo];
-    calcola(); 
+function setDay(d) {
+    let r = prompt("Incasso giorno "+d, db.history[d]||"");
+    if(r!==null) { db.history[d] = parseFloat(r.replace(',','.')) || 0; render(); }
 }
 
-function tab(id, btn) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
-function exportJSON() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download=`backup_nave.json`; a.click(); }
-function importJSON(e) { const r = new FileReader(); r.onload = (ev) => { db = JSON.parse(ev.target.result); localStorage.setItem('NAVE_V63_3', JSON.stringify(db)); location.reload(); }; r.readAsText(e.target.files[0]);}
-function chiudiGiorno() { if(confirm("Scarichi il venduto?")){ db.prodotti.forEach(p=>{p.ve+=(p.og||0)+(p.op||0); p.og=0; p.op=0;}); calcola(); location.reload(); }}
-function chiudiQuindicina() {
-    if(confirm("Chiudi 15-ina? I valori REALI diventeranno i nuovi INIZIALI.")){
-        db.prodotti.forEach(p => {
-            let teo = (p.qi + p.ca) - (p.ve + p.og + p.op + p.om);
-            p.qi = Math.max(0, Math.round((p.re > 0) ? p.re : teo));
-            p.ca=0; p.ve=0; p.og=0; p.op=0; p.om=0; p.re=0;
-        });
-        db.incassi = Array(31).fill(null);
-        calcola(); location.reload();
-    }
+function up(i,f,v) { db.prodotti[i][f] = Number(v)||0; render(); }
+function toggleAcc(i) { let e=document.getElementById('acc-'+i); e.style.display=e.style.display==='block'?'none':'block'; }
+function switchTab(t) {
+    document.getElementById('page-cassa').style.display = t=='c'?'grid':'none';
+    document.getElementById('page-menu').style.display = t=='m'?'block':'none';
+    document.getElementById('page-history').style.display = t=='h'?'block':'none';
+    document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-'+t).classList.add('active');
 }
-function popolaGiorni() {
-    const sel = document.getElementById('select-giorno'); sel.innerHTML = '';
-    for(let i=1; i<=31; i++) {
-        let opt = document.createElement('option'); opt.value = i; opt.textContent = "Giorno " + i;
-        if(i === new Date().getDate()) opt.selected = true;
-        sel.appendChild(opt);
-    }
+function openGest(i) { cur=i; qty=1; document.getElementById('g-nome').textContent=db.prodotti[i].n; document.getElementById('g-qty').textContent=qty; document.getElementById('gestionale').style.display='flex'; }
+function closeGest() { document.getElementById('gestionale').style.display='none'; }
+function changeQty(v) { qty=Math.max(1, qty+v); document.getElementById('g-qty').textContent=qty; }
+
+function conferma(t) { 
+    if(t==='pas') db.prodotti[cur].vePas+=qty; 
+    else if(t==='pen') db.prodotti[cur].vePen+=qty;
+    else if(t==='omaggio') db.prodotti[cur].omaggio = (db.prodotti[cur].omaggio || 0) + qty;
+    closeGest(); render(); 
 }
-function inizializza() { caricaDati(); popolaGiorni(); renderMagazzino(); renderVeloci(); renderCalendario(); calcola(); }
+
+function exportJSON() {
+    const blob = new Blob([JSON.stringify(db)], {type:'application/json'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="NAV_V128.json"; a.click();
+}
+function importAndRepair(e) {
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=(ev)=>{ 
+        try {
+            let content = ev.target.result;
+            content = content.replace(/\[object Object\]/g, "0");
+            db = JSON.parse(content);
+            repairData(); render();
+            alert("Backup Caricato con Omaggi!");
+        } catch(err) { alert("Errore caricamento."); }
+    };
+    r.readAsText(f);
+}
 </script>
 </body>
 </html>
