@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NAV-PRO V160: FULL CONTROL</title>
+    <title>NAV-PRO V160: FLEET 20</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--txt); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        .header { background: #000; padding: 10px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .header b { font-size: 18px; color: var(--lime); }
-        .header small { color: #888; text-transform: uppercase; font-size: 10px; }
+        .header { background: #000; padding: 10px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; gap: 5px; }
+        .header b { font-size: 15px; color: var(--lime); }
+        .header small { color: #888; text-transform: uppercase; font-size: 9px; }
+
+        .boat-controls { display: flex; align-items: center; gap: 5px; background: #1c1c1e; padding: 5px 10px; border-radius: 10px; border: 1px solid #333; flex: 1; max-width: 180px; }
+        .boat-switcher { background: none; color: var(--cyan); border: none; font-weight: bold; font-size: 13px; outline: none; width: 100%; cursor: pointer; }
+        .edit-name-btn { background: none; border: none; color: #666; font-size: 14px; cursor: pointer; padding: 0; }
 
         .page { display: none; overflow-y: auto; flex-grow: 1; padding-bottom: 100px; }
         .active-page { display: block; }
@@ -50,8 +54,12 @@
 <body onload="init()">
 
 <div class="header">
-    <div><small>Incasso App</small><br><b id="tot-incasso">0.00€</b></div>
-    <div style="text-align:right"><small>Valore Bordo</small><br><b id="header-val-carico" style="color:var(--gold)">0.00€</b></div>
+    <div class="boat-controls">
+        <select id="boat-selector" class="boat-switcher" onchange="switchBoat(this.value)"></select>
+        <button class="edit-name-btn" onclick="renameBoat()">✏️</button>
+    </div>
+    <div style="text-align:center"><small>Incasso</small><br><b id="tot-incasso">0.00€</b></div>
+    <div style="text-align:right"><small>Carico</small><br><b id="header-val-carico" style="color:var(--gold)">0.00€</b></div>
 </div>
 
 <div id="page-c" class="page active-page"><div class="grid" id="page-cassa"></div></div>
@@ -68,7 +76,7 @@
 
 <div id="page-i" class="page">
     <div class="summary-card">
-        <small style="color:#888">DIFFERENZA TOTALE (Valore Reale vs App)</small>
+        <small style="color:#888">DIFFERENZA TOTALE (Reale vs App)</small>
         <div id="inv-diff" style="font-size:32px; font-weight:bold;">0.00€</div>
         <div id="inv-status" style="font-size:12px; margin-top:5px; color:#ccc;">Verifica in corso...</div>
     </div>
@@ -106,63 +114,104 @@
 </div>
 
 <script>
+let currentBoatID = "1";
 let db = { prodotti: [], history: {} };
 let cur = -1, qty = 1;
+const NUM_BOATS = 20;
+
+// Carica i nomi delle barche o inizializza
+let customNames = JSON.parse(localStorage.getItem('NAV_FLEET_NAMES')) || {};
+for(let i=1; i<=NUM_BOATS; i++) { if(!customNames[i]) customNames[i] = "Barca " + i; }
 
 function init() {
-    const saved = localStorage.getItem('NAV_V160');
+    buildSelector();
+    currentBoatID = localStorage.getItem('NAV_LAST_ID') || "1";
+    document.getElementById('boat-selector').value = currentBoatID;
+    loadBoatData(currentBoatID);
+}
+
+function buildSelector() {
+    const s = document.getElementById('boat-selector');
+    s.innerHTML = "";
+    for(let i=1; i<=NUM_BOATS; i++) {
+        let opt = document.createElement('option');
+        opt.value = i;
+        opt.text = customNames[i];
+        s.appendChild(opt);
+    }
+}
+
+function renameBoat() {
+    let old = customNames[currentBoatID];
+    let n = prompt("Nome per " + old + ":", old);
+    if(n && n.trim() !== "") {
+        customNames[currentBoatID] = n.trim().toUpperCase();
+        localStorage.setItem('NAV_FLEET_NAMES', JSON.stringify(customNames));
+        buildSelector();
+        document.getElementById('boat-selector').value = currentBoatID;
+        save();
+    }
+}
+
+function loadBoatData(id) {
+    const saved = localStorage.getItem('NAV_DATA_B' + id);
     if(saved) { db = JSON.parse(saved); repairData(); } 
     else { hardReset(); }
     render();
 }
 
+function switchBoat(id) {
+    save();
+    currentBoatID = id;
+    localStorage.setItem('NAV_LAST_ID', id);
+    loadBoatData(id);
+}
+
 function repairData() {
+    if(!db.prodotti) db.prodotti = [];
     db.prodotti.forEach(p => {
-        p.q = Number(p.q)||0; p.c = Number(p.c)||0;
-        p.vePas = Number(p.vePas)||0; p.vePen = Number(p.vePen)||0;
-        p.omaggio = Number(p.omaggio)||0; p.pas = Number(p.pas)||0;
-        p.pen = Number(p.pen)||0;
+        p.q=Number(p.q)||0; p.c=Number(p.c)||0; p.vePas=Number(p.vePas)||0;
+        p.vePen=Number(p.vePen)||0; p.omaggio=Number(p.omaggio)||0;
+        p.pas=Number(p.pas)||0; p.pen=Number(p.pen)||0;
         if(p.reale === undefined) p.reale = null;
     });
 }
 
 function hardReset() {
     const master = [
-        {n:"ACQUA", i:"💧", q:112, c:0, pas:2.0, pen:1.0}, {n:"ARACHIDI+", i:"🥜", q:11, c:0, pas:2.5, pen:1.0},
-        {n:"BORSE G", i:"👜", q:17, c:0, pas:10.0, pen:10.0}, {n:"BORSE M", i:"🛍️", q:3, c:0, pas:7.0, pen:7.0},
-        {n:"BUENO/BISC", i:"🍫", q:36, c:0, pas:3.0, pen:1.0}, {n:"CAPPELLI", i:"🧢", q:175, c:0, pas:5.0, pen:5.0},
-        {n:"CARAMELLE", i:"🍬", q:119, c:0, pas:2.5, pen:1.0}, {n:"CHOCO CHIPS", i:"🍪", q:10, c:0, pas:3.5, pen:2.0},
-        {n:"CIALDE", i:"☕", q:160, c:0, pas:2.0, pen:1.0}, {n:"DECA", i:"☕", q:5, c:0, pas:2.0, pen:1.0},
-        {n:"FITNESS", i:"🌾", q:3, c:0, pas:2.5, pen:1.5}, {n:"FONZIES", i:"🍟", q:66, c:0, pas:2.5, pen:1.0},
-        {n:"GINSENG", i:"☕", q:10, c:0, pas:2.0, pen:1.0}, {n:"IMPERMEAB", i:"🧥", q:57, c:0, pas:5.0, pen:5.0},
-        {n:"KINDER CARDS", i:"🃏", q:12, c:0, pas:3.0, pen:1.5}, {n:"LATTINE", i:"🥤", q:245, c:0, pas:2.5, pen:1.5},
-        {n:"M&M", i:"🍫", q:24, c:0, pas:2.5, pen:1.5}, {n:"MAGLIE", i:"👕", q:99, c:0, pas:5.0, pen:5.0},
-        {n:"NIK NOK", i:"🥜", q:8, c:0, pas:2.5, pen:1.5}, {n:"PAVESINI", i:"🍪", q:15, c:0, pas:2.5, pen:1.0},
-        {n:"PERONI", i:"🍺", q:35, c:0, pas:4.5, pen:1.5}, {n:"PERONI C.", i:"🍋", q:15, c:0, pas:7.5, pen:5.5},
-        {n:"PRINGLES", i:"🥔", q:17, c:0, pas:3.5, pen:2.0}, {n:"PROSECCO", i:"🍷", q:30, c:0, pas:6.0, pen:3.0},
-        {n:"RED BULL", i:"⚡", q:64, c:0, pas:4.5, pen:2.5}, {n:"RINGO/OREO", i:"🍪", q:64, c:0, pas:2.5, pen:1.0},
-        {n:"RITZ", i:"🥨", q:9, c:0, pas:4.5, pen:3.0}, {n:"SPRITZ", i:"🍹", q:10, c:0, pas:8.0, pen:5.0},
-        {n:"SUCCO", i:"🧃", q:59, c:0, pas:3.5, pen:2.0}, {n:"THE/CAMOM", i:"🍵", q:125, c:0, pas:2.5, pen:1.5},
-        {n:"TUC", i:"🍪", q:7, c:0, pas:3.5, pen:2.5}, {n:"TWIX/KIT KAT", i:"🍫", q:81, c:0, pas:2.5, pen:1.5}
+        {n:"ACQUA", i:"💧", q:0, c:0, pas:2.0, pen:1.0}, {n:"ARACHIDI+", i:"🥜", q:0, c:0, pas:2.5, pen:1.0},
+        {n:"BORSE G", i:"👜", q:0, c:0, pas:10.0, pen:10.0}, {n:"BORSE M", i:"🛍️", q:0, c:0, pas:7.0, pen:7.0},
+        {n:"BUENO/BISC", i:"🍫", q:0, c:0, pas:3.0, pen:1.0}, {n:"CAPPELLI", i:"🧢", q:0, c:0, pas:5.0, pen:5.0},
+        {n:"CARAMELLE", i:"🍬", q:0, c:0, pas:2.5, pen:1.0}, {n:"CHOCO CHIPS", i:"🍪", q:0, c:0, pas:3.5, pen:2.0},
+        {n:"CIALDE", i:"☕", q:0, c:0, pas:2.0, pen:1.0}, {n:"DECA", i:"☕", q:0, c:0, pas:2.0, pen:1.0},
+        {n:"FITNESS", i:"🌾", q:0, c:0, pas:2.5, pen:1.5}, {n:"FONZIES", i:"🍟", q:0, c:0, pas:2.5, pen:1.0},
+        {n:"GINSENG", i:"☕", q:0, c:0, pas:2.0, pen:1.0}, {n:"IMPERMEAB", i:"🧥", q:0, c:0, pas:5.0, pen:5.0},
+        {n:"KINDER CARDS", i:"🃏", q:0, c:0, pas:3.0, pen:1.5}, {n:"LATTINE", i:"🥤", q:0, c:0, pas:2.5, pen:1.5},
+        {n:"M&M", i:"🍫", q:0, c:0, pas:2.5, pen:1.5}, {n:"MAGLIE", i:"👕", q:0, c:0, pas:5.0, pen:5.0},
+        {n:"NIK NOK", i:"🥜", q:0, c:0, pas:2.5, pen:1.5}, {n:"PAVESINI", i:"🍪", q:0, c:0, pas:2.5, pen:1.0},
+        {n:"PERONI", i:"🍺", q:0, c:0, pas:4.5, pen:1.5}, {n:"PERONI C.", i:"🍋", q:0, c:0, pas:7.5, pen:5.5},
+        {n:"PRINGLES", i:"🥔", q:0, c:0, pas:3.5, pen:2.0}, {n:"PROSECCO", i:"🍷", q:0, c:0, pas:6.0, pen:3.0},
+        {n:"RED BULL", i:"⚡", q:0, c:0, pas:4.5, pen:2.5}, {n:"RINGO/OREO", i:"🍪", q:0, c:0, pas:2.5, pen:1.0},
+        {n:"RITZ", i:"🥨", q:0, c:0, pas:4.5, pen:3.0}, {n:"SPRITZ", i:"🍹", q:0, c:0, pas:8.0, pen:5.0},
+        {n:"SUCCO", i:"🧃", q:0, c:0, pas:3.5, pen:2.0}, {n:"THE/CAMOM", i:"🍵", q:0, c:0, pas:2.5, pen:1.5},
+        {n:"TUC", i:"🍪", q:0, c:0, pas:3.5, pen:2.5}, {n:"TWIX/KIT KAT", i:"🍫", q:0, c:0, pas:2.5, pen:1.5}
     ];
     db.prodotti = master.map(p => ({...p, vePas:0, vePen:0, omaggio:0, reale:null}));
     db.history = {}; save(); render();
 }
 
-function save() { localStorage.setItem('NAV_V160', JSON.stringify(db)); }
+function save() { localStorage.setItem('NAV_DATA_B' + currentBoatID, JSON.stringify(db)); }
 function calcF(p) { return p.q + p.c - p.vePas - p.vePen - p.omaggio; }
 
 function render() {
-    // 1. CASSA
     document.getElementById('page-cassa').innerHTML = db.prodotti.map((p,i) => `
         <div class="product-btn" onclick="openGest(${i})">
             <i>${p.i}</i><div><b>${p.n}</b><span class="stock">Disp: ${calcF(p)}</span></div>
         </div>`).join('');
 
-    // 2. REPORT & SOMME
-    let tInc = 0, tValApp = 0;
+    let tInc=0, tValApp=0;
     document.getElementById('accordion-list').innerHTML = db.prodotti.map((p,i) => {
-        let fine = calcF(p); tInc += (p.vePas * p.pas) + (p.vePen * p.pen); tValApp += fine * p.pas;
+        let fine=calcF(p); tInc+=(p.vePas*p.pas)+(p.vePen*p.pen); tValApp+=fine*p.pas;
         return `<div class="accordion">
             <div class="acc-header" onclick="toggleAcc(${i})"><b>${p.n}</b> <b style="color:var(--gold)">${(fine*p.pas).toFixed(2)}€</b></div>
             <div id="acc-${i}" class="acc-body">
@@ -176,67 +225,61 @@ function render() {
         </div>`;
     }).join('');
 
-    // 3. INVENTARIO (CALCOLO REALE)
-    let tValReale = 0;
+    let tValReale=0;
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p,i) => {
-        let fineApp = calcF(p);
-        let reale = p.reale !== null ? p.reale : fineApp;
-        tValReale += reale * p.pas;
+        let fineApp=calcF(p); let reale=p.reale!==null?p.reale:fineApp; tValReale+=reale*p.pas;
         return `<div class="inv-row">
             <div><b>${p.n}</b><br><small style="color:#888">App: ${fineApp} | Prezzo: ${p.pas}€</small></div>
-            <input type="number" value="${p.reale !== null ? p.reale : ''}" placeholder="${fineApp}" onchange="up(${i},'reale',this.value)">
+            <input type="number" value="${p.reale!==null?p.reale:''}" placeholder="${fineApp}" onchange="up(${i},'reale',this.value)">
         </div>`;
     }).join('');
 
-    let diffEuri = tValReale - tValApp;
-    const dDiv = document.getElementById('inv-diff');
-    dDiv.innerText = (diffEuri > 0 ? "+" : "") + diffEuri.toFixed(2) + "€";
-    dDiv.className = diffEuri >= 0 ? 'diff-pos' : 'diff-neg';
-    document.getElementById('inv-status').innerText = diffEuri === 0 ? "✅ Tutto torna" : (diffEuri > 0 ? "📈 Eccedenza Merce" : "⚠️ Mancano Soldi/Merce");
+    let diff=tValReale-tValApp;
+    document.getElementById('inv-diff').innerText=(diff>0?"+":"")+diff.toFixed(2)+"€";
+    document.getElementById('inv-diff').className=diff>=0?'diff-pos':'diff-neg';
+    document.getElementById('inv-status').innerText=diff===0?"✅ Ok":(diff>0?"📈 Eccedenza":"⚠️ Ammanco");
 
-    // 4. BUSTE & CALENDARI
     let h1="", h2="", t1=0, t2=0;
     for(let d=1; d<=31; d++) {
-        let v = Number(db.history[d])||0;
-        let cell = `<div onclick="setDay(${d})" class="day-cell ${v>0?'day-active':''}"><b>${d}</b><span>${v>0?v+'€':''}</span></div>`;
-        if(d<=15) { h1+=cell; t1+=v; } else { h2+=cell; t2+=v; }
+        let v=Number(db.history[d])||0;
+        let cell=`<div onclick="setDay(${d})" class="day-cell ${v>0?'day-active':''}"><b>${d}</b><span>${v>0?v+'€':''}</span></div>`;
+        if(d<=15){ h1+=cell; t1+=v; } else { h2+=cell; t2+=v; }
     }
-    document.getElementById('grid-q1').innerHTML = h1; document.getElementById('grid-q2').innerHTML = h2;
-    document.getElementById('tot-q1').innerText = t1.toFixed(2)+"€"; document.getElementById('tot-q2').innerText = t2.toFixed(2)+"€";
-    document.getElementById('tot-incasso').innerText = tInc.toFixed(2) + "€";
-    document.getElementById('header-val-carico').innerText = tValApp.toFixed(2) + "€";
+    document.getElementById('grid-q1').innerHTML=h1; document.getElementById('grid-q2').innerHTML=h2;
+    document.getElementById('tot-q1').innerText=t1.toFixed(2)+"€"; document.getElementById('tot-q2').innerText=t2.toFixed(2)+"€";
+    document.getElementById('tot-incasso').innerText=tInc.toFixed(2)+"€";
+    document.getElementById('header-val-carico').innerText=tValApp.toFixed(2)+"€";
     save();
 }
 
-function up(i,f,v) { db.prodotti[i][f] = v==='' ? (f==='reale'?null:0) : parseFloat(v); render(); }
-function switchTab(t) {
+function up(i,f,v){ db.prodotti[i][f]=v===''?(f==='reale'?null:0):parseFloat(v); render(); }
+function switchTab(t){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active-page'));
     document.getElementById('page-'+t).classList.add('active-page');
     document.querySelectorAll('.footer button').forEach(b=>b.classList.remove('active'));
     document.getElementById('btn-'+t).classList.add('active');
 }
-function openGest(i) { cur=i; qty=1; document.getElementById('g-nome').innerText=db.prodotti[i].n; document.getElementById('g-qty').innerText=qty; document.getElementById('gestionale').style.display='flex'; }
-function closeGest() { document.getElementById('gestionale').style.display='none'; }
-function changeQty(v) { qty=Math.max(1, qty+v); document.getElementById('g-qty').innerText=qty; }
-function conferma(t) { 
-    if(t==='pas') db.prodotti[cur].vePas+=qty; 
-    else if(t==='pen') db.prodotti[cur].vePen+=qty;
-    else db.prodotti[cur].omaggio+=qty;
+function openGest(i){ cur=i; qty=1; document.getElementById('g-nome').innerText=db.prodotti[i].n; document.getElementById('g-qty').innerText=qty; document.getElementById('gestionale').style.display='flex'; }
+function closeGest(){ document.getElementById('gestionale').style.display='none'; }
+function changeQty(v){ qty=Math.max(1, qty+v); document.getElementById('g-qty').innerText=qty; }
+function conferma(t){ 
+    if(t==='pas') db.prodotti[cur].vePas+=qty; else if(t==='pen') db.prodotti[cur].vePen+=qty; else db.prodotti[cur].omaggio+=qty;
     closeGest(); render(); 
 }
-function toggleAcc(i) { let e=document.getElementById('acc-'+i); e.style.display=e.style.display==='block'?'none':'block'; }
-function setDay(d) { let r=prompt("Incasso giorno "+d, db.history[d]||""); if(r!==null){ db.history[d]=parseFloat(r.replace(',','.'))||0; render(); }}
-function clearReali() { if(confirm("Azzero i conteggi reali?")) { db.prodotti.forEach(p=>p.reale=null); render(); }}
-function chiudiGiornata() { if(confirm("Azzerare l'incasso app?")) { db.prodotti.forEach(p=>{ p.q=calcF(p); p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; }); render(); }}
+function toggleAcc(i){ let e=document.getElementById('acc-'+i); e.style.display=e.style.display==='block'?'none':'block'; }
+function setDay(d){ let r=prompt("Incasso giorno "+d, db.history[d]||""); if(r!==null){ db.history[d]=parseFloat(r.replace(',','.'))||0; render(); }}
+function clearReali(){ if(confirm("Azzera conteggi fisici?")){ db.prodotti.forEach(p=>p.reale=null); render(); }}
+function chiudiGiornata(){ if(confirm("Azzera incasso app per nuova giornata?")){ db.prodotti.forEach(p=>{ p.q=calcF(p); p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; }); render(); }}
 
-function exportJSON() {
-    const blob = new Blob([JSON.stringify(db)], {type:'application/json'});
-    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="NAV_V160_BACKUP.json"; a.click();
+function exportJSON(){
+    let n=customNames[currentBoatID].replace(/\s+/g,'_');
+    let blob=new Blob([JSON.stringify(db)], {type:'application/json'});
+    let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`NAV_${n}_BACKUP.json`; a.click();
 }
-function importAndRepair(e) {
-    const f=e.target.files[0]; if(!f) return;
-    const r=new FileReader();
-    r.onload=(ev)=>{ try { db=JSON.parse(ev.target.result); repairData(); render(); alert("Backup Caricato con successo!"); } catch(i){ alert("Errore nel file!"); } e.target.value=""; };
+function importAndRepair(e){
+    let f=e.target.files[0]; if(!f) return;
+    let r=new FileReader();
+    r.onload=(ev)=>{ try{ db=JSON.parse(ev.target.result); repairData(); render(); alert("Caricato!"); }catch(i){ alert("Errore!"); } e.target.value=""; };
     r.readAsText(f);
 }
 </script>
