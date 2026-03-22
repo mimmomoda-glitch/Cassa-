@@ -59,17 +59,22 @@
         <button class="edit-name-btn" onclick="renameBoat()">✏️</button>
     </div>
     <div style="text-align:center"><small>Incasso</small><br><b id="tot-incasso">0.00€</b></div>
-    <div style="text-align:right"><small>Carico</small><br><b id="header-val-carico" style="color:var(--gold)">0.00€</b></div>
+    <div style="text-align:right"><small>Val. Magazzino</small><br><b id="header-val-carico" style="color:var(--gold)">0.00€</b></div>
 </div>
 
 <div id="page-c" class="page active-page"><div class="grid" id="page-cassa"></div></div>
 
 <div id="page-m" class="page">
-    <div style="padding:15px;"><button onclick="chiudiGiornata()" style="width:100%; padding:20px; background:var(--lime); color:#000; border:none; border-radius:12px; font-weight:bold; font-size:16px;">☀️ INIZIO NUOVA GIORNATA</button></div>
+    <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
+        <button onclick="chiudiGiornataSoloVendite()" style="width:100%; padding:15px; background:var(--apple-blue); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:14px;">☀️ FINE GIORNATA (Azzera solo Vendite)</button>
+        
+        <button onclick="chiudiQuindicina()" style="width:100%; padding:20px; background:var(--lime); color:#000; border:none; border-radius:12px; font-weight:800; font-size:16px;">🏁 CHIUDI 15 GIORNI (Reset Inventario)</button>
+    </div>
+    
     <div id="accordion-list"></div>
     <div style="padding:15px; display: flex; gap: 10px;">
-        <button onclick="exportJSON()" style="flex:1; padding:15px; background:var(--apple-blue); border:none; border-radius:10px; color:#fff; font-weight:bold;">📥 SALVA</button>
-        <button onclick="document.getElementById('fileInput').click()" style="flex:1; padding:15px; background:var(--orange); border:none; border-radius:10px; color:#000; font-weight:bold;">📤 CARICA</button>
+        <button onclick="exportJSON()" style="flex:1; padding:15px; background:var(--orange); border:none; border-radius:10px; color:#000; font-weight:bold;">📥 BACKUP</button>
+        <button onclick="document.getElementById('fileInput').click()" style="flex:1; padding:15px; background:#444; border:none; border-radius:10px; color:#fff; font-weight:bold;">📤 CARICA</button>
         <input type="file" id="fileInput" style="display:none" onchange="importAndRepair(event)">
     </div>
 </div>
@@ -119,7 +124,6 @@ let db = { prodotti: [], history: {} };
 let cur = -1, qty = 1;
 const NUM_BOATS = 20;
 
-// Carica i nomi delle barche o inizializza
 let customNames = JSON.parse(localStorage.getItem('NAV_FLEET_NAMES')) || {};
 for(let i=1; i<=NUM_BOATS; i++) { if(!customNames[i]) customNames[i] = "Barca " + i; }
 
@@ -149,7 +153,6 @@ function renameBoat() {
         localStorage.setItem('NAV_FLEET_NAMES', JSON.stringify(customNames));
         buildSelector();
         document.getElementById('boat-selector').value = currentBoatID;
-        save();
     }
 }
 
@@ -215,9 +218,8 @@ function render() {
         return `<div class="accordion">
             <div class="acc-header" onclick="toggleAcc(${i})"><b>${p.n}</b> <b style="color:var(--gold)">${(fine*p.pas).toFixed(2)}€</b></div>
             <div id="acc-${i}" class="acc-body">
-                <div class="edit-row"><span>💰 Prezzo Pas (€):</span> <input type="number" step="0.5" value="${p.pas}" onchange="up(${i},'pas',this.value)"></div>
-                <div class="edit-row"><span>🏠 Inizio:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
-                <div class="edit-row"><span>🚛 Carico (+):</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
+                <div class="edit-row"><span>🏠 Inizio Quindicina:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
+                <div class="edit-row"><span>🚛 Carico Totale:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
                 <div class="edit-row"><span>🎟️ Vend. Pas:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
                 <div class="edit-row"><span>🚉 Vend. Pen:</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
                 <div class="edit-row"><span>🎁 Omaggi:</span> <input type="number" value="${p.omaggio}" onchange="up(${i},'omaggio',this.value)"></div>
@@ -269,7 +271,44 @@ function conferma(t){
 function toggleAcc(i){ let e=document.getElementById('acc-'+i); e.style.display=e.style.display==='block'?'none':'block'; }
 function setDay(d){ let r=prompt("Incasso giorno "+d, db.history[d]||""); if(r!==null){ db.history[d]=parseFloat(r.replace(',','.'))||0; render(); }}
 function clearReali(){ if(confirm("Azzera conteggi fisici?")){ db.prodotti.forEach(p=>p.reale=null); render(); }}
-function chiudiGiornata(){ if(confirm("Azzera incasso app per nuova giornata?")){ db.prodotti.forEach(p=>{ p.q=calcF(p); p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; }); render(); }}
+
+// --- NUOVE FUNZIONI DI CHIUSURA ---
+
+function chiudiGiornataSoloVendite() {
+    if (confirm("AZZERA VENDITE OGGI?\nI carichi e la giacenza totale NON verranno toccati.\nFallo solo a fine turno ogni sera.")) {
+        db.prodotti.forEach(p => {
+            p.vePas = 0;
+            p.vePen = 0;
+            p.omaggio = 0;
+        });
+        save();
+        render();
+        alert("Vendite del turno azzerate!");
+        switchTab('c');
+    }
+}
+
+function chiudiQuindicina() {
+    if (confirm("CHIUSURA 15 GIORNI:\nLe rimanenze attuali diventeranno il nuovo 'INIZIO'.\nTutto il resto verrà azzerato.\nEseguire solo dopo il conteggio fisico.")) {
+        db.prodotti.forEach(p => {
+            let finaleApp = p.q + p.c - p.vePas - p.vePen - p.omaggio;
+            if (p.reale !== null && p.reale !== "" && p.reale !== undefined) {
+                p.q = Number(p.reale);
+            } else {
+                p.q = finaleApp;
+            }
+            p.c = 0;
+            p.vePas = 0;
+            p.vePen = 0;
+            p.omaggio = 0;
+            p.reale = null;
+        });
+        save();
+        render();
+        alert("Quindicina chiusa correttamente!");
+        switchTab('c');
+    }
+}
 
 function exportJSON(){
     let n=customNames[currentBoatID].replace(/\s+/g,'_');
