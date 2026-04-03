@@ -369,6 +369,8 @@ function showConfirm(type) {
             let inc = db.prodotti.reduce((acc, p) => acc + (p.vePas * p.pas) + (p.vePen * p.pen), 0);
             db.history[d] = (db.history[d] || 0) + inc;
             db.prodotti.forEach(p => { p.q = calcGiacenza(p); p.c=p.vePas=p.vePen=p.omaggio=0; });
+            save();
+            render();
         } else {
             // AZZERA QUINDICINA TOTALE
             // 1. Resetta Magazzino
@@ -380,10 +382,13 @@ function showConfirm(type) {
                 p.omaggio = 0; 
                 p.reale = null; 
             });
-            // 2. Resetta Storico Incassi Busta
+            // 2. Resetta Storico Incassi Busta (SVUOTA OGGETTO)
             db.history = {}; 
+            save();
+            // Ricarica la pagina per essere sicuri che tutto il DOM sia aggiornato
+            location.reload(); 
         }
-        closeModal('mod-confirm'); render();
+        closeModal('mod-confirm');
     };
     document.getElementById('mod-confirm').style.display = 'flex';
 }
