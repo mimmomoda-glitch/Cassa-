@@ -246,7 +246,7 @@ function render() {
             <div>
                 <b>${p.n}</b>
                 <span class="price-info">${p.pas.toFixed(1)}€ / ${p.pen.toFixed(1)}€</span>
-                <span class="stock">${calcGiacenza(p)}</span>
+                <span class="stock">${calcGiacenza(p).toFixed(1)}</span>
             </div>
         </div>`).join('');
 
@@ -269,7 +269,13 @@ function render() {
                     <input type="number" step="0.5" value="${p.pen}" onchange="up(${i},'pen',this.value)" style="color:var(--apple-blue); border-color:var(--apple-blue)">
                 </div>
                 <div class="edit-row"><span>Inizio Q:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
-                <div class="edit-row"><span>Carico:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
+                
+                <div class="edit-row" style="background: rgba(90, 200, 250, 0.1); border-radius: 8px; margin: 5px 0;">
+                    <span style="color: var(--cyan); font-weight: bold;">Carico (Pezzi ÷ 7):</span> 
+                    <input type="number" value="${(p.c * 7).toFixed(0)}" placeholder="Es. 70" onchange="upCarico(${i},this.value)" style="border-color: var(--cyan);">
+                </div>
+                <div style="font-size: 10px; color: #666; text-align: right; padding-right: 10px; margin-bottom: 10px;">Quantità registrata: ${p.c.toFixed(2)}</div>
+
                 <div class="edit-row"><span>Vend. Pas:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
                 <div class="edit-row"><span>Vend. Pen:</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
                 <div class="edit-row"><span>Scarichi:</span> <input type="number" value="${p.omaggio}" onchange="up(${i},'omaggio',this.value)"></div>
@@ -284,8 +290,8 @@ function render() {
         let r = p.reale !== null ? p.reale : app;
         tValReale += r * p.pas;
         return `<div class="inv-row">
-            <div><b>${p.n}</b><br><small style="color:#888">App: ${app}</small></div>
-            <input type="number" value="${p.reale !== null ? p.reale : ''}" placeholder="${app}" onchange="up(${i},'reale',this.value)">
+            <div><b>${p.n}</b><br><small style="color:#888">App: ${app.toFixed(1)}</small></div>
+            <input type="number" value="${p.reale !== null ? p.reale : ''}" placeholder="${app.toFixed(1)}" onchange="up(${i},'reale',this.value)">
         </div>`;
     }).join('');
 
@@ -297,6 +303,14 @@ function render() {
     document.getElementById('tot-incasso').innerText = tInc.toFixed(2) + "€";
     document.getElementById('header-val-carico').innerText = tValApp.toFixed(2) + "€";
     save();
+}
+
+// Funzione specifica per il carico che divide per 7
+function upCarico(i, v) {
+    let pezzi = parseFloat(v);
+    if(isNaN(pezzi)) pezzi = 0;
+    db.prodotti[i].c = pezzi / 7;
+    render();
 }
 
 function renderBuste() {
@@ -343,7 +357,13 @@ function switchTab(t) {
     document.getElementById('t-'+t).classList.add('active');
 }
 
-function up(i, f, v) { db.prodotti[i][f] = v==='' ? (f==='reale'?null:0) : parseFloat(v); render(); }
+function up(i, f, v) { 
+    let val = parseFloat(v);
+    if(isNaN(val)) val = (f==='reale' ? null : 0);
+    db.prodotti[i][f] = val; 
+    render(); 
+}
+
 function toggleAcc(i) { let e = document.getElementById('acc-'+i); e.style.display = e.style.display === 'block' ? 'none' : 'block'; }
 function clearReali() { db.prodotti.forEach(p => p.reale = null); render(); }
 
@@ -372,8 +392,6 @@ function showConfirm(type) {
             save();
             render();
         } else {
-            // AZZERA QUINDICINA TOTALE
-            // 1. Resetta Magazzino
             db.prodotti.forEach(p => { 
                 p.q = p.reale !== null ? p.reale : calcGiacenza(p); 
                 p.c = 0; 
@@ -382,10 +400,8 @@ function showConfirm(type) {
                 p.omaggio = 0; 
                 p.reale = null; 
             });
-            // 2. Resetta Storico Incassi Busta (SVUOTA OGGETTO)
             db.history = {}; 
             save();
-            // Ricarica la pagina per essere sicuri che tutto il DOM sia aggiornato
             location.reload(); 
         }
         closeModal('mod-confirm');
