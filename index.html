@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -6,56 +7,64 @@
     <title>NAV-PRO V160 - AMALFI JET</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
-        
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
         body { margin: 0; background: var(--bg); color: var(--txt); height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; width: 100%; }
         
-        /* Header */
         .header { background: #000; padding: 10px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; height: 65px; flex-shrink: 0; z-index: 100; }
         .header b { font-size: 14px; color: var(--lime); }
         .header small { color: #888; text-transform: uppercase; font-size: 8px; }
-
-        .boat-box { background: #1c1c1e; padding: 8px 10px; border-radius: 10px; border: 1px solid #333; color: var(--cyan); font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 5px; max-width: 160px; overflow: hidden; cursor: pointer; transition: background 0.3s; }
-
-        /* Pagine */
+        
+        .boat-box { background: #1c1c1e; padding: 8px 10px; border-radius: 10px; border: 1px solid #333; color: var(--cyan); font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 5px; max-width: 160px; overflow: hidden; cursor: pointer; border-left: 3px solid var(--cyan); }
+        
         .page { display: none; overflow-y: auto; flex-grow: 1; padding-bottom: 100px; -webkit-overflow-scrolling: touch; width: 100%; }
         .active-page { display: block; }
-
-        /* Grid Cassa */
+        
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
         .product-btn { background: var(--card); height: 100px; border-radius: 14px; display: flex; align-items: center; padding: 12px; border: 1px solid #333; color: white; text-align: left; width: 100%; position: relative; cursor: pointer; }
         .product-btn i { font-size: 24px; margin-right: 12px; font-style: normal; pointer-events: none; }
         .product-btn div { pointer-events: none; flex-grow: 1; }
         .product-btn b { font-size: 10px; text-transform: uppercase; display: block; margin-bottom: 2px; }
         .product-btn .stock { font-size: 18px; font-weight: bold; color: var(--cyan); }
-
-        /* Report Accordion */
+        
         .accordion { background: var(--card); border-radius: 12px; margin: 10px; border: 1px solid #333; overflow: hidden; }
         .acc-header { padding: 15px; background: #2c2c2e; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .acc-body { display: none; padding: 10px; background: #1c1c1e; }
+        
         .edit-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2c2c2e; }
         .edit-row span { font-size: 12px; color: #ccc; }
         .edit-row input { background: #000; border: 1px solid #444; color: var(--cyan); text-align: right; width: 90px; border-radius: 8px; padding: 8px; font-size: 16px; font-weight: bold; }
-
-        /* Inventario */
+        
         .inv-row { border-bottom: 1px solid #333; display: flex; align-items: center; padding: 15px; background: var(--card); justify-content: space-between; }
         .inv-row input { width: 90px; background: #000; border: 1px solid var(--apple-blue); color: var(--txt); text-align: center; border-radius: 8px; padding: 10px; font-size: 18px; font-weight: bold; }
+        
         .summary-card { background: #1c1c1e; border: 2px solid #333; border-radius: 15px; margin: 15px; padding: 15px; text-align: center; }
-
-        /* Footer */
+        
         .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 75px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
         .footer button { flex: 1; background: none; border: none; color: #888; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
         .footer button.active { color: var(--cyan); }
-
-        /* Modali */
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; padding: 10px; background: #1c1c1e; margin: 10px; border-radius: 12px; border: 1px solid #333; }
+        .cal-day-label { text-align: center; font-size: 9px; color: #888; padding-bottom: 5px; }
+        .cal-cell { background: #2c2c2e; aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; position: relative; cursor: pointer; border: 1px solid transparent; }
+        .cal-cell.today { border-color: var(--cyan); background: #3a3a3c; }
+        .cal-cell b { font-size: 13px; }
+        .cal-cell span { font-size: 7px; color: var(--lime); margin-top: 2px; }
+        
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; padding: 20px; }
         .modal-card { background: #1c1c1e; padding: 25px; border-radius: 25px; border: 1px solid #444; text-align: center; max-height: 90vh; overflow-y: auto; width: 100%; max-width: 400px; margin: auto; }
+        
         .btn-big { width: 100%; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 16px; margin-top: 12px; border: none; cursor: pointer; }
-
-        /* Toast */
+        
+        .backup-section { margin: 15px; padding: 15px; background: #1c1c1e; border-radius: 15px; border: 1px solid #444; border-style: dashed; text-align: center; }
+        
         #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 5000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        .boat-item { padding: 18px; border-bottom: 1px solid #333; color: white; text-align: center; font-size: 16px; font-weight: bold; }
+        .boat-item:active { background: #333; }
     </style>
 </head>
 <body onload="init()">
@@ -64,48 +73,63 @@
 
 <div class="header">
     <div class="boat-box" onclick="openBoatMenu()" id="boat-display">
-        <span id="current-boat-name">...</span>
+        <span id="current-boat-name">CARICAMENTO...</span>
     </div>
     <div style="text-align:center"><small>Incasso Oggi</small><br><b id="tot-incasso">0.00€</b></div>
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
 </div>
 
-<!-- PAGINA CASSA -->
-<div id="page-c" class="page active-page">
-    <div class="grid" id="grid-cassa"></div>
-</div>
+<div id="page-c" class="page active-page"><div class="grid" id="grid-cassa"></div></div>
 
-<!-- PAGINA REPORT -->
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
         <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--apple-blue); color:white;">☀️ CHIUDI GIORNATA</button>
-        <button onclick="showConfirm('quindicina')" class="btn-big" style="background:var(--lime); color:black;">🏁 AZZERA QUINDICINA</button>
+        <button onclick="showConfirm('reset')" class="btn-big" style="background:var(--red); color:white;">⚠️ AZZERA TUTTO</button>
     </div>
+
+    <!-- SEZIONE BACKUP AGGIORNATA -->
+    <div class="backup-section">
+        <div style="color:var(--cyan); font-weight:bold; font-size:10px; text-transform:uppercase; margin-bottom:12px;">Gestione Dati Backup</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button onclick="exportJSON()" style="background:#2c2c2e; color:var(--lime); border:1px solid #444; padding:15px; border-radius:12px; font-weight:bold; font-size:12px;">💾 ESPORTA</button>
+            <button onclick="document.getElementById('file-input').click()" style="background:#2c2c2e; color:var(--orange); border:1px solid #444; padding:15px; border-radius:12px; font-weight:bold; font-size:12px;">📂 IMPORTA</button>
+        </div>
+        <input type="file" id="file-input" style="display:none" accept=".json" onchange="importJSON(event)">
+        <p style="color:#666; font-size:9px; margin-top:10px;">Salva il file per non perdere i dati o caricarli su altri dispositivi.</p>
+    </div>
+
     <div id="accordion-list"></div>
-    <div style="padding:15px; display: flex; gap: 10px;">
-        <button id="btn-backup" onclick="exportJSON()" style="flex:1; padding:12px; background:var(--orange); border-radius:10px; border:none; font-weight:bold; color:black;">📥 SALVA BACKUP</button>
-        <button onclick="document.getElementById('fileInput').click()" style="flex:1; padding:12px; background:#444; border-radius:10px; border:none; color:#fff; font-weight:bold;">📤 CARICA</button>
-        <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
-    </div>
 </div>
 
-<!-- PAGINA INVENTARIO -->
 <div id="page-i" class="page">
     <div class="summary-card">
-        <small style="color:#888">SQUADRATURA RIMANENZE (PREZZO PASSEGGERO)</small>
-        <div id="inv-diff" style="font-size:32px; font-weight:bold;">0.00€</div>
-        <button onclick="clearReali()" style="background:none; border:1px solid var(--red); color:var(--red); padding:8px 15px; border-radius:8px; margin-top:10px; font-size:12px;">AZZERA CONTEGGI FISICI</button>
+        <small style="color:#888">SQUADRATURA INVENTARIO</small>
+        <div id="inv-diff" style="font-size:32px; font-weight:bold; color:var(--lime);">0.00€</div>
+        <button onclick="clearReali()" style="background:none; border:1px solid var(--red); color:var(--red); padding:8px 15px; border-radius:8px; margin-top:15px; font-size:11px; text-transform:uppercase;">Azzera Conteggio Fisico</button>
     </div>
     <div id="inventory-list"></div>
 </div>
 
-<!-- PAGINA BUSTE -->
 <div id="page-h" class="page">
-    <div style="padding:15px; font-weight:bold; color:var(--cyan);">BUSTE & PAGA</div>
+    <div style="padding:15px; font-weight:bold; color:var(--cyan); display:flex; justify-content:space-between; align-items:center;">
+        CALENDARIO INCASSI
+        <small id="current-month-name" style="color:#888; text-transform:uppercase;"></small>
+    </div>
+    <div class="calendar-grid" id="calendar-body"></div>
+    <div style="padding:0 15px; font-weight:bold; color:var(--cyan); margin-top:10px;">PROSPETTO PAGA</div>
     <div id="quindicine-container"></div>
 </div>
 
-<!-- MODALE GESTIONE PRODOTTO -->
+<!-- MODALI -->
+<div id="mod-cal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="cal-edit-title" style="color:var(--cyan);">MODIFICA INCASSO</h3>
+        <input type="number" id="cal-edit-input" style="width:100%; background:#000; border:2px solid var(--apple-blue); color:white; padding:15px; border-radius:15px; font-size:24px; text-align:center; margin:20px 0;">
+        <button id="cal-edit-save" class="btn-big" style="background:var(--lime); color:black;">SALVA</button>
+        <button onclick="closeModal('mod-cal')" class="btn-big" style="background:#444; color:white;">CHIUDI</button>
+    </div>
+</div>
+
 <div id="mod-gest" class="modal-overlay">
     <div class="modal-card">
         <h2 id="g-nome" style="color:var(--cyan);"></h2>
@@ -130,9 +154,14 @@
     </div>
 </div>
 
-<div id="mod-boat" class="modal-overlay"><div class="modal-card" style="padding:0;"><div id="boat-list-container" style="max-height:60vh; overflow-y:auto;"></div><button onclick="closeModal('mod-boat')" class="btn-big" style="width:90%; margin:15px; background:#333; color:white;">CHIUDI</button></div></div>
+<div id="mod-boat" class="modal-overlay">
+    <div class="modal-card" style="padding:0;">
+        <div style="padding:20px; border-bottom:1px solid #333; font-weight:bold; color:var(--cyan);">SELEZIONA MEZZO</div>
+        <div id="boat-list-container" style="max-height:60vh; overflow-y:auto;"></div>
+        <button onclick="closeModal('mod-boat')" class="btn-big" style="width:90%; margin:15px; background:#333; color:white;">CHIUDI</button>
+    </div>
+</div>
 
-<!-- FOOTER -->
 <div class="footer">
     <button id="t-c" class="active" onclick="switchTab('c')">🛒 CASSA</button>
     <button id="t-m" onclick="switchTab('m')">📊 REPORT</button>
@@ -141,21 +170,19 @@
 </div>
 
 <script>
+const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
+
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "3";
 let db = { prodotti: [], history: {} };
 let curIdx = -1, qty = 1;
 const FISSO = 26, PERC = 0.05;
 
-let customNames = JSON.parse(localStorage.getItem('NAV_FLEET_NAMES')) || {"3": "AMALFI JET"};
-const DEFAULT_FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
-
 function init() { loadData(); }
 
 function showToast(msg) {
     const t = document.getElementById("toast");
-    t.innerText = msg;
-    t.className = "show";
-    setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+    t.innerText = msg; t.className = "show";
+    setTimeout(() => { t.className = ""; }, 3000);
 }
 
 function loadData() {
@@ -170,25 +197,20 @@ function loadData() {
 }
 
 function hardReset() {
-    const master = [
-        {n:"ACQUA", i:"💧", pas:2.0, pen:1.0, q: 241}, {n:"ARACHIDI+", i:"🥜", pas:2.5, pen:1.0, q: 35}, 
+    const data = [
+        {n:"ACQUA", i:"💧", pas:2.0, pen:1.0, q: 241}, {n:"ARACHIDI+", i:"🥜", pas:2.5, pen:1.0, q: 35},
         {n:"BORSE G", i:"👜", pas:10.0, pen:10.0, q: 4}, {n:"BORSE M", i:"🛍️", pas:7.0, pen:7.0, q: 12},
-        {n:"BUENO/BISC", i:"🍫", pas:3.0, pen:1.0, q: 58}, {n:"CAPPELLI", i:"🧢", pas:5.0, pen:5.0, q: 61}, 
-        {n:"CARAMELLE", i:"🍬", pas:2.5, pen:1.0, q: 105}, {n:"CHOCO CHIPS", i:"🍪", pas:3.5, pen:2.0, q: 0},
-        {n:"CIALDE", i:"☕", pas:2.0, pen:1.0, q: 155}, {n:"FITNESS", i:"🌾", pas:2.5, pen:1.5, q: 38}, 
-        {n:"FONZIES", i:"🍟", pas:2.5, pen:1.0, q: 93}, {n:"IMPERMEAB", i:"🧥", pas:5.0, pen:5.0, q: 90}, 
-        {n:"KINDER CARDS", i:"🃏", pas:3.0, pen:1.5, q: 0}, {n:"LATTINE", i:"🥤", pas:2.5, pen:1.5, q: 201},
-        {n:"MAGLIE", i:"👕", pas:5.0, pen:5.0, q: 43}, {n:"MIKADO", i:"🥢", pas:2.5, pen:1.5, q: 16},
-        {n:"MUFFIN", i:"🧁", pas:2.5, pen:1.5, q: 17}, {n:"NIK NOK", i:"🥜", pas:2.5, pen:1.5, q: 23}, 
-        {n:"PAVESINI", i:"🍪", pas:2.5, pen:1.0, q: 17}, {n:"PERONI", i:"🍺", pas:4.5, pen:1.5, q: 81}, 
-        {n:"PERONI C.", i:"🍋", pas:7.5, pen:5.5, q: 71}, {n:"PRINGLES", i:"🥔", pas:3.5, pen:2.0, q: 15}, 
-        {n:"PROSECCO", i:"🍷", pas:6.0, pen:3.0, q: 57}, {n:"RED BULL", i:"⚡", pas:4.5, pen:2.5, q: 36}, 
-        {n:"RINGO/OREO", i:"🍪", pas:2.5, pen:1.0, q: 89}, {n:"RITZ", i:"🥨", pas:4.5, pen:3.0, q: 17}, 
-        {n:"SPRITZ", i:"🍹", pas:8.0, pen:5.0, q: 33}, {n:"SUCCO", i:"🧃", pas:3.5, pen:2.0, q: 13}, 
-        {n:"THE/CAMOM", i:"🍵", pas:2.5, pen:1.5, q: 65}, {n:"TUC", i:"🍪", pas:3.5, pen:2.5, q: 16}, 
-        {n:"TWIX/KIT KAT", i:"🍫", pas:2.5, pen:1.5, q: 54}
+        {n:"BUENO/BISC", i:"🍫", pas:3.0, pen:1.0, q: 58}, {n:"CAPPELLI", i:"🧢", pas:5.0, pen:5.0, q: 60},
+        {n:"CARAMELLE", i:"🍬", pas:2.5, pen:1.0, q: 105}, {n:"CIALDE", i:"☕", pas:2.0, pen:1.0, q: 153},
+        {n:"FONZIES", i:"🍟", pas:2.5, pen:1.0, q: 85}, {n:"IMPERMEAB", i:"🧥", pas:5.0, pen:5.0, q: 90},
+        {n:"LATTINE", i:"🥤", pas:2.5, pen:1.5, q: 201}, {n:"MAGLIE", i:"👕", pas:5.0, pen:5.0, q: 43},
+        {n:"PERONI", i:"🍺", pas:4.5, pen:1.5, q: 81}, {n:"PERONI C.", i:"🍋", pas:7.5, pen:5.5, q: 70},
+        {n:"PRINGLES", i:"🥔", pas:3.5, pen:2.0, q: 26}, {n:"PROSECCO", i:"🍷", pas:6.0, pen:3.0, q: 56},
+        {n:"RED BULL", i:"⚡", pas:4.5, pen:2.5, q: 36}, {n:"RINGO/OREO", i:"🍪", pas:2.5, pen:1.0, q: 89},
+        {n:"SPRITZ", i:"🍹", pas:8.0, pen:5.0, q: 33}, {n:"SUCCO", i:"🧃", pas:3.5, pen:2.0, q: 13},
+        {n:"THE/CAMOM", i:"🍵", pas:2.5, pen:1.5, q: 65}, {n:"TWIX/KIT KAT", i:"🍫", pas:2.5, pen:1.5, q: 50}
     ];
-    db.prodotti = master.map(p => ({...p, c:0, vePas:0, vePen:0, omaggio:0, reale:null}));
+    db.prodotti = data.map(p => ({...p, c:0, vePas:0, vePen:0, omaggio:0, reale:null}));
     db.history = {};
     save();
 }
@@ -198,167 +220,144 @@ function save() {
     localStorage.setItem('NAV_LAST_ID', currentBoatID); 
 }
 
-function calcGiacenza(p) { return (p.q + p.c) - (p.vePas + p.vePen + p.omaggio); }
+function calcGiacenza(p) { return Math.round((p.q + p.c) - (p.vePas + p.vePen + p.omaggio)); }
 
-function render() {
-    let bName = customNames[currentBoatID] || DEFAULT_FLEET[parseInt(currentBoatID)-1];
-    document.getElementById('current-boat-name').innerText = bName;
-
-    let tValRimanenzeApp = 0;
-    let tValRimanenzeReali = 0;
-    let tIncassoOggi = db.history[new Date().getDate()] || 0;
-
-    // CASSA
-    document.getElementById('grid-cassa').innerHTML = db.prodotti.map((p, i) => `
-        <div class="product-btn" onclick="openGest(${i})">
-            <i>${p.i}</i>
-            <div>
-                <b>${p.n}</b>
-                <span class="stock">${calcGiacenza(p).toFixed(0)} pz</span>
-            </div>
-        </div>`).join('');
-
-    // REPORT
-    document.getElementById('accordion-list').innerHTML = db.prodotti.map((p, i) => {
-        let giacenza = calcGiacenza(p);
-        let valoreGiacenza = giacenza * p.pas;
-        tValRimanenzeApp += valoreGiacenza;
-
-        return `<div class="accordion">
-            <div class="acc-header" onclick="toggleAcc(${i})">
-                <b>${p.n}</b> 
-                <b style="color:var(--gold)">${valoreGiacenza.toFixed(2)}€</b>
-            </div>
-            <div id="acc-${i}" class="acc-body">
-                <div class="edit-row"><span>Inizio Q:</span> <input type="number" value="${p.q.toFixed(0)}" onchange="up(${i},'q',this.value)"></div>
-                <div class="edit-row" style="background:rgba(90,200,250,0.1)"><span>Carico:</span> <input type="number" value="${p.c.toFixed(0)}" onchange="up(${i},'c',this.value)"></div>
-                <div class="edit-row"><span>Vend. Pas:</span> <input type="number" value="${p.vePas.toFixed(0)}" onchange="up(${i},'vePas',this.value)"></div>
-                <div class="edit-row"><span>Vend. Pen:</span> <input type="number" value="${p.vePen.toFixed(0)}" onchange="up(${i},'vePen',this.value)"></div>
-                <div class="edit-row"><span>Scarichi:</span> <input type="number" value="${p.omaggio.toFixed(0)}" onchange="up(${i},'omaggio',this.value)"></div>
-            </div>
-        </div>`;
-    }).join('');
-
-    // INVENTARIO
-    document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
-        let app = calcGiacenza(p);
-        let realeVal = p.reale !== null ? p.reale : app;
-        tValRimanenzeReali += (realeVal * p.pas);
+// FUNZIONI DI BACKUP MIGLIORATE
+function exportJSON() {
+    try {
+        const dataStr = JSON.stringify(db, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const fileName = 'NAV_BACKUP_' + FLEET[parseInt(currentBoatID)-1].replace(/\s/g, '_') + '.json';
         
-        return `<div class="inv-row">
-            <div>
-                <b>${p.n}</b><br>
-                <small style="color:#888">App: ${app.toFixed(0)} | <span style="color:var(--cyan)">€${(app*p.pas).toFixed(2)}</span></small>
-            </div>
-            <input type="number" value="${p.reale !== null ? p.reale.toFixed(0) : ''}" placeholder="${app.toFixed(0)}" onchange="up(${i},'reale',this.value)">
-        </div>`;
-    }).join('');
-
-    let diff = tValRimanenzeReali - tValRimanenzeApp;
-    document.getElementById('inv-diff').innerText = diff.toFixed(2) + "€";
-    document.getElementById('inv-diff').style.color = Math.abs(diff) < 0.01 ? "var(--lime)" : "var(--red)";
-    
-    document.getElementById('tot-incasso').innerText = tIncassoOggi.toFixed(2) + "€";
-    document.getElementById('header-val-rimanenze').innerText = tValRimanenzeApp.toFixed(2) + "€";
-    
-    renderBuste();
-    save();
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        
+        // Pulizia
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+        
+        showToast("Download avviato!");
+    } catch (e) {
+        showToast("Errore nel download");
+    }
 }
 
-function up(i, f, v) {
-    let val = parseFloat(v);
-    if(isNaN(val)) db.prodotti[i][f] = (f==='reale' ? null : 0);
-    else db.prodotti[i][f] = val;
-    render();
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if(imported.prodotti && Array.isArray(imported.prodotti)) {
+                db = imported;
+                save();
+                render();
+                showToast("Dati ricaricati!");
+            } else {
+                showToast("File non compatibile");
+            }
+        } catch (err) {
+            showToast("Errore lettura file");
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
+}
+
+function render() {
+    document.getElementById('current-boat-name').innerText = FLEET[parseInt(currentBoatID) - 1];
+    let tIncasso = 0, tValRimanenze = 0, tDiffInventario = 0;
+    db.prodotti.forEach(p => {
+        const giac = calcGiacenza(p);
+        tIncasso += (p.vePas * p.pas) + (p.vePen * p.pen);
+        tValRimanenze += (giac * p.pas);
+        if (p.reale !== null) tDiffInventario += (p.reale - giac) * p.pas;
+    });
+    document.getElementById('tot-incasso').innerText = tIncasso.toFixed(2) + "€";
+    document.getElementById('header-val-rimanenze').innerText = tValRimanenze.toFixed(2) + "€";
+    document.getElementById('inv-diff').innerText = (tDiffInventario > 0 ? "+" : "") + tDiffInventario.toFixed(2) + "€";
+    document.getElementById('grid-cassa').innerHTML = db.prodotti.map((p, i) => `<div class="product-btn" onclick="openGest(${i})"><i>${p.i}</i><div><b>${p.n}</b><span class="stock">${calcGiacenza(p)} pz</span></div></div>`).join('');
+    document.getElementById('accordion-list').innerHTML = db.prodotti.map((p, i) => {
+        let g = calcGiacenza(p);
+        return `<div class="accordion"><div class="acc-header" onclick="toggleAcc(${i})"><span><b>${p.n}</b> <small>(${g} pz)</small></span><b>${(g*p.pas).toFixed(2)}€</b></div><div id="acc-${i}" class="acc-body"><div class="edit-row"><span>Inizio:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div><div class="edit-row"><span>Carico:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div><div class="edit-row"><span>V.Pas:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div><div class="edit-row"><span>V.Pen:</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div></div></div>`;
+    }).join('');
+    document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => `<div class="inv-row"><div><b>${p.n}</b><br><small>App: ${calcGiacenza(p)}</small></div><input type="number" value="${p.reale !== null ? p.reale : ''}" placeholder="${calcGiacenza(p)}" onchange="up(${i},'reale',this.value)"></div>`).join('');
+    renderCalendar(); save();
+}
+
+function renderCalendar() {
+    const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
+    const days = new Date(y, m + 1, 0).getDate();
+    document.getElementById('current-month-name').innerText = now.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
+    let h = `<div class="cal-day-label">L</div><div class="cal-day-label">M</div><div class="cal-day-label">M</div><div class="cal-day-label">G</div><div class="cal-day-label">V</div><div class="cal-day-label">S</div><div class="cal-day-label">D</div>`;
+    const first = (new Date(y, m, 1).getDay() + 6) % 7;
+    for(let i=0; i<first; i++) h += `<div></div>`;
+    for(let d=1; d<=days; d++) {
+        let v = db.history[d] || 0;
+        h += `<div class="cal-cell ${d === now.getDate() ? 'today' : ''}" onclick="openEditCal(${d})"><b>${d}</b>${v > 0 ? `<span>${v.toFixed(0)}€</span>` : ''}</div>`;
+    }
+    document.getElementById('calendar-body').innerHTML = h;
+    renderBuste();
 }
 
 function renderBuste() {
     let h = "";
-    [ {t: "1ª QUINDICINA", r: [1,15]}, {t: "2ª QUINDICINA", r: [16,31]} ].forEach(q => {
-        let totI = 0;
-        for(let d=q.r[0]; d<=q.r[1]; d++) totI += db.history[d] || 0;
-        h += `<div class="quin-box" style="background:#1c1c1e; margin:10px; border-radius:12px; padding:15px; border:1px solid #333;"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><b>${q.t}</b><b style="color:var(--lime)">${(totI>0?FISSO+(totI*PERC):0).toFixed(2)}€</b></div><div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:5px;">`;
-        for(let d=q.r[0]; d<=q.r[1]; d++) {
-            let v = db.history[d] || 0;
-            h += `<div onclick="openNumpad(${d})" style="background:${v>0?'var(--apple-blue)':'#333'}; padding:5px; text-align:center; border-radius:5px; font-size:10px;">${d}<br>${v>0?v.toFixed(0):''}</div>`;
-        }
-        h += `</div></div>`;
+    [{t:"1ª QUINDICINA",r:[1,15]},{t:"2ª QUINDICINA",r:[16,31]}].forEach(q=>{
+        let tot=0; for(let d=q.r[0];d<=q.r[1];d++) tot+=(db.history[d]||0);
+        h+=`<div style="background:#1c1c1e;margin:10px;border-radius:12px;padding:15px;border:1px solid #333;display:flex;justify-content:space-between;align-items:center;"><div><small>${q.t}</small><br><b>${tot.toFixed(2)}€</b></div><b style="color:var(--lime);font-size:20px;">${(tot>0?FISSO+(tot*PERC):0).toFixed(2)}€</b></div>`;
     });
     document.getElementById('quindicine-container').innerHTML = h;
 }
 
-function openNumpad(d) {
-    let val = prompt("Incasso giorno " + d, db.history[d] || 0);
-    if(val !== null) { db.history[d] = parseFloat(val) || 0; render(); }
-}
-
-function openBoatMenu() {
-    let h = "";
-    for(let i=1; i<=20; i++) {
-        let n = customNames[i] || DEFAULT_FLEET[i-1];
-        h += `<div onclick="selectBoat('${i}')" style="padding:15px; border-bottom:1px solid #333;">${n}</div>`;
-    }
-    document.getElementById('boat-list-container').innerHTML = h;
-    document.getElementById('mod-boat').style.display = 'flex';
+function openEditCal(d) {
+    document.getElementById('cal-edit-input').value = db.history[d] || "";
+    document.getElementById('cal-edit-save').onclick = () => { db.history[d] = parseFloat(document.getElementById('cal-edit-input').value) || 0; closeModal('mod-cal'); render(); };
+    document.getElementById('mod-cal').style.display = 'flex';
 }
 
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
+function up(i, f, v) { db.prodotti[i][f] = v === '' ? (f==='reale'?null:0) : Math.round(parseFloat(v)); render(); }
 function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').innerText = db.prodotti[i].n; document.getElementById('g-qty').innerText = qty; document.getElementById('mod-gest').style.display = 'flex'; }
 function changeQty(v) { qty = Math.max(1, qty + v); document.getElementById('g-qty').innerText = qty; }
 function conferma(f) { db.prodotti[curIdx][f] += qty; closeModal('mod-gest'); render(); }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function toggleAcc(i) { let e = document.getElementById('acc-'+i); e.style.display = e.style.display === 'block' ? 'none' : 'block'; }
 function clearReali() { db.prodotti.forEach(p => p.reale = null); render(); }
-
+function openBoatMenu() {
+    let h = ""; FLEET.forEach((n, i) => { let id = (i + 1).toString(); h += `<div class="boat-item" onclick="selectBoat('${id}')">${n}</div>`; });
+    document.getElementById('boat-list-container').innerHTML = h;
+    document.getElementById('mod-boat').style.display = 'flex';
+}
 function switchTab(t) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
     document.getElementById('page-'+t).classList.add('active-page');
     document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
     document.getElementById('t-'+t).classList.add('active');
 }
-
 function showConfirm(type) {
     const btn = document.getElementById('confirm-yes');
-    document.getElementById('confirm-title').innerText = "CONFERMA";
-    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere la giornata e salvare l'incasso?" : "Azzera tutto?";
+    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere e salvare l'incasso?" : "Resettare tutto?";
     btn.onclick = () => {
         if(type === 'fine') {
-            let d = new Date().getDate();
-            let inc = 0;
+            let d = new Date().getDate(), inc = 0;
             db.prodotti.forEach(p => inc += (p.vePas * p.pas) + (p.vePen * p.pen));
             db.history[d] = (db.history[d] || 0) + inc;
-            db.prodotti.forEach(p => { p.q = calcGiacenza(p); p.c=p.vePas=p.vePen=p.omaggio=0; });
-        } else {
-            db.prodotti.forEach(p => { p.q = p.reale!==null?p.reale:calcGiacenza(p); p.c=p.vePas=p.vePen=p.omaggio=0; p.reale=null; });
-            db.history = {};
-        }
+            db.prodotti.forEach(p => { p.q = calcGiacenza(p); p.c = p.vePas = p.vePen = p.omaggio = 0; p.reale = null; });
+            showToast("Giorno chiuso!");
+        } else { hardReset(); }
         closeModal('mod-confirm'); render();
     };
     document.getElementById('mod-confirm').style.display = 'flex';
-}
-
-function exportJSON() {
-    const dataStr = JSON.stringify(db);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `NAVPRO_${currentBoatID}.json`;
-    a.click();
-    showToast("Salvataggio...");
-}
-
-function importData(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        db = JSON.parse(ev.target.result);
-        save(); render();
-    };
-    reader.readAsText(file);
 }
 </script>
 </body>
 </html>
 
+```
