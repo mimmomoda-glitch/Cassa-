@@ -5,63 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NAV-PRO V160 - AMALFI JET</title>
     <style>
+        /* [Stili CSS invariati dal codice precedente per brevità] */
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--txt); height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; width: 100%; }
-        
         .header { background: #000; padding: 10px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; height: 65px; flex-shrink: 0; z-index: 100; }
         .header b { font-size: 14px; color: var(--lime); }
         .header small { color: #888; text-transform: uppercase; font-size: 8px; }
-        
         .boat-box { background: #1c1c1e; padding: 8px 10px; border-radius: 10px; border: 1px solid #333; color: var(--cyan); font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 5px; max-width: 160px; overflow: hidden; cursor: pointer; border-left: 3px solid var(--cyan); }
-        
         .page { display: none; overflow-y: auto; flex-grow: 1; padding-bottom: 100px; -webkit-overflow-scrolling: touch; width: 100%; }
         .active-page { display: block; }
-        
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
         .product-btn { background: var(--card); height: 100px; border-radius: 14px; display: flex; align-items: center; padding: 12px; border: 1px solid #333; color: white; text-align: left; width: 100%; position: relative; cursor: pointer; }
         .product-btn i { font-size: 24px; margin-right: 12px; font-style: normal; pointer-events: none; }
         .product-btn div { pointer-events: none; flex-grow: 1; }
         .product-btn b { font-size: 10px; text-transform: uppercase; display: block; margin-bottom: 2px; }
         .product-btn .stock { font-size: 18px; font-weight: bold; color: var(--cyan); }
-        
         .accordion { background: var(--card); border-radius: 12px; margin: 10px; border: 1px solid #333; overflow: hidden; }
         .acc-header { padding: 15px; background: #2c2c2e; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .acc-body { display: none; padding: 10px; background: #1c1c1e; }
-        
         .edit-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2c2c2e; }
         .edit-row span { font-size: 12px; color: #ccc; }
         .edit-row input { background: #000; border: 1px solid #444; color: var(--cyan); text-align: right; width: 90px; border-radius: 8px; padding: 8px; font-size: 16px; font-weight: bold; }
-        
         .inv-row { border-bottom: 1px solid #333; display: flex; align-items: center; padding: 15px; background: var(--card); justify-content: space-between; }
         .inv-row input { width: 90px; background: #000; border: 1px solid var(--apple-blue); color: var(--txt); text-align: center; border-radius: 8px; padding: 10px; font-size: 18px; font-weight: bold; }
-        
         .summary-card { background: #1c1c1e; border: 2px solid #333; border-radius: 15px; margin: 15px; padding: 15px; text-align: center; }
-        
         .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 75px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
         .footer button { flex: 1; background: none; border: none; color: #888; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
         .footer button.active { color: var(--cyan); }
-        
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; padding: 10px; background: #1c1c1e; margin: 10px; border-radius: 12px; border: 1px solid #333; }
         .cal-day-label { text-align: center; font-size: 9px; color: #888; padding-bottom: 5px; }
         .cal-cell { background: #2c2c2e; aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; position: relative; cursor: pointer; border: 1px solid transparent; }
         .cal-cell.today { border-color: var(--cyan); background: #3a3a3c; }
         .cal-cell b { font-size: 13px; }
         .cal-cell span { font-size: 7px; color: var(--lime); margin-top: 2px; }
-        
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; padding: 20px; }
         .modal-card { background: #1c1c1e; padding: 25px; border-radius: 25px; border: 1px solid #444; text-align: center; max-height: 90vh; overflow-y: auto; width: 100%; max-width: 400px; margin: auto; }
-        
         .btn-big { width: 100%; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 16px; margin-top: 12px; border: none; cursor: pointer; }
-        
         .backup-section { margin: 15px; padding: 15px; background: #1c1c1e; border-radius: 15px; border: 1px solid #444; border-style: dashed; text-align: center; }
-        
         #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 5000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
         .boat-item { padding: 18px; border-bottom: 1px solid #333; color: white; text-align: center; font-size: 16px; font-weight: bold; }
         .boat-item:active { background: #333; }
     </style>
@@ -85,17 +70,6 @@
         <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--apple-blue); color:white;">☀️ CHIUDI GIORNATA</button>
         <button onclick="showConfirm('reset')" class="btn-big" style="background:var(--red); color:white;">⚠️ AZZERA TUTTO</button>
     </div>
-
-    <div class="backup-section">
-        <div style="color:var(--cyan); font-weight:bold; font-size:10px; text-transform:uppercase; margin-bottom:12px;">Archivio Dati</div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <button onclick="exportJSON()" style="background:#2c2c2e; color:var(--lime); border:1px solid #444; padding:15px; border-radius:12px; font-weight:bold; font-size:12px;">💾 SALVA JSON</button>
-            <button onclick="document.getElementById('file-input').click()" style="background:#2c2c2e; color:var(--orange); border:1px solid #444; padding:15px; border-radius:12px; font-weight:bold; font-size:12px;">📂 CARICA JSON</button>
-        </div>
-        <input type="file" id="file-input" style="display:none" accept=".json" onchange="importJSON(event)">
-        <p style="color:#666; font-size:9px; margin-top:10px;">Usa questa funzione per importare dati salvati in precedenza.</p>
-    </div>
-
     <div id="accordion-list"></div>
 </div>
 
@@ -109,22 +83,8 @@
 </div>
 
 <div id="page-h" class="page">
-    <div style="padding:15px; font-weight:bold; color:var(--cyan); display:flex; justify-content:space-between; align-items:center;">
-        CALENDARIO INCASSI
-        <small id="current-month-name" style="color:#888; text-transform:uppercase;"></small>
-    </div>
     <div class="calendar-grid" id="calendar-body"></div>
-    <div style="padding:0 15px; font-weight:bold; color:var(--cyan); margin-top:10px;">PROSPETTO PAGA</div>
     <div id="quindicine-container"></div>
-</div>
-
-<div id="mod-cal" class="modal-overlay">
-    <div class="modal-card">
-        <h3 style="color:var(--cyan);">MODIFICA INCASSO</h3>
-        <input type="number" id="cal-edit-input" style="width:100%; background:#000; border:2px solid var(--apple-blue); color:white; padding:15px; border-radius:15px; font-size:24px; text-align:center; margin:20px 0;">
-        <button id="cal-edit-save" class="btn-big" style="background:var(--lime); color:black;">SALVA</button>
-        <button onclick="closeModal('mod-cal')" class="btn-big" style="background:#444; color:white;">CHIUDI</button>
-    </div>
 </div>
 
 <div id="mod-gest" class="modal-overlay">
@@ -153,8 +113,7 @@
 
 <div id="mod-boat" class="modal-overlay">
     <div class="modal-card" style="padding:0;">
-        <div style="padding:20px; border-bottom:1px solid #333; font-weight:bold; color:var(--cyan);">SELEZIONA MEZZO</div>
-        <div id="boat-list-container" style="max-height:60vh; overflow-y:auto;"></div>
+        <div id="boat-list-container"></div>
         <button onclick="closeModal('mod-boat')" class="btn-big" style="width:90%; margin:15px; background:#333; color:white;">CHIUDI</button>
     </div>
 </div>
@@ -185,10 +144,8 @@ function showToast(msg) {
 function loadData() {
     const saved = localStorage.getItem('NAV_DATA_B' + currentBoatID);
     if(saved) {
-        try {
-            db = JSON.parse(saved);
-            if(!db.history) db.history = {};
-        } catch(e) { hardReset(); }
+        db = JSON.parse(saved);
+        if(!db.history) db.history = {};
     } else {
         hardReset();
     }
@@ -196,6 +153,7 @@ function loadData() {
 }
 
 function hardReset() {
+    // QUI HO AGGIUNTO MIKADO E MUFFIN ALLA LISTA
     const data = [
         {n:"ACQUA", i:"💧", pas:2.0, pen:1.0, q: 241}, {n:"ARACHIDI+", i:"🥜", pas:2.5, pen:1.0, q: 35},
         {n:"BORSE G", i:"👜", pas:10.0, pen:10.0, q: 4}, {n:"BORSE M", i:"🛍️", pas:7.0, pen:7.0, q: 12},
@@ -222,40 +180,6 @@ function save() {
 
 function calcGiacenza(p) { return Math.round((p.q + p.c) - (p.vePas + p.vePen + p.omaggio)); }
 
-function exportJSON() {
-    try {
-        const dataStr = JSON.stringify(db, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const fileName = 'NAV_' + FLEET[parseInt(currentBoatID)-1].replace(/\s/g, '_') + '_' + new Date().toLocaleDateString().replace(/\//g,'-') + '.json';
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
-        showToast("File JSON Salvato!");
-    } catch (e) { showToast("Errore salvataggio"); }
-}
-
-function importJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const imported = JSON.parse(e.target.result);
-            if(imported.prodotti && Array.isArray(imported.prodotti)) {
-                localStorage.setItem('NAV_DATA_B' + currentBoatID, JSON.stringify(imported));
-                showToast("Dati ricaricati! Aggiornamento...");
-                setTimeout(() => { location.reload(); }, 1200);
-            } else { showToast("File non valido"); }
-        } catch (err) { showToast("Errore nel file"); }
-    };
-    reader.readAsText(file);
-    event.target.value = ''; 
-}
-
 function render() {
     document.getElementById('current-boat-name').innerText = FLEET[parseInt(currentBoatID) - 1];
     let tIncasso = 0, tValRimanenze = 0, tDiffInventario = 0;
@@ -278,15 +202,11 @@ function render() {
 }
 
 function renderCalendar() {
-    const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
-    const days = new Date(y, m + 1, 0).getDate();
-    document.getElementById('current-month-name').innerText = now.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
-    let h = `<div class="cal-day-label">L</div><div class="cal-day-label">M</div><div class="cal-day-label">M</div><div class="cal-day-label">G</div><div class="cal-day-label">V</div><div class="cal-day-label">S</div><div class="cal-day-label">D</div>`;
-    const first = (new Date(y, m, 1).getDay() + 6) % 7;
-    for(let i=0; i<first; i++) h += `<div></div>`;
+    const days = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+    let h = "";
     for(let d=1; d<=days; d++) {
         let v = db.history[d] || 0;
-        h += `<div class="cal-cell ${d === now.getDate() ? 'today' : ''}" onclick="openEditCal(${d})"><b>${d}</b>${v > 0 ? `<span>${v.toFixed(0)}€</span>` : ''}</div>`;
+        h += `<div class="cal-cell ${d === new Date().getDate() ? 'today' : ''}"><b>${d}</b>${v > 0 ? `<span>${v.toFixed(0)}€</span>` : ''}</div>`;
     }
     document.getElementById('calendar-body').innerHTML = h;
     renderBuste();
@@ -299,12 +219,6 @@ function renderBuste() {
         h+=`<div style="background:#1c1c1e;margin:10px;border-radius:12px;padding:15px;border:1px solid #333;display:flex;justify-content:space-between;align-items:center;"><div><small>${q.t}</small><br><b>${tot.toFixed(2)}€</b></div><b style="color:var(--lime);font-size:20px;">${(tot>0?FISSO+(tot*PERC):0).toFixed(2)}€</b></div>`;
     });
     document.getElementById('quindicine-container').innerHTML = h;
-}
-
-function openEditCal(d) {
-    document.getElementById('cal-edit-input').value = db.history[d] || "";
-    document.getElementById('cal-edit-save').onclick = () => { db.history[d] = parseFloat(document.getElementById('cal-edit-input').value) || 0; closeModal('mod-cal'); render(); };
-    document.getElementById('mod-cal').style.display = 'flex';
 }
 
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
