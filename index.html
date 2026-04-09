@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NAV-PRO V160 - NAPOLI JET</title>
+    <title>NAV-PRO V160 - AMALFI JET</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -56,7 +56,7 @@
 
 <div class="header">
     <div class="boat-box" onclick="openBoatMenu()" id="boat-display">
-        <span id="current-boat-name">NAPOLI JET</span>
+        <span id="current-boat-name">SALERNO JET</span>
     </div>
     <div style="text-align:center"><small>Incasso Oggi</small><br><b id="tot-incasso">0.00€</b></div>
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
@@ -67,7 +67,7 @@
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
         <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--apple-blue); color:white;">☀️ CHIUDI GIORNATA</button>
-        <button onclick="showConfirm('reset')" class="btn-big" style="background:var(--red); color:white;">⚠️ RESET QUANTITÀ NAPOLI JET</button>
+        <button onclick="showConfirm('reset')" class="btn-big" style="background:var(--red); color:white;">⚠️ RESET BARCA ATTUALE</button>
     </div>
     <div id="accordion-list"></div>
 </div>
@@ -122,7 +122,7 @@
 <script>
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
 
-let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "1";
+let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; // Default Salerno Jet
 let db = { prodotti: [], history: {} };
 let curIdx = -1, qty = 1;
 
@@ -138,8 +138,6 @@ function loadData() {
     const saved = localStorage.getItem('NAV_DATA_B' + currentBoatID);
     if(saved) {
         db = JSON.parse(saved);
-        // Forza aggiornamento se mancano prodotti critici della lista Napoli
-        if(!db.prodotti.find(p => p.n === "Ginseng")) hardReset();
     } else {
         hardReset();
     }
@@ -147,42 +145,81 @@ function loadData() {
 }
 
 function hardReset() {
-    // QUANTITÀ INIZIALI PRESE DAL NAPOLI JET (SCREEN VERDE)
-    const data = [
-        {n:"Acqua", i:"💧", pas:2.0, pen:1.0, q: 313},
-        {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, q: 28},
-        {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, q: 5},
-        {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, q: 55},
-        {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, q: 175},
-        {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, q: 56},
-        {n:"Cialde", i:"☕", pas:2.0, pen:1.0, q: 0},
-        {n:"Deca", i:"☕", pas:2.0, pen:1.0, q: 20},
-        {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, q: 17},
-        {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, q: 33},
-        {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, q: 45},
-        {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, q: 10},
-        {n:"Latte", i:"🥛", pas:0.5, pen:0.5, q: 4},
-        {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, q: 330},
-        {n:"Maglie", i:"👕", pas:5.0, pen:5.0, q: 83},
-        {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, q: 17},
-        {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, q: 17},
-        {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, q: 15},
-        {n:"Orzo", i:"☕", pas:2.0, pen:1.0, q: 10},
-        {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, q: 4},
-        {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, q: 115},
-        {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, q: 24},
-        {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, q: 62},
-        {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, q: 59},
-        {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, q: 55},
-        {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, q: 96},
-        {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, q: 12},
-        {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, q: 57},
-        {n:"Succo", i:"🧃", pas:3.5, pen:2.0, q: 53},
-        {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, q: 88},
-        {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, q: 14},
-        {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, q: 170},
-        {n:"TU", i:"⚓", pas:0.0, pen:0.0, q: 0}
-    ];
+    let data = [];
+    
+    if(currentBoatID === "1") { // NAPOLI JET
+        data = [
+            {n:"Acqua", i:"💧", pas:2.0, pen:1.0, q: 313},
+            {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, q: 28},
+            {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, q: 5},
+            {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, q: 55},
+            {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, q: 175},
+            {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, q: 56},
+            {n:"Cialde", i:"☕", pas:2.0, pen:1.0, q: 0},
+            {n:"Deca", i:"☕", pas:2.0, pen:1.0, q: 20},
+            {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, q: 17},
+            {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, q: 33},
+            {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, q: 45},
+            {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, q: 10},
+            {n:"Latte", i:"🥛", pas:0.5, pen:0.5, q: 4},
+            {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, q: 330},
+            {n:"Maglie", i:"👕", pas:5.0, pen:5.0, q: 83},
+            {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, q: 17},
+            {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, q: 17},
+            {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, q: 15},
+            {n:"Orzo", i:"☕", pas:2.0, pen:1.0, q: 10},
+            {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, q: 4},
+            {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, q: 115},
+            {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, q: 24},
+            {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, q: 62},
+            {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, q: 59},
+            {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, q: 55},
+            {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, q: 96},
+            {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, q: 12},
+            {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, q: 57},
+            {n:"Succo", i:"🧃", pas:3.5, pen:2.0, q: 53},
+            {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, q: 88},
+            {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, q: 14},
+            {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, q: 170},
+            {n:"TU", i:"⚓", pas:0.0, pen:0.0, q: 0}
+        ];
+    } else { // SALERNO JET (E DEFAULT ALTRE)
+        data = [
+            {n:"Acqua", i:"💧", pas:2.0, pen:1.0, q: 115},
+            {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, q: 16},
+            {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, q: 23},
+            {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, q: 35},
+            {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, q: 116},
+            {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, q: 77},
+            {n:"Cialde", i:"☕", pas:2.0, pen:1.0, q: 140},
+            {n:"Deca", i:"☕", pas:2.0, pen:1.0, q: 4},
+            {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, q: 22},
+            {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, q: 15},
+            {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, q: 61},
+            {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, q: 18},
+            {n:"Latte", i:"🥛", pas:0.5, pen:0.5, q: 4},
+            {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, q: 234},
+            {n:"Maglie", i:"👕", pas:5.0, pen:5.0, q: 137},
+            {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, q: 17},
+            {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, q: 28},
+            {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, q: 17},
+            {n:"Orzo", i:"☕", pas:2.0, pen:1.0, q: 50},
+            {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, q: 18},
+            {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, q: 156},
+            {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, q: 44},
+            {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, q: 64},
+            {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, q: 80},
+            {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, q: 38},
+            {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, q: 100},
+            {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, q: 25},
+            {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, q: 50},
+            {n:"Succo", i:"🧃", pas:3.5, pen:2.0, q: 16},
+            {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, q: 63},
+            {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, q: 14},
+            {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, q: 82},
+            {n:"TU", i:"⚓", pas:0.0, pen:0.0, q: 0}
+        ];
+    }
     db.prodotti = data.map(p => ({...p, c:0, vePas:0, vePen:0, omaggio:0, reale:null}));
     db.history = db.history || {};
     save();
@@ -254,7 +291,7 @@ function switchTab(t) {
 }
 function showConfirm(type) {
     const btn = document.getElementById('confirm-yes');
-    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere la giornata e salvare l'incasso?" : "Resettare le quantità del Napoli Jet?";
+    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere la giornata e salvare l'incasso?" : "Resettare la barca attuale ai valori iniziali?";
     btn.onclick = () => {
         if(type === 'fine') {
             let d = new Date().getDate(), inc = 0;
