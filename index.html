@@ -118,7 +118,6 @@
     <div id="quindicine-container"></div>
 </div>
 
-<!-- MODALI -->
 <div id="mod-cal" class="modal-overlay">
     <div class="modal-card">
         <h3 style="color:var(--cyan);">MODIFICA INCASSO</h3>
@@ -204,6 +203,7 @@ function hardReset() {
         {n:"CARAMELLE", i:"🍬", pas:2.5, pen:1.0, q: 105}, {n:"CIALDE", i:"☕", pas:2.0, pen:1.0, q: 153},
         {n:"FONZIES", i:"🍟", pas:2.5, pen:1.0, q: 85}, {n:"IMPERMEAB", i:"🧥", pas:5.0, pen:5.0, q: 90},
         {n:"LATTINE", i:"🥤", pas:2.5, pen:1.5, q: 201}, {n:"MAGLIE", i:"👕", pas:5.0, pen:5.0, q: 43},
+        {n:"MIKADO", i:"🥖", pas:3.0, pen:1.0, q: 40}, {n:"MUFFIN", i:"🧁", pas:3.0, pen:1.0, q: 30},
         {n:"PERONI", i:"🍺", pas:4.5, pen:1.5, q: 81}, {n:"PERONI C.", i:"🍋", pas:7.5, pen:5.5, q: 70},
         {n:"PRINGLES", i:"🥔", pas:3.5, pen:2.0, q: 26}, {n:"PROSECCO", i:"🍷", pas:6.0, pen:3.0, q: 56},
         {n:"RED BULL", i:"⚡", pas:4.5, pen:2.5, q: 36}, {n:"RINGO/OREO", i:"🍪", pas:2.5, pen:1.0, q: 89},
@@ -222,7 +222,6 @@ function save() {
 
 function calcGiacenza(p) { return Math.round((p.q + p.c) - (p.vePas + p.vePen + p.omaggio)); }
 
-// ESPORTA
 function exportJSON() {
     try {
         const dataStr = JSON.stringify(db, null, 2);
@@ -239,7 +238,6 @@ function exportJSON() {
     } catch (e) { showToast("Errore salvataggio"); }
 }
 
-// IMPORTA E FORZA REFRESH
 function importJSON(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -248,10 +246,8 @@ function importJSON(event) {
         try {
             const imported = JSON.parse(e.target.result);
             if(imported.prodotti && Array.isArray(imported.prodotti)) {
-                // Salviamo i dati per la barca corrente
                 localStorage.setItem('NAV_DATA_B' + currentBoatID, JSON.stringify(imported));
                 showToast("Dati ricaricati! Aggiornamento...");
-                // Forza ricaricamento totale della pagina dopo 1 secondo per pulire cache
                 setTimeout(() => { location.reload(); }, 1200);
             } else { showToast("File non valido"); }
         } catch (err) { showToast("Errore nel file"); }
@@ -348,5 +344,3 @@ function showConfirm(type) {
 </script>
 </body>
 </html>
-
-```
