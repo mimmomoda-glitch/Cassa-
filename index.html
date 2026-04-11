@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NAV-PRO V160 - AMALFI JET</title>
+    <title>NAV-PRO V160 - SALERNO JET</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -35,7 +36,6 @@
         
         .inv-row { border-bottom: 1px solid #333; display: flex; align-items: center; padding: 12px 15px; background: var(--card); justify-content: space-between; }
         .inv-row input { width: 80px; background: #000; border: 1px solid var(--apple-blue); color: var(--txt); text-align: center; border-radius: 8px; padding: 8px; font-size: 16px; font-weight: bold; }
-        .inv-status { font-size: 10px; font-weight: bold; margin-top: 2px; display: block; }
         
         .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 75px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
         .footer button { flex: 1; background: none; border: none; color: #888; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
@@ -49,6 +49,10 @@
         .day-cell b { margin-top: -5px; }
         .day-cell .val { font-size: 8px; color: var(--lime); font-weight: bold; margin-top: 2px; }
         .day-cell.today { border-color: var(--cyan); background: #3a3a3c; }
+
+        .backup-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 15px 15px; }
+        .btn-small { padding: 12px; border-radius: 10px; font-size: 12px; font-weight: bold; border: 1px solid #444; background: #2c2c2e; color: white; cursor: pointer; text-transform: uppercase; }
+        .btn-json { background: var(--apple-blue) !important; border-color: #5ac8fa !important; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
 
         #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 5000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
@@ -72,14 +76,23 @@
 
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
-        <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--apple-blue); color:white;">☀️ CHIUDI GIORNATA</button>
-        <button onclick="showConfirm('reset')" class="btn-big" style="background:var(--red); color:white;">⚠️ RESET BARCA ATTUALE</button>
+        <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--lime); color:black;">☀️ CHIUDI GIORNATA</button>
+        
+        <div class="backup-section" style="margin-top:10px;">
+            <button onclick="downloadFullBackup()" class="btn-small btn-json">💾 SALVA TUTTO</button>
+            <button onclick="document.getElementById('importFile').click()" class="btn-small">📂 CARICA TUTTO</button>
+            <input type="file" id="importFile" style="display:none" onchange="importJSON(event)" accept=".json">
+        </div>
+
+        <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size:14px;">📦 RIPRISTINA INVENTARIO SALERNO</button>
+        <button onclick="exportReport()" class="btn-big" style="background:var(--purple); color:white; font-size:14px;">📄 REPORT TESTO (WhatsApp)</button>
+        <button onclick="showConfirm('reset')" class="btn-big" style="background:var(--red); color:white;">⚠️ RESET DATI BARCA</button>
     </div>
     <div id="accordion-list"></div>
 </div>
 
 <div id="page-i" class="page">
-    <div style="padding: 10px 15px; background: #222; font-size: 11px; color: #ccc;"><b>INVENTARIO REALE:</b> Inserisci i conteggi fisici. Solo i prodotti con valore "Fisico" verranno rettificati.</div>
+    <div style="padding: 10px 15px; background: #222; font-size: 11px; color: #ccc;"><b>INVENTARIO:</b> Inserisci i conteggi fisici. Solo se scrivi il "Fisico", questo diventerà la nuova Iniziale alla chiusura.</div>
     <div id="inventory-list"></div>
 </div>
 
@@ -107,7 +120,7 @@
 
 <div id="mod-edit-day" class="modal-overlay">
     <div class="modal-card">
-        <h3 id="edit-day-title" style="color:var(--cyan);">GIORNO X</h3>
+        <h3 id="edit-day-title" style="color:var(--cyan);">MODIFICA INCASSO</h3>
         <input type="number" id="edit-day-input" style="width:100%; background:#000; border:2px solid var(--apple-blue); color:white; padding:15px; border-radius:12px; font-size:24px; text-align:center; margin-bottom:20px;" placeholder="0.00">
         <button onclick="saveDayIncasso()" class="btn-big" style="background:var(--lime); color:black;">SALVA</button>
         <button onclick="closeModal('mod-edit-day')" class="btn-big" style="background:#444; color:white;">CHIUDI</button>
@@ -140,6 +153,44 @@
 <script>
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
 
+// CATALOGO AGGIORNATO CON DATI REALI SALERNO JET (Report 09/04/2026)
+const MASTER_CATALOG = [
+    {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def: 115},
+    {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def: 16},
+    {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, def: 23},
+    {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, def: 35},
+    {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, def: 116},
+    {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, def: 77},
+    {n:"Cialde", i:"☕", pas:2.0, pen:1.0, def: 140},
+    {n:"Deca", i:"☕", pas:2.0, pen:1.0, def: 4},
+    {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, def: 22},
+    {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, def: 15},
+    {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, def: 61},
+    {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, def: 18},
+    {n:"Latte", i:"🥛", pas:0.5, pen:0.5, def: 4},
+    {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, def: 234},
+    {n:"Maglie", i:"👕", pas:5.0, pen:5.0, def: 137},
+    {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, def: 17},
+    {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, def: 28},
+    {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, def: 17},
+    {n:"Orzo", i:"☕", pas:2.0, pen:1.0, def: 50},
+    {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, def: 18},
+    {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, def: 156},
+    {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, def: 44},
+    {n:"Pringles", i:" potatoes ", pas:3.5, pen:2.0, def: 64},
+    {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, def: 80},
+    {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, def: 38},
+    {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, def: 100},
+    {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, def: 25},
+    {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, def: 50},
+    {n:"Succo", i:"🧃", pas:3.5, pen:2.0, def: 16},
+    {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, def: 63},
+    {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, def: 14},
+    {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, def: 82},
+    {n:"TU", i:"⚓", pas:0.0, pen:0.0, def: 0}
+];
+
+// Impostato Salerno Jet (ID 2) come default
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
 let db = { prodotti: [], history: {} };
 let curIdx = -1, qty = 1, editingDay = -1;
@@ -164,50 +215,22 @@ function loadData() {
 }
 
 function hardReset(full = false) {
-    const catalog = [
-        {n:"Acqua", i:"💧", pas:2.0, pen:1.0, q: 115},
-        {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, q: 16},
-        {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, q: 23},
-        {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, q: 35},
-        {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, q: 116},
-        {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, q: 77},
-        {n:"Cialde", i:"☕", pas:2.0, pen:1.0, q: 140},
-        {n:"Deca", i:"☕", pas:2.0, pen:1.0, q: 4},
-        {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, q: 22},
-        {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, q: 15},
-        {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, q: 61},
-        {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, q: 18},
-        {n:"Latte", i:"🥛", pas:0.5, pen:0.5, q: 4},
-        {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, q: 234},
-        {n:"Maglie", i:"👕", pas:5.0, pen:5.0, q: 137},
-        {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, q: 17},
-        {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, q: 28},
-        {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, q: 17},
-        {n:"Orzo", i:"☕", pas:2.0, pen:1.0, q: 50},
-        {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, q: 18},
-        {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, q: 156},
-        {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, q: 44},
-        {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, q: 64},
-        {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, q: 80},
-        {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, q: 38},
-        {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, q: 100},
-        {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, q: 25},
-        {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, q: 50},
-        {n:"Succo", i:"🧃", pas:3.5, pen:2.0, q: 16},
-        {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, q: 63},
-        {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, q: 14},
-        {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, q: 82},
-        {n:"TU", i:"⚓", pas:0.0, pen:0.0, q: 0}
-    ];
-
-    db.prodotti = catalog.map(p => ({
-        ...p, 
-        q: (currentBoatID === "2" ? p.q : 0),
-        c:0, vePas:0, vePen:0, omaggio:0, reale:null
+    db.prodotti = MASTER_CATALOG.map(p => ({
+        n: p.n, i: p.i, pas: p.pas, pen: p.pen,
+        q: p.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null
     }));
     
     if(full) db.history = {};
     save();
+}
+
+function applyDefaultStock() {
+    db.prodotti.forEach((p, index) => {
+        p.q = MASTER_CATALOG[index].def;
+        p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null;
+    });
+    showToast("Inventario Salerno Jet caricato!");
+    render();
 }
 
 function save() { 
@@ -215,10 +238,56 @@ function save() {
     localStorage.setItem('NAV_LAST_ID', currentBoatID); 
 }
 
+function downloadFullBackup() {
+    const fullBackup = {
+        version: "V160-Salerno",
+        date: new Date().toISOString(),
+        data: {}
+    };
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('NAV_DATA_B') || key === 'NAV_LAST_ID') {
+            fullBackup.data[key] = localStorage.getItem(key);
+        }
+    }
+    const jsonStr = JSON.stringify(fullBackup, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NAVPRO_SALERNO_JET_${new Date().toLocaleDateString('it-IT').replace(/\//g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("File salvato!");
+}
+
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+            const dataToImport = backup.data ? backup.data : backup;
+            Object.keys(dataToImport).forEach(key => {
+                localStorage.setItem(key, dataToImport[key]);
+            });
+            showToast("Dati ripristinati!");
+            setTimeout(() => location.reload(), 1000);
+        } catch (err) {
+            showToast("Errore nel caricamento");
+        }
+    };
+    reader.readAsText(file);
+}
+
 function calcGiacenza(p) { return Math.round((p.q + p.c) - (p.vePas + p.vePen + p.omaggio)); }
 
 function render() {
-    document.getElementById('current-boat-name').innerText = FLEET[parseInt(currentBoatID) - 1];
+    const boatName = FLEET[parseInt(currentBoatID) - 1];
+    document.getElementById('current-boat-name').innerText = boatName;
     let tIncasso = 0, tValRimanenze = 0;
     
     db.prodotti.forEach(p => {
@@ -230,14 +299,12 @@ function render() {
     document.getElementById('tot-incasso').innerText = tIncasso.toFixed(2) + "€";
     document.getElementById('header-val-rimanenze').innerText = tValRimanenze.toFixed(2) + "€";
     
-    // Grid Cassa
     document.getElementById('grid-cassa').innerHTML = db.prodotti.map((p, i) => `
         <div class="product-btn" onclick="openGest(${i})">
             <i>${p.i}</i>
             <div><b>${p.n}</b><span class="stock">${calcGiacenza(p)}</span></div>
         </div>`).join('');
     
-    // Accordion Report
     document.getElementById('accordion-list').innerHTML = db.prodotti.map((p, i) => `
         <div class="accordion">
             <div class="acc-header" onclick="toggleAcc(${i})">
@@ -252,33 +319,13 @@ function render() {
             </div>
         </div>`).join('');
     
-    // Inventory List (Tab INV)
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
-        const giacSistema = calcGiacenza(p); 
-        const diff = p.reale !== null ? (p.reale - giacSistema) : 0;
-        
-        let color = '#888';
-        let label = 'DA CONTARE';
-        
-        if (p.reale !== null) {
-            if (diff === 0) {
-                color = 'var(--lime)';
-                label = 'OK (REALE = TEORICO)';
-            } else if (diff < 0) {
-                color = 'var(--red)';
-                label = 'MANCA: ' + Math.abs(diff);
-            } else {
-                color = 'var(--orange)';
-                label = 'ECCESSO: +' + diff;
-            }
-        }
-
+        const teorico = calcGiacenza(p);
         return `
         <div class="inv-row">
             <div>
                 <b>${p.n}</b><br>
-                <small>Teorico: ${giacSistema}</small>
-                <span class="inv-status" style="color:${color}">${label}</span>
+                <small>Teorico: ${teorico}</small>
             </div>
             <input type="number" value="${p.reale !== null ? p.reale : ''}" placeholder="Fisico" onchange="applyReale(${i}, this.value)">
         </div>`;
@@ -288,12 +335,29 @@ function render() {
     save();
 }
 
+function exportReport() {
+    const boatName = FLEET[parseInt(currentBoatID) - 1];
+    let text = `REPORT TURNO - ${boatName}\nData: ${new Date().toLocaleString()}\n\n`;
+    db.prodotti.forEach(p => {
+        const vendite = p.vePas + p.vePen;
+        if (vendite > 0 || p.c > 0) {
+            text += `${p.n}: ${vendite} VEND. | Giac: ${calcGiacenza(p)}\n`;
+        }
+    });
+    let tInc = 0;
+    db.prodotti.forEach(p => tInc += (p.vePas * p.pas) + (p.vePen * p.pen));
+    text += `\nINCASSO TOTALE: ${tInc.toFixed(2)}€`;
+    
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Report_${boatName}.txt`;
+    a.click();
+}
+
 function applyReale(i, val) {
-    if (val === '') {
-        db.prodotti[i].reale = null;
-    } else {
-        db.prodotti[i].reale = parseFloat(val);
-    }
+    db.prodotti[i].reale = (val === '') ? null : parseFloat(val);
     render();
 }
 
@@ -355,34 +419,19 @@ function switchTab(t) {
 
 function showConfirm(type) {
     const btn = document.getElementById('confirm-yes');
-    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Confermare la chiusura del turno? Le quantità vendute verranno scalate dalle iniziali." : "Resettare tutte le quantità della barca?";
-    
+    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere il turno? Le vendite scaleranno le Iniziali." : "Resettare tutte le quantità?";
     btn.onclick = () => {
         if(type === 'fine') {
             let d = new Date().getDate(), inc = 0;
-            
-            // 1. Salva incasso nel calendario
             db.prodotti.forEach(p => inc += (p.vePas * p.pas) + (p.vePen * p.pen));
             db.history[d] = (db.history[d] || 0) + inc;
-            
-            // 2. SCALA LE INIZIALI
             db.prodotti.forEach(p => { 
-                // Se c'è un valore FISICO contato in INV, quello vince e diventa la nuova q
-                // Se non c'è nulla in Fisico, scala semplicemente (Teorico diventa Iniziale)
                 p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
-                
-                // 3. Azzeramento contatori giornalieri
-                p.c = 0;
-                p.vePas = 0;
-                p.vePen = 0;
-                p.omaggio = 0;
-                p.reale = null; // Pulisce il campo inventario fisico per il prossimo turno
+                p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null;
             });
-            
-            showToast("Turno chiuso. Rimanenze scalate!");
+            showToast("Turno chiuso!");
         } else { 
             hardReset(false); 
-            showToast("Reset completato!");
         }
         closeModal('mod-confirm'); render();
     };
