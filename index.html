@@ -96,7 +96,7 @@
 </div>
 
 <div id="page-h" class="page">
-    <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI</small></div>
+    <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI (TUTTE LE BARCHE)</small></div>
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
 </div>
@@ -188,7 +188,8 @@ const MASTER_CATALOG = [
 ];
 
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
-let db = { prodotti: [], history: {} };
+let db = { prodotti: [] };
+let globalHistory = {}; // Storia globale condivisa tra barche
 let curIdx = -1, qty = 1, editingDay = -1;
 
 function init() { loadData(); }
@@ -200,13 +201,22 @@ function showToast(msg) {
 }
 
 function loadData() {
+    // Carica dati barca
     const saved = localStorage.getItem('NAV_DATA_B' + currentBoatID);
     if(saved) {
         db = JSON.parse(saved);
-        db.history = db.history || {};
     } else {
-        hardReset(true);
+        hardReset(false); // Reset prodotti ma non storia
     }
+
+    // Carica Storia Globale (Indipendente dalla barca)
+    const savedHistory = localStorage.getItem('NAV_GLOBAL_HISTORY');
+    if(savedHistory) {
+        globalHistory = JSON.parse(savedHistory);
+    } else {
+        globalHistory = {};
+    }
+    
     render();
 }
 
@@ -215,7 +225,10 @@ function hardReset(full = false) {
         n: p.n, i: p.i, pas: p.pas, pen: p.pen,
         q: p.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null
     }));
-    if(full) db.history = {};
+    if(full) {
+        globalHistory = {};
+        localStorage.removeItem('NAV_GLOBAL_HISTORY');
+    }
     save();
 }
 
@@ -231,10 +244,16 @@ function applyDefaultStock() {
 function save() { 
     localStorage.setItem('NAV_DATA_B' + currentBoatID, JSON.stringify(db)); 
     localStorage.setItem('NAV_LAST_ID', currentBoatID); 
+    localStorage.setItem('NAV_GLOBAL_HISTORY', JSON.stringify(globalHistory));
 }
 
 function downloadFullBackup() {
-    const fullBackup = { version: "V160-Salerno", date: new Date().toISOString(), data: {} };
+    const fullBackup = { 
+        version: "V160-Salerno-Global", 
+        date: new Date().toISOString(), 
+        data: {},
+        globalHistory: globalHistory 
+    };
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key.startsWith('NAV_DATA_B') || key === 'NAV_LAST_ID') {
@@ -245,11 +264,8 @@ function downloadFullBackup() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `NAVPRO_SALERNO_JET_${new Date().toLocaleDateString('it-IT').replace(/\//g, '-')}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    a.download = `NAVPRO_FULL_BACKUP_${new Date().toLocaleDateString('it-IT').replace(/\//g, '-')}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 function importJSON(event) {
@@ -259,9 +275,13 @@ function importJSON(event) {
     reader.onload = function(e) {
         try {
             const backup = JSON.parse(e.target.result);
+            if(backup.globalHistory) {
+                globalHistory = backup.globalHistory;
+                localStorage.setItem('NAV_GLOBAL_HISTORY', JSON.stringify(globalHistory));
+            }
             const dataToImport = backup.data ? backup.data : backup;
             Object.keys(dataToImport).forEach(key => localStorage.setItem(key, dataToImport[key]));
-            showToast("Dati ripristinati!");
+            showToast("Dati e Storia ripristinati!");
             setTimeout(() => location.reload(), 1000);
         } catch (err) { showToast("Errore file"); }
     };
@@ -334,7 +354,7 @@ function renderCalendar() {
     const days = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
     let h = "";
     for(let d=1; d<=days; d++) {
-        let v = db.history[d] || 0;
+        let v = globalHistory[d] || 0;
         h += `<div class="day-cell ${d === new Date().getDate() ? 'today' : ''}" onclick="openEditDay(${d})"><b>${d}</b>${v > 0 ? `<span class="val">${v.toFixed(0)}€</span>` : ''}</div>`;
     }
     document.getElementById('calendar-body').innerHTML = h;
@@ -343,16 +363,15 @@ function renderCalendar() {
 
 function openEditDay(d) {
     editingDay = d;
-    document.getElementById('edit-day-input').value = db.history[d] || "";
+    document.getElementById('edit-day-input').value = globalHistory[d] || "";
     document.getElementById('mod-edit-day').style.display = 'flex';
 }
 
 function saveDayIncasso() {
-    db.history[editingDay] = parseFloat(document.getElementById('edit-day-input').value) || 0;
+    globalHistory[editingDay] = parseFloat(document.getElementById('edit-day-input').value) || 0;
     closeModal('mod-edit-day'); render();
 }
 
-// --- LOGICA CORRETTA BUSTA PAGA ---
 function renderBuste() {
     let h = "";
     const quindicine = [
@@ -365,14 +384,13 @@ function renderBuste() {
         let giorniLavorati = 0;
 
         for (let d = q.range[0]; d <= q.range[1]; d++) {
-            let val = db.history[d] || 0;
+            let val = globalHistory[d] || 0;
             if (val > 0) {
                 totIncasso += val;
-                giorniLavorati++; // Conta il giorno se c'è incasso
+                giorniLavorati++;
             }
         }
 
-        // CALCOLO: (Giorni * 26) + (5% Incasso)
         let pagaFissa = giorniLavorati * 26;
         let commissione = totIncasso * 0.05;
         let totaleBusta = pagaFissa + commissione;
@@ -392,7 +410,12 @@ function renderBuste() {
     document.getElementById('quindicine-container').innerHTML = h;
 }
 
-function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
+function selectBoat(id) { 
+    currentBoatID = id; 
+    closeModal('mod-boat'); 
+    loadData(); // Ricarica dati barca ma mantiene globalHistory
+}
+
 function up(i, f, v) { db.prodotti[i][f] = v === '' ? 0 : parseFloat(v); render(); }
 function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').innerText = db.prodotti[i].n; document.getElementById('g-qty').innerText = qty; document.getElementById('mod-gest').style.display = 'flex'; }
 function changeQty(v) { qty = Math.max(1, qty + v); document.getElementById('g-qty').innerText = qty; }
@@ -419,10 +442,18 @@ function showConfirm(type) {
         if(type === 'fine') {
             let d = new Date().getDate(), inc = 0;
             db.prodotti.forEach(p => inc += (p.vePas * p.pas) + (p.vePen * p.pen));
-            db.history[d] = (db.history[d] || 0) + inc;
-            db.prodotti.forEach(p => { p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; });
-            showToast("Turno chiuso!");
-        } else { hardReset(false); }
+            
+            // AGGIORNA STORIA GLOBALE (Somma incassi di diverse barche se chiudi più turni lo stesso giorno)
+            globalHistory[d] = (globalHistory[d] || 0) + inc;
+            
+            db.prodotti.forEach(p => { 
+                p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
+                p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; 
+            });
+            showToast("Turno chiuso e incasso aggiunto al Calendario!");
+        } else { 
+            hardReset(false); 
+        }
         closeModal('mod-confirm'); render();
     };
     document.getElementById('mod-confirm').style.display = 'flex';
