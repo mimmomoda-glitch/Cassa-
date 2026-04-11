@@ -101,7 +101,6 @@
     <div id="quindicine-container"></div>
 </div>
 
-<!-- Modals -->
 <div id="mod-gest" class="modal-overlay">
     <div class="modal-card">
         <h2 id="g-nome" style="color:var(--cyan);"></h2>
@@ -152,7 +151,6 @@
 <script>
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
 
-// CATALOGO AGGIORNATO CON DATI REALI SALERNO JET (Report 09/04/2026)
 const MASTER_CATALOG = [
     {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def: 115},
     {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def: 16},
@@ -176,7 +174,7 @@ const MASTER_CATALOG = [
     {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, def: 18},
     {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, def: 156},
     {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, def: 44},
-    {n:"Pringles", i:" potatoes ", pas:3.5, pen:2.0, def: 64},
+    {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, def: 64},
     {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, def: 80},
     {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, def: 38},
     {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, def: 100},
@@ -189,7 +187,6 @@ const MASTER_CATALOG = [
     {n:"TU", i:"⚓", pas:0.0, pen:0.0, def: 0}
 ];
 
-// Impostato Salerno Jet (ID 2) come default
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
 let db = { prodotti: [], history: {} };
 let curIdx = -1, qty = 1, editingDay = -1;
@@ -218,7 +215,6 @@ function hardReset(full = false) {
         n: p.n, i: p.i, pas: p.pas, pen: p.pen,
         q: p.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null
     }));
-    
     if(full) db.history = {};
     save();
 }
@@ -238,19 +234,14 @@ function save() {
 }
 
 function downloadFullBackup() {
-    const fullBackup = {
-        version: "V160-Salerno",
-        date: new Date().toISOString(),
-        data: {}
-    };
+    const fullBackup = { version: "V160-Salerno", date: new Date().toISOString(), data: {} };
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key.startsWith('NAV_DATA_B') || key === 'NAV_LAST_ID') {
             fullBackup.data[key] = localStorage.getItem(key);
         }
     }
-    const jsonStr = JSON.stringify(fullBackup, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -259,7 +250,6 @@ function downloadFullBackup() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast("File salvato!");
 }
 
 function importJSON(event) {
@@ -270,14 +260,10 @@ function importJSON(event) {
         try {
             const backup = JSON.parse(e.target.result);
             const dataToImport = backup.data ? backup.data : backup;
-            Object.keys(dataToImport).forEach(key => {
-                localStorage.setItem(key, dataToImport[key]);
-            });
+            Object.keys(dataToImport).forEach(key => localStorage.setItem(key, dataToImport[key]));
             showToast("Dati ripristinati!");
             setTimeout(() => location.reload(), 1000);
-        } catch (err) {
-            showToast("Errore nel caricamento");
-        }
+        } catch (err) { showToast("Errore file"); }
     };
     reader.readAsText(file);
 }
@@ -318,47 +304,31 @@ function render() {
             </div>
         </div>`).join('');
     
-    document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
-        const teorico = calcGiacenza(p);
-        return `
+    document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => `
         <div class="inv-row">
-            <div>
-                <b>${p.n}</b><br>
-                <small>Teorico: ${teorico}</small>
-            </div>
+            <div><b>${p.n}</b><br><small>Teorico: ${calcGiacenza(p)}</small></div>
             <input type="number" value="${p.reale !== null ? p.reale : ''}" placeholder="Fisico" onchange="applyReale(${i}, this.value)">
-        </div>`;
-    }).join('');
+        </div>`).join('');
 
-    renderCalendar(); 
-    save();
+    renderCalendar(); save();
 }
 
 function exportReport() {
     const boatName = FLEET[parseInt(currentBoatID) - 1];
     let text = `REPORT TURNO - ${boatName}\nData: ${new Date().toLocaleString()}\n\n`;
-    db.prodotti.forEach(p => {
-        const vendite = p.vePas + p.vePen;
-        if (vendite > 0 || p.c > 0) {
-            text += `${p.n}: ${vendite} VEND. | Giac: ${calcGiacenza(p)}\n`;
-        }
-    });
     let tInc = 0;
-    db.prodotti.forEach(p => tInc += (p.vePas * p.pas) + (p.vePen * p.pen));
+    db.prodotti.forEach(p => {
+        const v = p.vePas + p.vePen;
+        if (v > 0 || p.c > 0) text += `${p.n}: ${v} VEND. | Giac: ${calcGiacenza(p)}\n`;
+        tInc += (p.vePas * p.pas) + (p.vePen * p.pen);
+    });
     text += `\nINCASSO TOTALE: ${tInc.toFixed(2)}€`;
-    
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `Report_${boatName}.txt`;
-    a.click();
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    a.download = `Report_${boatName}.txt`; a.click();
 }
 
-function applyReale(i, val) {
-    db.prodotti[i].reale = (val === '') ? null : parseFloat(val);
-    render();
-}
+function applyReale(i, val) { db.prodotti[i].reale = (val === '') ? null : parseFloat(val); render(); }
 
 function renderCalendar() {
     const days = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
@@ -382,12 +352,42 @@ function saveDayIncasso() {
     closeModal('mod-edit-day'); render();
 }
 
+// --- LOGICA CORRETTA BUSTA PAGA ---
 function renderBuste() {
     let h = "";
-    [{t:"1ª QUINDICINA",r:[1,15]},{t:"2ª QUINDICINA",r:[16,31]}].forEach(q=>{
-        let tot=0; for(let d=q.r[0];d<=q.r[1];d++) tot+=(db.history[d]||0);
-        let b = tot>0?(26+(tot*0.05)):0;
-        h+=`<div style="background:#1c1c1e;margin:10px;border-radius:12px;padding:15px;border:1px solid #333;display:flex;justify-content:space-between;align-items:center;"><div><small style="color:#888">${q.t}</small><br><b>${tot.toFixed(2)}€</b></div><div style="text-align:right"><small style="color:var(--lime)">COMMISS.</small><br><b style="color:var(--lime);font-size:22px;">${b.toFixed(2)}€</b></div></div>`;
+    const quindicine = [
+        { nome: "1ª QUINDICINA", range: [1, 15] },
+        { nome: "2ª QUINDICINA", range: [16, 31] }
+    ];
+
+    quindicine.forEach(q => {
+        let totIncasso = 0;
+        let giorniLavorati = 0;
+
+        for (let d = q.range[0]; d <= q.range[1]; d++) {
+            let val = db.history[d] || 0;
+            if (val > 0) {
+                totIncasso += val;
+                giorniLavorati++; // Conta il giorno se c'è incasso
+            }
+        }
+
+        // CALCOLO: (Giorni * 26) + (5% Incasso)
+        let pagaFissa = giorniLavorati * 26;
+        let commissione = totIncasso * 0.05;
+        let totaleBusta = pagaFissa + commissione;
+
+        h += `
+        <div style="background:#1c1c1e; margin:10px; border-radius:12px; padding:15px; border:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <small style="color:#888">${q.nome} (${giorniLavorati} gg)</small><br>
+                <b style="font-size:16px;">${totIncasso.toFixed(2)}€</b>
+            </div>
+            <div style="text-align:right">
+                <small style="color:var(--lime)">COMMISS. + FISSO</small><br>
+                <b style="color:var(--lime); font-size:22px;">${totaleBusta.toFixed(2)}€</b>
+            </div>
+        </div>`;
     });
     document.getElementById('quindicine-container').innerHTML = h;
 }
@@ -401,10 +401,7 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function toggleAcc(i) { let e = document.getElementById('acc-'+i); e.style.display = e.style.display === 'block' ? 'none' : 'block'; }
 
 function openBoatMenu() {
-    let h = ""; FLEET.forEach((n, i) => { 
-        let id = (i + 1).toString(); 
-        h += `<div style="padding:18px; border-bottom:1px solid #333; color:white; text-align:center; font-weight:bold;" onclick="selectBoat('${id}')">${n}</div>`; 
-    });
+    let h = ""; FLEET.forEach((n, i) => h += `<div style="padding:18px; border-bottom:1px solid #333; color:white; text-align:center; font-weight:bold;" onclick="selectBoat('${i+1}')">${n}</div>`);
     document.getElementById('boat-list-container').innerHTML = h;
     document.getElementById('mod-boat').style.display = 'flex';
 }
@@ -417,21 +414,15 @@ function switchTab(t) {
 }
 
 function showConfirm(type) {
-    const btn = document.getElementById('confirm-yes');
-    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere il turno? Le vendite scaleranno le Iniziali." : "Resettare tutte le quantità?";
-    btn.onclick = () => {
+    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere il turno?" : "Resettare i dati?";
+    document.getElementById('confirm-yes').onclick = () => {
         if(type === 'fine') {
             let d = new Date().getDate(), inc = 0;
             db.prodotti.forEach(p => inc += (p.vePas * p.pas) + (p.vePen * p.pen));
             db.history[d] = (db.history[d] || 0) + inc;
-            db.prodotti.forEach(p => { 
-                p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
-                p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null;
-            });
+            db.prodotti.forEach(p => { p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; });
             showToast("Turno chiuso!");
-        } else { 
-            hardReset(false); 
-        }
+        } else { hardReset(false); }
         closeModal('mod-confirm'); render();
     };
     document.getElementById('mod-confirm').style.display = 'flex';
@@ -439,5 +430,3 @@ function showConfirm(type) {
 </script>
 </body>
 </html>
-
-```
