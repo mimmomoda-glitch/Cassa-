@@ -18,6 +18,13 @@
         .page { display: none; overflow-y: auto; flex-grow: 1; padding-bottom: 120px; -webkit-overflow-scrolling: touch; width: 100%; }
         .active-page { display: block; }
         
+        /* BOX RICONCILIAZIONE AGGIUNTO */
+        .recon-box { background: #1c1c1e; margin: 10px 15px; padding: 15px; border-radius: 15px; border: 1px solid #333; }
+        .recon-title { color: var(--cyan); text-align: center; font-weight: 800; font-size: 11px; margin-bottom: 12px; text-transform: uppercase; }
+        .recon-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .recon-row span { color: #888; }
+        .recon-total { border-top: 1px solid #333; margin-top: 10px; padding-top: 10px; }
+
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
         .product-btn { background: var(--card); height: 85px; border-radius: 14px; display: flex; align-items: center; padding: 10px; border: 1px solid #333; color: white; text-align: left; width: 100%; position: relative; cursor: pointer; }
         .product-btn i { font-size: 20px; margin-right: 10px; font-style: normal; pointer-events: none; }
@@ -81,10 +88,8 @@
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
 </div>
 
-<!-- PAGINA CASSA -->
 <div id="page-c" class="page active-page"><div class="grid" id="grid-cassa"></div></div>
 
-<!-- PAGINA REPORT -->
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -108,7 +113,6 @@
     </div>
 </div>
 
-<!-- PAGINA INVENTARIO -->
 <div id="page-i" class="page">
     <div class="confirm-box-fixed">
         <div class="summary-bar" style="margin: 0 0 10px 0;">
@@ -118,17 +122,33 @@
         <button onclick="applyInventoryAsInitial()" class="btn-big" style="background:var(--lime); color:black; margin:0;">✅ CONFERMA E RESET CONTEGGI</button>
     </div>
 
+    <div class="recon-box">
+        <div class="recon-title">RICONCILIAZIONE TOTALE MESE</div>
+        <div class="recon-row">
+            <span>Incassi Calendario:</span>
+            <b id="rec-calendario" style="color:var(--lime)">0.00€</b>
+        </div>
+        <div class="recon-row">
+            <span>Valore Merce Uscita:</span>
+            <b id="rec-merce" style="color:var(--red)">0.00€</b>
+        </div>
+        <div class="recon-total">
+            <div class="recon-row" style="margin-bottom:0;">
+                <b style="font-size:16px;">DIFF. CASSA:</b>
+                <b id="rec-differenza" style="font-size:18px;">0.00€</b>
+            </div>
+        </div>
+    </div>
+
     <div id="inventory-list"></div>
 </div>
 
-<!-- PAGINA BUSTE -->
 <div id="page-h" class="page">
     <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI (MODIFICABILE)</small></div>
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
 </div>
 
-<!-- Modal Tastierino (Usato per Inventario e Calendario) -->
 <div id="mod-numpad" class="modal-overlay">
     <div class="modal-card">
         <h3 id="num-prod-name" style="color:var(--cyan); margin-bottom:10px;">PRODOTTO</h3>
@@ -154,7 +174,6 @@
     </div>
 </div>
 
-<!-- Altri Modali... -->
 <div id="mod-gest" class="modal-overlay">
     <div class="modal-card">
         <h2 id="g-nome" style="color:var(--cyan);"></h2>
@@ -313,14 +332,12 @@ function render() {
     document.getElementById('tot-incasso').innerText = tIncasso.toFixed(2) + "€";
     document.getElementById('header-val-rimanenze').innerText = tValRimanenze.toFixed(2) + "€";
     
-    // Griglia Cassa
     document.getElementById('grid-cassa').innerHTML = db.prodotti.map((p, i) => `
         <div class="product-btn" onclick="openGest(${i})">
             <i>${p.i}</i>
             <div><b>${p.n}</b><span class="stock">${calcGiacenza(p)}</span></div>
         </div>`).join('');
     
-    // Accordion Report
     document.getElementById('accordion-list').innerHTML = db.prodotti.map((p, i) => `
         <div class="accordion">
             <div class="acc-header" onclick="toggleAcc(${i})">
@@ -336,12 +353,13 @@ function render() {
             </div>
         </div>`).join('');
     
-    // Lista Inventario
-    let totalInvDiffEuro = 0;
-    let totalDiffCount = 0;
+    let totalInvDiffEuro = 0, totalDiffCount = 0, totalMerceUscitaVal = 0;
 
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
         const teo = calcGiacenza(p);
+        const uscitoFisico = (p.q + p.c) - (p.reale !== null ? p.reale : teo);
+        totalMerceUscitaVal += (uscitoFisico * p.pas);
+
         const diffQty = (p.reale !== null) ? (p.reale - teo) : 0;
         const diffEuro = diffQty * p.pas;
         
@@ -366,17 +384,23 @@ function render() {
         </div>`;
     }).join('');
 
-    const summaryDiffEl = document.getElementById('inv-diff-euro');
-    summaryDiffEl.innerText = (totalInvDiffEuro > 0 ? '+' : '') + totalInvDiffEuro.toFixed(2) + "€";
-    summaryDiffEl.style.color = totalInvDiffEuro < 0 ? 'var(--red)' : (totalInvDiffEuro > 0 ? 'var(--lime)' : 'white');
+    // CALCOLO RICONCILIAZIONE
+    const totalCal = Object.values(globalHistory).reduce((a, b) => a + b, 0);
+    document.getElementById('rec-calendario').innerText = totalCal.toFixed(2) + "€";
+    document.getElementById('rec-merce').innerText = totalMerceUscitaVal.toFixed(2) + "€";
+    const diffCassa = totalCal - totalMerceUscitaVal;
+    document.getElementById('rec-differenza').innerText = (diffCassa >= 0 ? '+' : '') + diffCassa.toFixed(2) + "€";
+    document.getElementById('rec-differenza').style.color = diffCassa >= -0.01 ? 'var(--lime)' : 'var(--red)';
+
+    document.getElementById('inv-diff-euro').innerText = (totalInvDiffEuro > 0 ? '+' : '') + totalInvDiffEuro.toFixed(2) + "€";
+    document.getElementById('inv-diff-euro').style.color = totalInvDiffEuro < 0 ? 'var(--red)' : (totalInvDiffEuro > 0 ? 'var(--lime)' : 'white');
     document.getElementById('inv-diff-count').innerText = totalDiffCount;
 
     renderCalendar(); save();
 }
 
 function renderCalendar() {
-    const now = new Date();
-    const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const now = new Date(), days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     let h = "";
     for(let d=1; d<=days; d++) {
         let v = globalHistory[d] || 0;
@@ -390,9 +414,7 @@ function renderCalendar() {
 }
 
 function openCalendarEdit(day) {
-    curDayEdit = day;
-    curIdx = -1; // Flag per distinguere da inventario prodotto
-    numBuffer = globalHistory[day] ? globalHistory[day].toString() : "";
+    curDayEdit = day; curIdx = -1; numBuffer = globalHistory[day] ? globalHistory[day].toString() : "";
     document.getElementById('num-prod-name').innerText = "INCASSO GIORNO " + day;
     document.getElementById('num-display').innerText = numBuffer;
     document.getElementById('mod-numpad').style.display = 'flex';
@@ -418,26 +440,14 @@ function openNumpad(i) {
     document.getElementById('mod-numpad').style.display = 'flex';
 }
 
-function numIn(v) {
-    if (v === 'DEL') numBuffer = numBuffer.slice(0, -1);
-    else numBuffer += v;
-    document.getElementById('num-display').innerText = numBuffer;
-}
+function numIn(v) { if (v === 'DEL') numBuffer = numBuffer.slice(0, -1); else numBuffer += v; document.getElementById('num-display').innerText = numBuffer; }
 
 function numDone() {
     try {
         const clean = numBuffer.replace(/[^0-9+\-*/.]/g, '');
         let finalVal = clean ? parseFloat(eval(clean).toFixed(2)) : 0;
-
-        if (curIdx === -1) {
-            // Modifica Calendario
-            if (finalVal <= 0) delete globalHistory[curDayEdit];
-            else globalHistory[curDayEdit] = finalVal;
-            showToast("Incasso giorno " + curDayEdit + " aggiornato");
-        } else {
-            // Modifica Inventario Prodotto
-            db.prodotti[curIdx].reale = clean ? finalVal : null;
-        }
+        if (curIdx === -1) { if (finalVal <= 0) delete globalHistory[curDayEdit]; else globalHistory[curDayEdit] = finalVal; } 
+        else { db.prodotti[curIdx].reale = clean ? finalVal : null; }
         closeModal('mod-numpad'); render();
     } catch (e) { showToast("Errore Calcolo!"); }
 }
@@ -447,12 +457,8 @@ function applyInventoryAsInitial() {
     document.getElementById('confirm-msg').innerText = "Le giacenze reali inserite diventeranno le nuove giacenze iniziali. I conteggi verranno azzerati. Procedere?";
     document.getElementById('confirm-yes').onclick = () => {
         exportReport(true);
-        db.prodotti.forEach(p => { 
-            p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
-            p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; 
-        });
-        showToast("Inventario Salvato!");
-        closeModal('mod-confirm'); render();
+        db.prodotti.forEach(p => { p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; });
+        showToast("Inventario Salvato!"); closeModal('mod-confirm'); render();
     };
     document.getElementById('mod-confirm').style.display = 'flex';
 }
@@ -462,20 +468,10 @@ function openDDT() {
     db.prodotti.forEach((p, i) => h += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #333;"><span>${p.n}</span><input type="number" id="ddt-${i}" style="width:70px; background:#000; border:1px solid var(--orange); color:white; text-align:center; padding:5px; border-radius:5px;"></div>`);
     h += `</div><button onclick="saveDDT()" class="btn-big" style="background:var(--orange); color:black;">CONFERMA CARICO BOLLETTA</button>`;
     document.getElementById('confirm-title').innerText = "NUOVA BOLLETTA (DDT)";
-    document.getElementById('confirm-msg').innerHTML = h;
-    document.getElementById('confirm-yes').style.display = "none";
-    document.getElementById('mod-confirm').style.display = 'flex';
+    document.getElementById('confirm-msg').innerHTML = h; document.getElementById('confirm-yes').style.display = "none"; document.getElementById('mod-confirm').style.display = 'flex';
 }
 
-function saveDDT() {
-    db.prodotti.forEach((p, i) => {
-        const val = parseFloat(document.getElementById(`ddt-${i}`).value);
-        if(!isNaN(val)) p.c += val;
-    });
-    closeModal('mod-confirm'); document.getElementById('confirm-yes').style.display = "block"; render();
-    showToast("Bolletta Caricata!");
-}
-
+function saveDDT() { db.prodotti.forEach((p, i) => { const val = parseFloat(document.getElementById(`ddt-${i}`).value); if(!isNaN(val)) p.c += val; }); closeModal('mod-confirm'); document.getElementById('confirm-yes').style.display = "block"; render(); showToast("Bolletta Caricata!"); }
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
 function up(i, f, v) { db.prodotti[i][f] = v === '' ? 0 : parseFloat(v); render(); }
 function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').innerText = db.prodotti[i].n; document.getElementById('g-qty').innerText = qty; document.getElementById('mod-gest').style.display = 'flex'; }
@@ -510,72 +506,39 @@ function showConfirm(type) {
 }
 
 function exportReport(isFinal = false) {
-    const boatName = FLEET[parseInt(currentBoatID) - 1];
-    const timestamp = new Date().toLocaleString();
-    let text = `--- REPORT ${boatName} ---\n`;
-    text += `Data: ${timestamp}\n\n`;
-    let tInc = 0;
+    const boatName = FLEET[parseInt(currentBoatID) - 1], timestamp = new Date().toLocaleString();
+    let text = `--- REPORT ${boatName} ---\nData: ${timestamp}\n\n`, tInc = 0;
     db.prodotti.forEach(p => {
         const v = p.vePas + p.vePen;
         if (v > 0 || p.c > 0 || p.omaggio > 0 || p.q > 0) {
-            text += `* ${p.n.toUpperCase()} *\n`;
-            text += `  Inizio: ${p.q}\n`;
-            if(p.c > 0) text += `  Carico Bolletta: +${p.c}\n`;
-            if(v > 0) text += `  Venduti: ${v} (${p.vePas} Pas / ${p.vePen} Pen)\n`;
-            if(p.omaggio > 0) text += `  Scarico/Omaggi: -${p.omaggio}\n`;
-            text += `  Giacenza Teorica: ${calcGiacenza(p)}\n`;
-            if(p.reale !== null) text += `  Giacenza Fisica: ${p.reale}\n`;
-            text += `----------------------\n`;
+            text += `* ${p.n.toUpperCase()} *\n  Inizio: ${p.q}\n${p.c > 0 ? `  Carico: +${p.c}\n` : ''}${v > 0 ? `  Venduti: ${v}\n` : ''}${p.omaggio > 0 ? `  Scarico: -${p.omaggio}\n` : ''}  Teorico: ${calcGiacenza(p)}\n${p.reale !== null ? `  Fisico: ${p.reale}\n` : ''}----------------------\n`;
         }
         tInc += (p.vePas * p.pas) + (p.vePen * p.pen);
     });
     text += `\n💰 INCASSO TURNO: ${tInc.toFixed(2)}€`;
     const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `Report_${boatName.replace(/ /g,'_')}.txt`;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Report_${boatName.replace(/ /g,'_')}.txt`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     if(!isFinal) showToast("Report Generato!");
 }
 
 function exportJSON() {
-    const boatName = FLEET[parseInt(currentBoatID) - 1];
-    const data = { boatID: currentBoatID, boatName: boatName, db: db, globalHistory: globalHistory, exportDate: new Date().toISOString() };
+    const boatName = FLEET[parseInt(currentBoatID) - 1], data = { boatID: currentBoatID, db: db, globalHistory: globalHistory };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `Backup_${boatName.replace(/ /g,'_')}.json`;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Backup_${boatName}.json`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    showToast("Dati Esportati!");
 }
 
 function triggerImport() { document.getElementById('import-file').click(); }
-
 function importJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const imported = JSON.parse(e.target.result);
-            if (imported.db) {
-                document.getElementById('confirm-title').innerText = "IMPORTA DATI";
-                document.getElementById('confirm-msg').innerText = `Caricare il backup? I dati attuali verranno sovrascritti.`;
-                document.getElementById('confirm-yes').onclick = () => {
-                    db = imported.db;
-                    if (imported.globalHistory) globalHistory = imported.globalHistory;
-                    save(); render(); closeModal('mod-confirm');
-                    showToast("Dati Importati!");
-                };
-                document.getElementById('mod-confirm').style.display = 'flex';
-            }
-        } catch (err) { showToast("File non valido!"); }
-        event.target.value = "";
-    };
-    reader.readAsText(file);
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader(); reader.onload = function(e) {
+        try { const imported = JSON.parse(e.target.result); if (imported.db) { db = imported.db; globalHistory = imported.globalHistory || {}; save(); render(); showToast("Dati Importati!"); } } catch (err) { showToast("Errore!"); }
+    }; reader.readAsText(file);
 }
 </script>
 </body>
 </html>
+
 
 ```
