@@ -9,18 +9,15 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--txt); height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; width: 100%; }
         
-        /* Header */
         .header { background: #000; padding: 10px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; height: 65px; flex-shrink: 0; z-index: 100; }
         .header b { font-size: 14px; color: var(--lime); }
         .header small { color: #888; text-transform: uppercase; font-size: 8px; }
         
         .boat-box { background: #1c1c1e; padding: 8px 10px; border-radius: 10px; border: 1px solid #333; color: var(--cyan); font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 5px; max-width: 160px; overflow: hidden; cursor: pointer; border-left: 3px solid var(--cyan); }
         
-        /* Pages */
         .page { display: none; overflow-y: auto; flex-grow: 1; padding-bottom: 120px; -webkit-overflow-scrolling: touch; width: 100%; }
         .active-page { display: block; }
         
-        /* Grid Cassa */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
         .product-btn { background: var(--card); height: 85px; border-radius: 14px; display: flex; align-items: center; padding: 10px; border: 1px solid #333; color: white; text-align: left; width: 100%; position: relative; cursor: pointer; }
         .product-btn i { font-size: 20px; margin-right: 10px; font-style: normal; pointer-events: none; }
@@ -28,72 +25,58 @@
         .product-btn b { font-size: 9px; text-transform: uppercase; display: block; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .product-btn .stock { font-size: 16px; font-weight: bold; color: var(--cyan); }
         
-        /* Inventario */
-        .inv-row { border-bottom: 1px solid #333; display: flex; align-items: center; padding: 12px 15px; background: var(--card); justify-content: space-between; position: relative; }
-        .inv-row input { width: 100px; background: #000; border: 2px solid var(--apple-blue); color: var(--txt); text-align: center; border-radius: 8px; padding: 8px; font-size: 16px; font-weight: bold; }
-        .diff-tag { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
-        .diff-pos { background: rgba(76, 217, 100, 0.2); color: var(--lime); }
-        .diff-neg { background: rgba(255, 59, 48, 0.2); color: var(--red); }
-        
-        /* Footer */
-        .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 75px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
-        .footer button { flex: 1; background: none; border: none; color: #888; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
-        .footer button.active { color: var(--cyan); }
-        
-        /* Recon Card */
-        .recon-card { background: #1c1c1e; margin: 10px; border-radius: 15px; border: 1px solid #333; padding: 15px; }
-        .recon-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        .recon-total { border-top: 1px solid #444; padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 16px; }
-
-        /* Modali */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; padding: 20px; }
-        .modal-card { background: #1c1c1e; padding: 25px; border-radius: 25px; border: 1px solid #444; text-align: center; max-height: 90vh; overflow-y: auto; width: 100%; max-width: 400px; margin: auto; }
-        .btn-big { width: 100%; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 16px; margin-top: 12px; border: none; cursor: pointer; }
-        
-        /* Calendario */
-        .day-cell { background:#2c2c2e; aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; border:1px solid transparent; cursor: pointer; position: relative; }
-        .day-cell b { margin-top: -5px; }
-        .day-cell .val { font-size: 8px; color: var(--lime); font-weight: bold; margin-top: 2px; }
-        .day-cell.today { border-color: var(--cyan); background: #3a3a3c; }
-
-        /* Tastierino Numerico */
-        .numpad-overlay { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #1c1c1e; z-index: 5000; padding: 10px; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -5px 25px rgba(0,0,0,0.5); padding-bottom: env(safe-area-inset-bottom); }
-        .numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .num-btn { background: #3a3a3c; color: white; border: none; border-radius: 12px; padding: 15px 0; font-size: 20px; font-weight: bold; cursor: pointer; }
-        .num-btn:active { background: #555; }
-        .num-btn.op { background: var(--orange); }
-        .num-btn.done { background: var(--lime); color: black; grid-column: span 2; }
-        .num-btn.del { background: var(--red); }
-        .numpad-display { background: #000; color: var(--cyan); text-align: right; padding: 15px; font-size: 24px; font-weight: bold; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; min-height: 60px; }
-
-        #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 6000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
-        /* Report / Accordion */
         .accordion { background: var(--card); border-radius: 12px; margin: 10px; border: 1px solid #333; overflow: hidden; }
         .acc-header { padding: 15px; background: #2c2c2e; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .acc-body { display: none; padding: 10px; background: #1c1c1e; }
+        
         .edit-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2c2c2e; }
         .edit-row span { font-size: 12px; color: #ccc; }
         .edit-row input { background: #000; border: 1px solid #444; color: var(--cyan); text-align: right; width: 90px; border-radius: 8px; padding: 8px; font-size: 16px; font-weight: bold; }
         
-        .ddt-input-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
-        .ddt-input-row span { font-size: 13px; text-align: left; flex: 1; color: #ccc; }
-        .ddt-input-row input { width: 70px; background: #000; border: 1px solid var(--orange); color: white; text-align: center; border-radius: 6px; padding: 5px; font-weight: bold; }
+        .inv-row { border-bottom: 1px solid #333; display: flex; align-items: center; padding: 12px 15px; background: var(--card); justify-content: space-between; border-left: 4px solid transparent; }
+        .inv-input-trigger { width: 100px; background: #000; border: 1px solid #555; color: var(--txt); text-align: center; border-radius: 8px; padding: 12px 8px; font-size: 16px; font-weight: bold; cursor: pointer; min-height: 45px; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 75px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
+        .footer button { flex: 1; background: none; border: none; color: #888; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+        .footer button.active { color: var(--cyan); }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; padding: 20px; }
+        .modal-card { background: #1c1c1e; padding: 25px; border-radius: 25px; border: 1px solid #444; text-align: center; max-height: 90vh; overflow-y: auto; width: 100%; max-width: 400px; margin: auto; }
+        .btn-big { width: 100%; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 16px; margin-top: 12px; border: none; cursor: pointer; }
+        
+        .numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+        .num-btn { background: #3a3a3c; border: none; color: white; border-radius: 10px; padding: 15px 5px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        .num-btn.op { background: var(--orange); }
+        .num-btn.del { background: var(--red); }
+        .num-btn.done { background: var(--lime); color: black; grid-column: span 2; }
+        .num-display { background: #000; border: 1px solid #444; color: var(--cyan); width: 100%; padding: 15px; font-size: 24px; border-radius: 12px; text-align: center; margin-bottom: 10px; min-height: 60px; font-family: monospace; }
+
+        .summary-bar { background: #1c1c1e; margin: 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .summary-bar div { display: flex; flex-direction: column; }
+        .summary-bar small { font-size: 10px; color: #888; text-transform: uppercase; }
+        .summary-bar b { font-size: 18px; }
+
+        .confirm-box-fixed { position: sticky; top: 0; z-index: 50; background: #000; padding: 10px 15px; border-bottom: 1px solid #333; }
+
+        #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 5000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        .day-cell { background: #2c2c2e; border-radius: 8px; padding: 5px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #444; }
+        .day-cell.today { border-color: var(--cyan); background: #1a2a3a; }
+        .day-cell .val { font-weight: bold; color: var(--lime); font-size: 9px; }
     </style>
 </head>
 <body onload="init()">
 
 <div id="toast">Messaggio</div>
 
-<!-- Header Fisso -->
 <div class="header">
     <div class="boat-box" onclick="openBoatMenu()" id="boat-display">
         <span id="current-boat-name">SALERNO JET</span>
     </div>
-    <div style="text-align:center"><small>Vendite (Oggi)</small><br><b id="tot-incasso">0.00€</b></div>
+    <div style="text-align:center"><small>Incasso Oggi</small><br><b id="tot-incasso">0.00€</b></div>
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
 </div>
 
@@ -103,74 +86,74 @@
 <!-- PAGINA REPORT -->
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
-        <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--lime); color:black;">☀️ CHIUDI GIORNATA</button>
-        <button onclick="openDDT()" class="btn-big" style="background:var(--orange); color:black; font-size:14px;">📝 CARICA DDT (BOLLETTA)</button>
-        <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size:14px;">📦 RIPRISTINA SCORTE SALERNO</button>
-        <button onclick="exportReport()" class="btn-big" style="background:var(--purple); color:white; font-size:14px;">📄 REPORT TESTO (WhatsApp)</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button onclick="openDDT()" class="btn-big" style="background:var(--orange); color:black; margin:0;">📝 CARICA DDT</button>
+            <button onclick="exportReport()" class="btn-big" style="background:var(--purple); color:white; margin:0;">📄 REPORT TESTO</button>
+        </div>
+        <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--lime); color:black;">☀️ CHIUDI GIORNATA (FINE TURNO)</button>
+        <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size: 12px;">📦 RESET STOCK SALERNO JET (DEF)</button>
     </div>
+    
     <div id="accordion-list"></div>
+
+    <div style="padding: 20px 15px; border-top: 1px dashed #444; margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+        <small style="color:#888; text-align: center;">BACKUP DATI (JSON)</small>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button onclick="exportJSON()" class="btn-big" style="background:#333; color:var(--cyan); margin:0; font-size: 12px;">💾 SCARICA JSON</button>
+            <button onclick="triggerImport()" class="btn-big" style="background:#333; color:var(--orange); margin:0; font-size: 12px;">📂 CARICA JSON</button>
+            <input type="file" id="import-file" style="display:none" onchange="importJSON(event)" accept=".json">
+        </div>
+        <button onclick="showConfirm('reset')" class="btn-big" style="background:var(--red); color:white; font-size: 12px; opacity: 0.6;">⚠️ RESET TOTALE DATI BARCA</button>
+    </div>
 </div>
 
 <!-- PAGINA INVENTARIO -->
 <div id="page-i" class="page">
-    <!-- Riconciliazione Globale -->
-    <div class="recon-card">
-        <div style="text-align:center; padding-bottom:10px; border-bottom:1px solid #333; margin-bottom:10px;">
-            <b style="color:var(--cyan); font-size:12px;">RICONCILIAZIONE TOTALE MESE</b>
+    <div class="confirm-box-fixed">
+        <div class="summary-bar" style="margin: 0 0 10px 0;">
+            <div><small>Differenza</small><b id="inv-diff-euro">0.00€</b></div>
+            <div style="text-align:right"><small>Prodotti</small><b id="inv-diff-count">0</b></div>
         </div>
-        <div class="recon-row">
-            <span style="color:#888;">Totale Incassi Calendario:</span>
-            <b id="recon-cal-val" style="color:var(--lime);">0.00€</b>
-        </div>
-        <div class="recon-row">
-            <span style="color:#888;">Valore Merce Uscita:</span>
-            <b id="recon-mer-val" style="color:var(--red);">0.00€</b>
-        </div>
-        <div class="recon-total">
-            <span>DIFFERENZA CASSA:</span>
-            <b id="recon-diff-val">0.00€</b>
-        </div>
-        <div id="recon-msg" style="font-size:10px; margin-top:5px; text-align:center; font-weight:bold;"></div>
+        <button onclick="applyInventoryAsInitial()" class="btn-big" style="background:var(--lime); color:black; margin:0;">✅ CONFERMA E RESET CONTEGGI</button>
     </div>
-    
-    <div style="padding: 5px 15px 15px 15px; background: #000; font-size: 11px; color: #888;"><b>Fisico:</b> Inserisci quanto hai in frigo ora. Puoi usare formule (es: <b>24+12</b>).</div>
+
     <div id="inventory-list"></div>
 </div>
 
-<!-- PAGINA STORICO / CALENDARIO -->
+<!-- PAGINA BUSTE -->
 <div id="page-h" class="page">
     <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI (TUTTE LE BARCHE)</small></div>
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
 </div>
 
-<!-- TASTIERINO NUMERICO (NUMPAD) -->
-<div id="numpad" class="numpad-overlay">
-    <div id="numpad-title" style="color:#888; font-size:12px; margin-bottom:5px; text-align:center; font-weight:bold;"></div>
-    <div class="numpad-display" id="num-display"></div>
-    <div class="numpad-grid">
-        <button class="num-btn" onclick="numIn('7')">7</button>
-        <button class="num-btn" onclick="numIn('8')">8</button>
-        <button class="num-btn" onclick="numIn('9')">9</button>
-        <button class="num-btn del" onclick="numIn('DEL')">⌫</button>
-        
-        <button class="num-btn" onclick="numIn('4')">4</button>
-        <button class="num-btn" onclick="numIn('5')">5</button>
-        <button class="num-btn" onclick="numIn('6')">6</button>
-        <button class="num-btn op" onclick="numIn('+')">+</button>
-        
-        <button class="num-btn" onclick="numIn('1')">1</button>
-        <button class="num-btn" onclick="numIn('2')">2</button>
-        <button class="num-btn" onclick="numIn('3')">3</button>
-        <button class="num-btn op" onclick="numIn('-')">-</button>
-        
-        <button class="num-btn" onclick="numIn('0')">0</button>
-        <button class="num-btn" onclick="numIn('.')">.</button>
-        <button class="num-btn done" onclick="numDone()">OK</button>
+<!-- Modal Tastierino Inventario -->
+<div id="mod-numpad" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="num-prod-name" style="color:var(--cyan); margin-bottom:10px;">PRODOTTO</h3>
+        <div id="num-display" class="num-display"></div>
+        <div class="numpad-grid">
+            <button class="num-btn" onclick="numIn('7')">7</button>
+            <button class="num-btn" onclick="numIn('8')">8</button>
+            <button class="num-btn" onclick="numIn('9')">9</button>
+            <button class="num-btn del" onclick="numIn('DEL')">⌫</button>
+            <button class="num-btn" onclick="numIn('4')">4</button>
+            <button class="num-btn" onclick="numIn('5')">5</button>
+            <button class="num-btn" onclick="numIn('6')">6</button>
+            <button class="num-btn op" onclick="numIn('*')">×</button>
+            <button class="num-btn" onclick="numIn('1')">1</button>
+            <button class="num-btn" onclick="numIn('2')">2</button>
+            <button class="num-btn" onclick="numIn('3')">3</button>
+            <button class="num-btn op" onclick="numIn('+')">+</button>
+            <button class="num-btn" onclick="numIn('0')">0</button>
+            <button class="num-btn" onclick="numIn('.')">.</button>
+            <button class="num-btn done" onclick="numDone()">OK</button>
+        </div>
+        <button onclick="closeModal('mod-numpad')" class="btn-big" style="background:#444; color:white; margin-top:20px;">ANNULLA</button>
     </div>
 </div>
 
-<!-- MODALE GESTIONE PRODOTTO -->
+<!-- Modal Gestione Prodotto -->
 <div id="mod-gest" class="modal-overlay">
     <div class="modal-card">
         <h2 id="g-nome" style="color:var(--cyan);"></h2>
@@ -181,24 +164,20 @@
         </div>
         <button onclick="conferma('vePas')" class="btn-big" style="background:var(--gold); color:black;">VENDITA PASSEGGERO</button>
         <button onclick="conferma('vePen')" class="btn-big" style="background:var(--apple-blue); color:white;">VENDITA PENDOLARE</button>
-        <button onclick="conferma('omaggio')" class="btn-big" style="background:var(--purple); color:white;">🎁 OMAGGIO / SCARICO</button>
+        <button onclick="conferma('omaggio')" class="btn-big" style="background:var(--purple); color:white;">🎁 SCARICO / OMAGGIO</button>
         <button onclick="closeModal('mod-gest')" class="btn-big" style="background:#444; color:white;">ANNULLA</button>
     </div>
 </div>
 
-<!-- MODALE CONFERMA GENERICA -->
 <div id="mod-confirm" class="modal-overlay">
     <div class="modal-card">
         <h3 id="confirm-title">CONFERMA</h3>
-        <div id="confirm-msg" style="margin-bottom:20px;"></div>
-        <div id="confirm-btns">
-            <button id="confirm-yes" class="btn-big" style="background:var(--lime); color:black;">CONFERMA</button>
-            <button onclick="closeModal('mod-confirm')" class="btn-big" style="background:#444; color:white;">ANNULLA</button>
-        </div>
+        <p id="confirm-msg"></p>
+        <button id="confirm-yes" class="btn-big" style="background:var(--lime); color:black;">CONFERMA</button>
+        <button onclick="closeModal('mod-confirm')" class="btn-big" style="background:#444; color:white;">ANNULLA</button>
     </div>
 </div>
 
-<!-- MODALE SELEZIONE BARCA -->
 <div id="mod-boat" class="modal-overlay">
     <div class="modal-card" style="padding:0;">
         <div id="boat-list-container" style="max-height:60vh; overflow-y:auto;"></div>
@@ -206,7 +185,6 @@
     </div>
 </div>
 
-<!-- Footer Navigazione -->
 <div class="footer">
     <button id="t-c" class="active" onclick="switchTab('c')">🛒 CASSA</button>
     <button id="t-m" onclick="switchTab('m')">📊 REPORT</button>
@@ -220,7 +198,7 @@ const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JE
 const MASTER_CATALOG = [
     {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def: 115},
     {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def: 16},
-    {n:"Borse Piccole", i:"👜", pas:5.0, pen:5.0, def: 0},
+    {n:"Borse Piccole", i:"👜", pas:6.0, pen:5.0, def: 0},
     {n:"Borse Medie", i:"👜", pas:7.0, pen:7.0, def: 0},
     {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, def: 23},
     {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, def: 35},
@@ -232,6 +210,7 @@ const MASTER_CATALOG = [
     {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, def: 15},
     {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, def: 61},
     {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, def: 18},
+    {n:"Impermeabili", i:"🧥", pas:3.5, pen:1.0, def: 0},
     {n:"Latte", i:"🥛", pas:0.5, pen:0.5, def: 4},
     {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, def: 234},
     {n:"Maglie", i:"👕", pas:5.0, pen:5.0, def: 137},
@@ -258,7 +237,8 @@ const MASTER_CATALOG = [
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
 let db = { prodotti: [] };
 let globalHistory = {}; 
-let curIdx = -1, qty = 1, currentEditType = null, currentEditTarget = null;
+let curIdx = -1, qty = 1;
+let numBuffer = "";
 
 function init() { loadData(); }
 
@@ -272,40 +252,42 @@ function loadData() {
     const saved = localStorage.getItem('NAV_DATA_B' + currentBoatID);
     if(saved) {
         db = JSON.parse(saved);
-        const hasBags = db.prodotti.some(p => p.n === "Borse Piccole");
-        if(!hasBags) mergeNewCatalog();
+        syncPricesAndCatalog();
     } else {
         hardReset(false);
     }
-    const savedHist = localStorage.getItem('NAV_GLOBAL_HISTORY');
-    globalHistory = savedHist ? JSON.parse(savedHist) : {};
+    globalHistory = JSON.parse(localStorage.getItem('NAV_GLOBAL_HISTORY') || '{}');
     render();
 }
 
-function mergeNewCatalog() {
-    const existing = db.prodotti.map(p => p.n);
-    MASTER_CATALOG.forEach(m => {
-        if(!existing.includes(m.n)) {
-            db.prodotti.push({...m, q: m.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null});
+function syncPricesAndCatalog() {
+    MASTER_CATALOG.forEach(pMaster => {
+        const localIdx = db.prodotti.findIndex(p => p.n === pMaster.n);
+        if(localIdx === -1) {
+            db.prodotti.push({ n: pMaster.n, i: pMaster.i, pas: pMaster.pas, pen: pMaster.pen, q: pMaster.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null });
+        } else {
+            db.prodotti[localIdx].pas = pMaster.pas;
+            db.prodotti[localIdx].pen = pMaster.pen;
+            db.prodotti[localIdx].i = pMaster.i;
         }
     });
-    db.prodotti.sort((a,b) => MASTER_CATALOG.findIndex(x=>x.n===a.n) - MASTER_CATALOG.findIndex(x=>x.n===b.n));
+    db.prodotti.sort((a,b) => MASTER_CATALOG.findIndex(m => m.n === a.n) - MASTER_CATALOG.findIndex(m => m.n === b.n));
     save();
 }
 
 function hardReset(full = false) {
-    db.prodotti = MASTER_CATALOG.map(p => ({...p, q: p.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null}));
+    db.prodotti = MASTER_CATALOG.map(p => ({ n: p.n, i: p.i, pas: p.pas, pen: p.pen, q: p.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null }));
     if(full) { globalHistory = {}; localStorage.removeItem('NAV_GLOBAL_HISTORY'); }
-    save(); render();
+    save();
 }
 
 function applyDefaultStock() {
     db.prodotti.forEach(p => {
-        const m = MASTER_CATALOG.find(x => x.n === p.n);
-        if(m) { p.q = m.def; p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; }
+        const m = MASTER_CATALOG.find(mi => mi.n === p.n);
+        if(m) { p.q = m.def; p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; }
     });
-    showToast("Inventario Salerno Jet Ripristinato!");
-    save(); render();
+    showToast("Stock Salerno Jet Predefinito Caricato!");
+    render();
 }
 
 function save() { 
@@ -316,71 +298,28 @@ function save() {
 
 function calcGiacenza(p) { return Math.round((p.q + p.c) - (p.vePas + p.vePen + p.omaggio)); }
 
-function safeEval(str) {
-    try {
-        const clean = str.replace(/[^-+*/\d.]/g, '');
-        if (!clean) return null;
-        return Function('"use strict";return (' + clean + ')')();
-    } catch (e) {
-        return null;
-    }
-}
-
 function render() {
     const boatName = FLEET[parseInt(currentBoatID) - 1];
     document.getElementById('current-boat-name').innerText = boatName;
-    
-    let totalCashInCalendar = 0;
-    Object.values(globalHistory).forEach(v => totalCashInCalendar += v);
-    
-    let tIncOggi = 0, tRim = 0, totalMissingMerceValue = 0;
+    let tIncasso = 0, tValRimanenze = 0;
     
     db.prodotti.forEach(p => {
-        const teorico = calcGiacenza(p);
-        tIncOggi += (p.vePas * p.pas) + (p.vePen * p.pen);
-        tRim += (teorico * p.pas);
-        
-        if (p.reale !== null) {
-            let usciti = (p.q + p.c) - p.reale; 
-            if (usciti > 0) totalMissingMerceValue += (usciti * p.pas);
-        } else {
-            let uscitiTeorici = (p.vePas + p.vePen + p.omaggio);
-            totalMissingMerceValue += (uscitiTeorici * p.pas);
-        }
+        const giac = calcGiacenza(p);
+        tIncasso += (p.vePas * p.pas) + (p.vePen * p.pen);
+        tValRimanenze += (giac * p.pas);
     });
 
-    document.getElementById('tot-incasso').innerText = tIncOggi.toFixed(2) + "€";
-    document.getElementById('header-val-rimanenze').innerText = tRim.toFixed(2) + "€";
-    document.getElementById('recon-mer-val').innerText = totalMissingMerceValue.toFixed(2) + "€";
-    document.getElementById('recon-cal-val').innerText = totalCashInCalendar.toFixed(2) + "€";
+    document.getElementById('tot-incasso').innerText = tIncasso.toFixed(2) + "€";
+    document.getElementById('header-val-rimanenze').innerText = tValRimanenze.toFixed(2) + "€";
     
-    const finalDiff = totalCashInCalendar - totalMissingMerceValue;
-    const diffEl = document.getElementById('recon-diff-val');
-    const msgEl = document.getElementById('recon-msg');
-    
-    diffEl.innerText = (finalDiff >= 0 ? "+" : "") + finalDiff.toFixed(2) + "€";
-    if (Math.abs(finalDiff) < 0.1) {
-        diffEl.style.color = "white";
-        msgEl.innerText = "I CONTI TORNANO PERFETTAMENTE";
-        msgEl.style.color = "#888";
-    } else if (finalDiff > 0) {
-        diffEl.style.color = "var(--lime)";
-        msgEl.innerText = "ECCEDENZA IN CASSA (MOLTO BENE)";
-        msgEl.style.color = "var(--lime)";
-    } else {
-        diffEl.style.color = "var(--red)";
-        msgEl.innerText = "ATTENZIONE: MANCANO SOLDI RISPETTO ALLA MERCE";
-        msgEl.style.color = "var(--red)";
-    }
-
-    // Cassa
+    // Griglia Cassa
     document.getElementById('grid-cassa').innerHTML = db.prodotti.map((p, i) => `
         <div class="product-btn" onclick="openGest(${i})">
             <i>${p.i}</i>
             <div><b>${p.n}</b><span class="stock">${calcGiacenza(p)}</span></div>
         </div>`).join('');
     
-    // Report Detail
+    // Accordion Report
     document.getElementById('accordion-list').innerHTML = db.prodotti.map((p, i) => `
         <div class="accordion">
             <div class="acc-header" onclick="toggleAcc(${i})">
@@ -388,105 +327,96 @@ function render() {
                 <b>${(calcGiacenza(p)*p.pas).toFixed(2)}€</b>
             </div>
             <div id="acc-${i}" class="acc-body">
-                <div class="edit-row"><span>Iniziale:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'q')" value="${p.q}"></div>
-                <div class="edit-row"><span>Carico:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'c')" value="${p.c}"></div>
-                <div class="edit-row"><span>V.Pas:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'vePas')" value="${p.vePas}"></div>
-                <div class="edit-row"><span>V.Pen:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'vePen')" value="${p.vePen}"></div>
+                <div class="edit-row"><span>Inizio:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
+                <div class="edit-row"><span>Carico:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
+                <div class="edit-row"><span>V.Pas:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
+                <div class="edit-row"><span>V.Pen:</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
+                <div class="edit-row"><span>Scrico:</span> <input type="number" value="${p.omaggio}" onchange="up(${i},'omaggio',this.value)"></div>
             </div>
         </div>`).join('');
     
-    // Inventario Fisico
+    // Lista Inventario
+    let totalInvDiffEuro = 0;
+    let totalDiffCount = 0;
+
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
-        const teorico = calcGiacenza(p);
-        let diffHtml = "";
-        if (p.reale !== null) {
-            const d = p.reale - teorico;
-            const cashD = d * p.pas;
-            if (d === 0) { diffHtml = `<span class="diff-tag diff-pos">✓ IN PARI</span>`; }
-            else { diffHtml = `<span class="diff-tag ${d > 0 ? 'diff-pos' : 'diff-neg'}">${d > 0 ? '+' : ''}${d} pz (${cashD.toFixed(2)}€)</span>`; }
+        const teo = calcGiacenza(p);
+        const diffQty = (p.reale !== null) ? (p.reale - teo) : 0;
+        const diffEuro = diffQty * p.pas;
+        
+        if (p.reale !== null && diffQty !== 0) {
+            totalInvDiffEuro += diffEuro;
+            totalDiffCount++;
         }
+
+        const color = diffQty < 0 ? 'var(--red)' : (diffQty > 0 ? 'var(--lime)' : 'var(--apple-blue)');
         return `
-        <div class="inv-row" onclick="openNumPad('prod', ${i}, 'reale')">
-            <div><b>${p.n}</b><br><small style="color:#aaa">Teorico: <b>${teorico}</b></small><br>${diffHtml}</div>
-            <input type="text" value="${p.reale !== null ? p.reale : ''}" placeholder="Tocca..." readonly>
+        <div class="inv-row" style="${p.reale !== null ? 'border-left-color:'+color : ''}">
+            <div>
+                <b>${p.n}</b><br>
+                <small>Teo: ${teo} ${p.reale !== null ? '| Diff: '+diffQty : ''}</small>
+                ${p.reale !== null && diffQty !== 0 ? `<br><small style="color:${color}; font-weight:bold;">${diffEuro > 0 ? '+' : ''}${diffEuro.toFixed(2)}€</small>` : ''}
+            </div>
+            <div class="inv-input-trigger" 
+                 style="border-color:${p.reale !== null ? color : '#555'}; color:${p.reale !== null ? 'white' : '#888'}" 
+                 onclick="openNumpad(${i})">
+                 ${p.reale !== null ? p.reale : 'FISICO'}
+            </div>
         </div>`;
     }).join('');
+
+    // Summary Inventario
+    const summaryDiffEl = document.getElementById('inv-diff-euro');
+    summaryDiffEl.innerText = (totalInvDiffEuro > 0 ? '+' : '') + totalInvDiffEuro.toFixed(2) + "€";
+    summaryDiffEl.style.color = totalInvDiffEuro < 0 ? 'var(--red)' : (totalInvDiffEuro > 0 ? 'var(--lime)' : 'white');
+    document.getElementById('inv-diff-count').innerText = totalDiffCount;
 
     renderCalendar(); save();
 }
 
-/* --- LOGICA NUMPAD --- */
-let numBuffer = "";
-function openNumPad(type, target, field) {
-    currentEditType = type;
-    currentEditTarget = target;
-    currentEditField = field;
-    
-    let title = "";
-    if(type === 'prod') title = db.prodotti[target].n + " (" + field.toUpperCase() + ")";
-    else title = "Incasso Giorno " + target;
-    
-    document.getElementById('numpad-title').innerText = title;
-    
-    // Pre-popola se c'è un valore
-    if(type === 'prod') numBuffer = db.prodotti[target][field] !== null ? String(db.prodotti[target][field]) : "";
-    else numBuffer = globalHistory[target] ? String(globalHistory[target]) : "";
-    
-    updateNumDisplay();
-    document.getElementById('numpad').style.display = 'block';
-}
-
-function updateNumDisplay() {
-    document.getElementById('num-display').innerText = numBuffer || "0";
-}
-
-function numIn(v) {
-    if(v === 'DEL') {
-        numBuffer = numBuffer.slice(0, -1);
-    } else {
-        numBuffer += v;
-    }
-    updateNumDisplay();
-}
-
-function numDone() {
-    let finalVal = null;
-    if(numBuffer.includes('+') || numBuffer.includes('-') || numBuffer.includes('*') || numBuffer.includes('/')) {
-        finalVal = safeEval(numBuffer);
-    } else {
-        finalVal = numBuffer === "" ? null : parseFloat(numBuffer);
-    }
-
-    if(currentEditType === 'prod') {
-        db.prodotti[currentEditTarget][currentEditField] = finalVal;
-    } else {
-        globalHistory[currentEditTarget] = finalVal || 0;
-    }
-
-    document.getElementById('numpad').style.display = 'none';
-    numBuffer = "";
-    render();
-}
-
-function openDDT() {
-    let h = `<div style="text-align:left; max-height:300px; overflow-y:auto; padding:5px;">`;
-    db.prodotti.forEach((p, i) => {
-        h += `<div class="ddt-input-row" onclick="closeModal('mod-confirm'); openNumPad('prod', ${i}, 'c')"><span>${p.n}</span><b style="color:var(--orange)">${p.c}</b></div>`;
-    });
-    h += `</div><p style="font-size:10px; color:#888;">Tocca un prodotto per caricare le quantità</p>`;
-    document.getElementById('confirm-title').innerText = "CARICO DDT (BOLLETTA)";
-    document.getElementById('confirm-msg').innerHTML = h;
-    document.getElementById('confirm-btns').style.display = "none";
+function applyInventoryAsInitial() {
+    document.getElementById('confirm-title').innerText = "CONFERMA INVENTARIO";
+    document.getElementById('confirm-msg').innerText = "Le giacenze reali inserite diventeranno le nuove giacenze iniziali. I conteggi di vendite e carichi verranno azzerati per il nuovo turno. Procedere?";
+    document.getElementById('confirm-yes').onclick = () => {
+        exportReport(true);
+        db.prodotti.forEach(p => { 
+            p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
+            p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; 
+        });
+        showToast("Inventario Salvato!");
+        closeModal('mod-confirm'); render();
+    };
     document.getElementById('mod-confirm').style.display = 'flex';
 }
 
+function openNumpad(i) {
+    curIdx = i; numBuffer = "";
+    document.getElementById('num-prod-name').innerText = db.prodotti[i].n;
+    document.getElementById('num-display').innerText = "";
+    document.getElementById('mod-numpad').style.display = 'flex';
+}
+
+function numIn(v) {
+    if (v === 'DEL') numBuffer = numBuffer.slice(0, -1);
+    else numBuffer += v;
+    document.getElementById('num-display').innerText = numBuffer;
+}
+
+function numDone() {
+    try {
+        const clean = numBuffer.replace(/[^0-9+\-*/.]/g, '');
+        if (!clean) db.prodotti[curIdx].reale = null;
+        else db.prodotti[curIdx].reale = parseFloat(eval(clean).toFixed(2));
+        closeModal('mod-numpad'); render();
+    } catch (e) { showToast("Errore Calcolo!"); }
+}
+
 function renderCalendar() {
-    const d = new Date();
-    const days = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const days = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
     let h = "";
-    for(let i=1; i<=days; i++) {
-        let v = globalHistory[i] || 0;
-        h += `<div class="day-cell ${i === d.getDate() ? 'today' : ''}" onclick="openNumPad('day', ${i}, '')"><b>${i}</b>${v > 0 ? `<span class="val">${v.toFixed(0)}€</span>` : ''}</div>`;
+    for(let d=1; d<=days; d++) {
+        let v = globalHistory[d] || 0;
+        h += `<div class="day-cell ${d === new Date().getDate() ? 'today' : ''}" onclick="showToast('Incasso: '+${v}+'€')"><b>${d}</b>${v > 0 ? `<span class="val">${v.toFixed(0)}€</span>` : ''}</div>`;
     }
     document.getElementById('calendar-body').innerHTML = h;
     renderBuste();
@@ -494,69 +424,152 @@ function renderCalendar() {
 
 function renderBuste() {
     let h = "";
-    const quindicine = [{n: "1ª QUINDICINA", r: [1, 15]}, {n: "2ª QUINDICINA", r: [16, 31]}];
-    quindicine.forEach(q => {
-        let inc = 0, gg = 0;
-        for(let i=q.r[0]; i<=q.r[1]; i++) { if(globalHistory[i]>0){ inc += globalHistory[i]; gg++; } }
-        let busta = (gg * 26) + (inc * 0.05);
+    [{ n: "1ª QUINDICINA", r: [1, 15] }, { n: "2ª QUINDICINA", r: [16, 31] }].forEach(q => {
+        let tot = 0, gg = 0;
+        for (let d = q.r[0]; d <= q.r[1]; d++) { if (globalHistory[d] > 0) { tot += globalHistory[d]; gg++; } }
         h += `<div style="background:#1c1c1e; margin:10px; border-radius:12px; padding:15px; border:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <div><small style="color:#888">${q.n} (${gg} gg)</small><br><b style="font-size:16px;">${inc.toFixed(2)}€</b></div>
-            <div style="text-align:right"><small style="color:var(--lime)">COMMISS. + FISSO</small><br><b style="color:var(--lime); font-size:20px;">${busta.toFixed(2)}€</b></div>
+            <div><small style="color:#888">${q.n}</small><br><b style="font-size:16px;">${tot.toFixed(2)}€</b></div>
+            <div style="text-align:right"><small style="color:var(--lime)">EXTRA</small><br><b style="color:var(--lime); font-size:20px;">${(gg * 26 + tot * 0.05).toFixed(2)}€</b></div>
         </div>`;
     });
     document.getElementById('quindicine-container').innerHTML = h;
 }
 
-function exportReport() {
-    const boat = FLEET[currentBoatID-1];
-    let t = `*REPORT ${boat}*\n_${new Date().toLocaleDateString()}_\n\n`;
-    let inc = 0;
-    db.prodotti.forEach(p => {
-        let v = p.vePas + p.vePen;
-        if(v > 0 || p.c > 0) t += `• ${p.n}: ${v} Vend. | Giac: ${calcGiacenza(p)}\n`;
-        inc += (p.vePas * p.pas) + (p.vePen * p.pen);
+function openDDT() {
+    let h = `<div style="text-align:left; max-height:400px; overflow-y:auto; padding:10px;">`;
+    db.prodotti.forEach((p, i) => h += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #333;"><span>${p.n}</span><input type="number" id="ddt-${i}" style="width:70px; background:#000; border:1px solid var(--orange); color:white; text-align:center; padding:5px; border-radius:5px;"></div>`);
+    h += `</div><button onclick="saveDDT()" class="btn-big" style="background:var(--orange); color:black;">CONFERMA CARICO BOLLETTA</button>`;
+    document.getElementById('confirm-title').innerText = "NUOVA BOLLETTA (DDT)";
+    document.getElementById('confirm-msg').innerHTML = h;
+    document.getElementById('confirm-yes').style.display = "none";
+    document.getElementById('mod-confirm').style.display = 'flex';
+}
+
+function saveDDT() {
+    db.prodotti.forEach((p, i) => {
+        const val = parseFloat(document.getElementById(`ddt-${i}`).value);
+        if(!isNaN(val)) p.c += val;
     });
-    t += `\n*INCASSO OGGI: ${inc.toFixed(2)}€*`;
-    window.location.href = "whatsapp://send?text=" + encodeURIComponent(t);
+    closeModal('mod-confirm'); document.getElementById('confirm-yes').style.display = "block"; render();
+    showToast("Bolletta Caricata!");
 }
 
-function switchTab(t) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    document.getElementById('page-'+t).classList.add('active-page');
-    document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
-    document.getElementById('t-'+t).classList.add('active');
-    document.getElementById('numpad').style.display = 'none';
-}
-
+function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
+function up(i, f, v) { db.prodotti[i][f] = v === '' ? 0 : parseFloat(v); render(); }
 function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').innerText = db.prodotti[i].n; document.getElementById('g-qty').innerText = qty; document.getElementById('mod-gest').style.display = 'flex'; }
 function changeQty(v) { qty = Math.max(1, qty + v); document.getElementById('g-qty').innerText = qty; }
 function conferma(f) { db.prodotti[curIdx][f] += qty; closeModal('mod-gest'); render(); }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; document.getElementById('confirm-btns').style.display = "block"; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function toggleAcc(i) { let e = document.getElementById('acc-'+i); e.style.display = e.style.display === 'block' ? 'none' : 'block'; }
 function openBoatMenu() {
     let h = ""; FLEET.forEach((n, i) => h += `<div style="padding:18px; border-bottom:1px solid #333; color:white; text-align:center; font-weight:bold;" onclick="selectBoat('${i+1}')">${n}</div>`);
-    document.getElementById('boat-list-container').innerHTML = h;
-    document.getElementById('mod-boat').style.display = 'flex';
+    document.getElementById('boat-list-container').innerHTML = h; document.getElementById('mod-boat').style.display = 'flex';
 }
-function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
+function switchTab(t) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page')); document.getElementById('page-'+t).classList.add('active-page');
+    document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active');
+}
 
 function showConfirm(type) {
-    document.getElementById('confirm-title').innerText = "CONFERMA";
-    document.getElementById('confirm-msg').innerText = type === 'fine' ? "Chiudere la giornata e aggiornare le scorte iniziali?" : "Azzera tutto?";
-    document.getElementById('confirm-yes').onclick = () => {
-        if(type === 'fine') {
+    document.getElementById('confirm-title').innerText = "ATTENZIONE"; document.getElementById('confirm-yes').style.display = "block";
+    if(type === 'fine') {
+        document.getElementById('confirm-msg').innerText = "Vuoi chiudere il turno? Verrà generato il report e salvato l'incasso nel calendario.";
+        document.getElementById('confirm-yes').onclick = () => {
             let d = new Date().getDate(), inc = 0;
-            db.prodotti.forEach(p => inc += (p.vePas*p.pas) + (p.vePen*p.pen));
+            db.prodotti.forEach(p => inc += (p.vePas * p.pas) + (p.vePen * p.pen));
             globalHistory[d] = (globalHistory[d] || 0) + inc;
-            db.prodotti.forEach(p => { 
-                p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
-                p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; 
-            });
-            showToast("Giornata chiusa!");
-        } else { hardReset(false); }
-        closeModal('mod-confirm'); render();
-    };
+            applyInventoryAsInitial(); 
+        };
+    } else {
+        document.getElementById('confirm-msg').innerText = "Sei sicuro di voler cancellare TUTTI i dati di questa barca?";
+        document.getElementById('confirm-yes').onclick = () => { hardReset(false); closeModal('mod-confirm'); render(); };
+    }
     document.getElementById('mod-confirm').style.display = 'flex';
+}
+
+function exportReport(isFinal = false) {
+    const boatName = FLEET[parseInt(currentBoatID) - 1];
+    const timestamp = new Date().toLocaleString();
+    let text = `--- REPORT ${boatName} ---\n`;
+    text += `Data: ${timestamp}\n\n`;
+    let tInc = 0;
+    db.prodotti.forEach(p => {
+        const v = p.vePas + p.vePen;
+        if (v > 0 || p.c > 0 || p.omaggio > 0 || p.q > 0) {
+            text += `* ${p.n.toUpperCase()} *\n`;
+            text += `  Inizio: ${p.q}\n`;
+            if(p.c > 0) text += `  Carico Bolletta: +${p.c}\n`;
+            if(v > 0) text += `  Venduti: ${v} (${p.vePas} Pas / ${p.vePen} Pen)\n`;
+            if(p.omaggio > 0) text += `  Scarico/Omaggi: -${p.omaggio}\n`;
+            text += `  Giacenza Teorica: ${calcGiacenza(p)}\n`;
+            if(p.reale !== null) text += `  Giacenza Fisica: ${p.reale}\n`;
+            text += `----------------------\n`;
+        }
+        tInc += (p.vePas * p.pas) + (p.vePen * p.pen);
+    });
+    text += `\n💰 INCASSO TURNO: ${tInc.toFixed(2)}€`;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `Report_${boatName.replace(/ /g,'_')}.txt`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    if(!isFinal) showToast("Report Generato!");
+}
+
+// NUOVE FUNZIONI JSON
+function exportJSON() {
+    const boatName = FLEET[parseInt(currentBoatID) - 1];
+    const data = {
+        boatID: currentBoatID,
+        boatName: boatName,
+        db: db,
+        globalHistory: globalHistory,
+        exportDate: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Backup_${boatName.replace(/ /g,'_')}_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("Dati Esportati!");
+}
+
+function triggerImport() {
+    document.getElementById('import-file').click();
+}
+
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (imported.db && imported.db.prodotti) {
+                // Conferma sovrascrittura
+                document.getElementById('confirm-title').innerText = "IMPORTA DATI";
+                document.getElementById('confirm-msg').innerText = `Vuoi caricare il backup di "${imported.boatName || 'Sconosciuta'}"? I dati attuali della barca selezionata verranno sovrascritti.`;
+                document.getElementById('confirm-yes').onclick = () => {
+                    db = imported.db;
+                    if (imported.globalHistory) globalHistory = imported.globalHistory;
+                    save();
+                    render();
+                    closeModal('mod-confirm');
+                    showToast("Dati Importati con Successo!");
+                };
+                document.getElementById('mod-confirm').style.display = 'flex';
+            } else {
+                showToast("File JSON non valido!");
+            }
+        } catch (err) {
+            showToast("Errore nel caricamento del file!");
+        }
+        event.target.value = ""; // Reset input
+    };
+    reader.readAsText(file);
 }
 </script>
 </body>
