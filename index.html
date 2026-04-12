@@ -30,7 +30,7 @@
         
         /* Inventario */
         .inv-row { border-bottom: 1px solid #333; display: flex; align-items: center; padding: 12px 15px; background: var(--card); justify-content: space-between; position: relative; }
-        .inv-row input { width: 85px; background: #000; border: 2px solid var(--apple-blue); color: var(--txt); text-align: center; border-radius: 8px; padding: 8px; font-size: 18px; font-weight: bold; }
+        .inv-row input { width: 100px; background: #000; border: 2px solid var(--apple-blue); color: var(--txt); text-align: center; border-radius: 8px; padding: 8px; font-size: 16px; font-weight: bold; }
         .diff-tag { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
         .diff-pos { background: rgba(76, 217, 100, 0.2); color: var(--lime); }
         .diff-neg { background: rgba(255, 59, 48, 0.2); color: var(--red); }
@@ -56,7 +56,17 @@
         .day-cell .val { font-size: 8px; color: var(--lime); font-weight: bold; margin-top: 2px; }
         .day-cell.today { border-color: var(--cyan); background: #3a3a3c; }
 
-        #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 5000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; }
+        /* Tastierino Numerico */
+        .numpad-overlay { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #1c1c1e; z-index: 5000; padding: 10px; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -5px 25px rgba(0,0,0,0.5); padding-bottom: env(safe-area-inset-bottom); }
+        .numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .num-btn { background: #3a3a3c; color: white; border: none; border-radius: 12px; padding: 15px 0; font-size: 20px; font-weight: bold; cursor: pointer; }
+        .num-btn:active { background: #555; }
+        .num-btn.op { background: var(--orange); }
+        .num-btn.done { background: var(--lime); color: black; grid-column: span 2; }
+        .num-btn.del { background: var(--red); }
+        .numpad-display { background: #000; color: var(--cyan); text-align: right; padding: 15px; font-size: 24px; font-weight: bold; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; min-height: 60px; }
+
+        #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 6000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
@@ -123,7 +133,7 @@
         <div id="recon-msg" style="font-size:10px; margin-top:5px; text-align:center; font-weight:bold;"></div>
     </div>
     
-    <div style="padding: 5px 15px 15px 15px; background: #000; font-size: 11px; color: #888;"><b>Fisico:</b> Inserisci quanto hai in frigo ora. Il sistema confronta con tutto l'incasso segnato a calendario.</div>
+    <div style="padding: 5px 15px 15px 15px; background: #000; font-size: 11px; color: #888;"><b>Fisico:</b> Inserisci quanto hai in frigo ora. Puoi usare formule (es: <b>24+12</b>).</div>
     <div id="inventory-list"></div>
 </div>
 
@@ -132,6 +142,32 @@
     <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI (TUTTE LE BARCHE)</small></div>
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
+</div>
+
+<!-- TASTIERINO NUMERICO (NUMPAD) -->
+<div id="numpad" class="numpad-overlay">
+    <div id="numpad-title" style="color:#888; font-size:12px; margin-bottom:5px; text-align:center; font-weight:bold;"></div>
+    <div class="numpad-display" id="num-display"></div>
+    <div class="numpad-grid">
+        <button class="num-btn" onclick="numIn('7')">7</button>
+        <button class="num-btn" onclick="numIn('8')">8</button>
+        <button class="num-btn" onclick="numIn('9')">9</button>
+        <button class="num-btn del" onclick="numIn('DEL')">⌫</button>
+        
+        <button class="num-btn" onclick="numIn('4')">4</button>
+        <button class="num-btn" onclick="numIn('5')">5</button>
+        <button class="num-btn" onclick="numIn('6')">6</button>
+        <button class="num-btn op" onclick="numIn('+')">+</button>
+        
+        <button class="num-btn" onclick="numIn('1')">1</button>
+        <button class="num-btn" onclick="numIn('2')">2</button>
+        <button class="num-btn" onclick="numIn('3')">3</button>
+        <button class="num-btn op" onclick="numIn('-')">-</button>
+        
+        <button class="num-btn" onclick="numIn('0')">0</button>
+        <button class="num-btn" onclick="numIn('.')">.</button>
+        <button class="num-btn done" onclick="numDone()">OK</button>
+    </div>
 </div>
 
 <!-- MODALE GESTIONE PRODOTTO -->
@@ -147,18 +183,6 @@
         <button onclick="conferma('vePen')" class="btn-big" style="background:var(--apple-blue); color:white;">VENDITA PENDOLARE</button>
         <button onclick="conferma('omaggio')" class="btn-big" style="background:var(--purple); color:white;">🎁 OMAGGIO / SCARICO</button>
         <button onclick="closeModal('mod-gest')" class="btn-big" style="background:#444; color:white;">ANNULLA</button>
-    </div>
-</div>
-
-<!-- MODALE MODIFICA GIORNO CALENDARIO -->
-<div id="mod-edit-day" class="modal-overlay">
-    <div class="modal-card">
-        <h3 id="edit-day-title" style="color:var(--cyan);">MODIFICA INCASSO</h3>
-        <input type="number" id="edit-day-input" style="width:100%; background:#000; border:2px solid var(--apple-blue); color:white; padding:15px; border-radius:12px; font-size:24px; text-align:center; margin-bottom:20px;" placeholder="0.00">
-        <div style="display:flex; gap:10px;">
-            <button onclick="saveDayIncasso()" class="btn-big" style="background:var(--lime); color:black; flex:1;">SALVA</button>
-            <button onclick="closeModal('mod-edit-day')" class="btn-big" style="background:#444; color:white; flex:1;">CHIUDI</button>
-        </div>
     </div>
 </div>
 
@@ -234,7 +258,7 @@ const MASTER_CATALOG = [
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
 let db = { prodotti: [] };
 let globalHistory = {}; 
-let curIdx = -1, qty = 1, editingDay = -1;
+let curIdx = -1, qty = 1, currentEditType = null, currentEditTarget = null;
 
 function init() { loadData(); }
 
@@ -292,11 +316,20 @@ function save() {
 
 function calcGiacenza(p) { return Math.round((p.q + p.c) - (p.vePas + p.vePen + p.omaggio)); }
 
+function safeEval(str) {
+    try {
+        const clean = str.replace(/[^-+*/\d.]/g, '');
+        if (!clean) return null;
+        return Function('"use strict";return (' + clean + ')')();
+    } catch (e) {
+        return null;
+    }
+}
+
 function render() {
     const boatName = FLEET[parseInt(currentBoatID) - 1];
     document.getElementById('current-boat-name').innerText = boatName;
     
-    // 1. Calcolo Incassi Totali dal Calendario (Somma di tutto il mese)
     let totalCashInCalendar = 0;
     Object.values(globalHistory).forEach(v => totalCashInCalendar += v);
     
@@ -307,15 +340,10 @@ function render() {
         tIncOggi += (p.vePas * p.pas) + (p.vePen * p.pen);
         tRim += (teorico * p.pas);
         
-        // 2. Calcolo Valore Merce Uscita (Basato sull'Inventario Fisico)
         if (p.reale !== null) {
-            // Differenza tra Scorte Iniziali+Carico e Rimanenza Fisica Effettiva
             let usciti = (p.q + p.c) - p.reale; 
-            if (usciti > 0) {
-                totalMissingMerceValue += (usciti * p.pas);
-            }
+            if (usciti > 0) totalMissingMerceValue += (usciti * p.pas);
         } else {
-            // Se non ho ancora messo il fisico, considero la merce uscita teorica (vendite segnate)
             let uscitiTeorici = (p.vePas + p.vePen + p.omaggio);
             totalMissingMerceValue += (uscitiTeorici * p.pas);
         }
@@ -323,8 +351,6 @@ function render() {
 
     document.getElementById('tot-incasso').innerText = tIncOggi.toFixed(2) + "€";
     document.getElementById('header-val-rimanenze').innerText = tRim.toFixed(2) + "€";
-    
-    // Recon Inventario
     document.getElementById('recon-mer-val').innerText = totalMissingMerceValue.toFixed(2) + "€";
     document.getElementById('recon-cal-val').innerText = totalCashInCalendar.toFixed(2) + "€";
     
@@ -362,10 +388,10 @@ function render() {
                 <b>${(calcGiacenza(p)*p.pas).toFixed(2)}€</b>
             </div>
             <div id="acc-${i}" class="acc-body">
-                <div class="edit-row"><span>Iniziale:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
-                <div class="edit-row"><span>Carico:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
-                <div class="edit-row"><span>V.Pas:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
-                <div class="edit-row"><span>V.Pen:</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
+                <div class="edit-row"><span>Iniziale:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'q')" value="${p.q}"></div>
+                <div class="edit-row"><span>Carico:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'c')" value="${p.c}"></div>
+                <div class="edit-row"><span>V.Pas:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'vePas')" value="${p.vePas}"></div>
+                <div class="edit-row"><span>V.Pen:</span> <input type="text" readonly onclick="openNumPad('prod', ${i}, 'vePen')" value="${p.vePen}"></div>
             </div>
         </div>`).join('');
     
@@ -376,49 +402,82 @@ function render() {
         if (p.reale !== null) {
             const d = p.reale - teorico;
             const cashD = d * p.pas;
-            if (d === 0) {
-                diffHtml = `<span class="diff-tag diff-pos">✓ IN PARI</span>`;
-            } else {
-                diffHtml = `<span class="diff-tag ${d > 0 ? 'diff-pos' : 'diff-neg'}">
-                    ${d > 0 ? 'ECCEDENZA: +' : 'MANCANTI: '}${d} pz (${cashD.toFixed(2)}€)
-                </span>`;
-            }
+            if (d === 0) { diffHtml = `<span class="diff-tag diff-pos">✓ IN PARI</span>`; }
+            else { diffHtml = `<span class="diff-tag ${d > 0 ? 'diff-pos' : 'diff-neg'}">${d > 0 ? '+' : ''}${d} pz (${cashD.toFixed(2)}€)</span>`; }
         }
         return `
-        <div class="inv-row">
-            <div>
-                <b>${p.n}</b><br>
-                <small style="color:#aaa">Teorico: <b>${teorico}</b></small><br>
-                ${diffHtml}
-            </div>
-            <input type="number" value="${p.reale !== null ? p.reale : ''}" placeholder="Fisico" onchange="applyReale(${i}, this.value)">
+        <div class="inv-row" onclick="openNumPad('prod', ${i}, 'reale')">
+            <div><b>${p.n}</b><br><small style="color:#aaa">Teorico: <b>${teorico}</b></small><br>${diffHtml}</div>
+            <input type="text" value="${p.reale !== null ? p.reale : ''}" placeholder="Tocca..." readonly>
         </div>`;
     }).join('');
 
     renderCalendar(); save();
 }
 
+/* --- LOGICA NUMPAD --- */
+let numBuffer = "";
+function openNumPad(type, target, field) {
+    currentEditType = type;
+    currentEditTarget = target;
+    currentEditField = field;
+    
+    let title = "";
+    if(type === 'prod') title = db.prodotti[target].n + " (" + field.toUpperCase() + ")";
+    else title = "Incasso Giorno " + target;
+    
+    document.getElementById('numpad-title').innerText = title;
+    
+    // Pre-popola se c'è un valore
+    if(type === 'prod') numBuffer = db.prodotti[target][field] !== null ? String(db.prodotti[target][field]) : "";
+    else numBuffer = globalHistory[target] ? String(globalHistory[target]) : "";
+    
+    updateNumDisplay();
+    document.getElementById('numpad').style.display = 'block';
+}
+
+function updateNumDisplay() {
+    document.getElementById('num-display').innerText = numBuffer || "0";
+}
+
+function numIn(v) {
+    if(v === 'DEL') {
+        numBuffer = numBuffer.slice(0, -1);
+    } else {
+        numBuffer += v;
+    }
+    updateNumDisplay();
+}
+
+function numDone() {
+    let finalVal = null;
+    if(numBuffer.includes('+') || numBuffer.includes('-') || numBuffer.includes('*') || numBuffer.includes('/')) {
+        finalVal = safeEval(numBuffer);
+    } else {
+        finalVal = numBuffer === "" ? null : parseFloat(numBuffer);
+    }
+
+    if(currentEditType === 'prod') {
+        db.prodotti[currentEditTarget][currentEditField] = finalVal;
+    } else {
+        globalHistory[currentEditTarget] = finalVal || 0;
+    }
+
+    document.getElementById('numpad').style.display = 'none';
+    numBuffer = "";
+    render();
+}
+
 function openDDT() {
-    let h = `<div style="text-align:left; max-height:400px; overflow-y:auto; padding:5px;">`;
+    let h = `<div style="text-align:left; max-height:300px; overflow-y:auto; padding:5px;">`;
     db.prodotti.forEach((p, i) => {
-        h += `<div class="ddt-input-row"><span>${p.n}</span><input type="number" id="ddt-${i}" placeholder="0" min="0"></div>`;
+        h += `<div class="ddt-input-row" onclick="closeModal('mod-confirm'); openNumPad('prod', ${i}, 'c')"><span>${p.n}</span><b style="color:var(--orange)">${p.c}</b></div>`;
     });
-    h += `</div><button onclick="saveDDT()" class="btn-big" style="background:var(--orange); color:black;">CONFERMA CARICO</button>`;
-    document.getElementById('confirm-title').innerText = "CARICO DDT";
+    h += `</div><p style="font-size:10px; color:#888;">Tocca un prodotto per caricare le quantità</p>`;
+    document.getElementById('confirm-title').innerText = "CARICO DDT (BOLLETTA)";
     document.getElementById('confirm-msg').innerHTML = h;
     document.getElementById('confirm-btns').style.display = "none";
     document.getElementById('mod-confirm').style.display = 'flex';
-}
-
-function saveDDT() {
-    db.prodotti.forEach((p, i) => {
-        const val = parseFloat(document.getElementById(`ddt-${i}`).value) || 0;
-        if(val > 0) p.c += val;
-    });
-    closeModal('mod-confirm');
-    document.getElementById('confirm-btns').style.display = "block";
-    showToast("DDT Caricato!");
-    render();
 }
 
 function renderCalendar() {
@@ -427,7 +486,7 @@ function renderCalendar() {
     let h = "";
     for(let i=1; i<=days; i++) {
         let v = globalHistory[i] || 0;
-        h += `<div class="day-cell ${i === d.getDate() ? 'today' : ''}" onclick="openEditDay(${i})"><b>${i}</b>${v > 0 ? `<span class="val">${v.toFixed(0)}€</span>` : ''}</div>`;
+        h += `<div class="day-cell ${i === d.getDate() ? 'today' : ''}" onclick="openNumPad('day', ${i}, '')"><b>${i}</b>${v > 0 ? `<span class="val">${v.toFixed(0)}€</span>` : ''}</div>`;
     }
     document.getElementById('calendar-body').innerHTML = h;
     renderBuste();
@@ -466,12 +525,13 @@ function switchTab(t) {
     document.getElementById('page-'+t).classList.add('active-page');
     document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
     document.getElementById('t-'+t).classList.add('active');
+    document.getElementById('numpad').style.display = 'none';
 }
 
 function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').innerText = db.prodotti[i].n; document.getElementById('g-qty').innerText = qty; document.getElementById('mod-gest').style.display = 'flex'; }
 function changeQty(v) { qty = Math.max(1, qty + v); document.getElementById('g-qty').innerText = qty; }
 function conferma(f) { db.prodotti[curIdx][f] += qty; closeModal('mod-gest'); render(); }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; document.getElementById('confirm-btns').style.display = "block"; }
 function toggleAcc(i) { let e = document.getElementById('acc-'+i); e.style.display = e.style.display === 'block' ? 'none' : 'block'; }
 function openBoatMenu() {
     let h = ""; FLEET.forEach((n, i) => h += `<div style="padding:18px; border-bottom:1px solid #333; color:white; text-align:center; font-weight:bold;" onclick="selectBoat('${i+1}')">${n}</div>`);
@@ -479,14 +539,6 @@ function openBoatMenu() {
     document.getElementById('mod-boat').style.display = 'flex';
 }
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
-function applyReale(i, v) { db.prodotti[i].reale = (v === '') ? null : parseFloat(v); render(); }
-function up(i, f, v) { db.prodotti[i][f] = v === '' ? 0 : parseFloat(v); render(); }
-function openEditDay(d) { editingDay = d; document.getElementById('edit-day-input').value = globalHistory[d] || ""; document.getElementById('mod-edit-day').style.display = 'flex'; }
-function saveDayIncasso() { 
-    globalHistory[editingDay] = parseFloat(document.getElementById('edit-day-input').value) || 0; 
-    closeModal('mod-edit-day'); 
-    render(); 
-}
 
 function showConfirm(type) {
     document.getElementById('confirm-title').innerText = "CONFERMA";
@@ -497,7 +549,6 @@ function showConfirm(type) {
             db.prodotti.forEach(p => inc += (p.vePas*p.pas) + (p.vePen*p.pen));
             globalHistory[d] = (globalHistory[d] || 0) + inc;
             db.prodotti.forEach(p => { 
-                // La nuova scorta iniziale sarà quella fisica se inserita, altrimenti quella teorica
                 p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
                 p.c=0; p.vePas=0; p.vePen=0; p.omaggio=0; p.reale=null; 
             });
