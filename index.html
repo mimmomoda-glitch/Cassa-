@@ -63,7 +63,8 @@
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
-        .day-cell { background: #2c2c2e; border-radius: 8px; padding: 5px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #444; }
+        .day-cell { background: #2c2c2e; border-radius: 8px; padding: 5px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #444; cursor: pointer; transition: transform 0.1s; }
+        .day-cell:active { transform: scale(0.95); background: #3a3a3c; }
         .day-cell.today { border-color: var(--cyan); background: #1a2a3a; }
         .day-cell .val { font-weight: bold; color: var(--lime); font-size: 9px; }
     </style>
@@ -122,12 +123,12 @@
 
 <!-- PAGINA BUSTE -->
 <div id="page-h" class="page">
-    <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI (TUTTE LE BARCHE)</small></div>
+    <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI (MODIFICABILE)</small></div>
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
 </div>
 
-<!-- Modal Tastierino Inventario -->
+<!-- Modal Tastierino (Usato per Inventario e Calendario) -->
 <div id="mod-numpad" class="modal-overlay">
     <div class="modal-card">
         <h3 id="num-prod-name" style="color:var(--cyan); margin-bottom:10px;">PRODOTTO</h3>
@@ -153,7 +154,7 @@
     </div>
 </div>
 
-<!-- Modal Gestione Prodotto -->
+<!-- Altri Modali... -->
 <div id="mod-gest" class="modal-overlay">
     <div class="modal-card">
         <h2 id="g-nome" style="color:var(--cyan);"></h2>
@@ -237,7 +238,7 @@ const MASTER_CATALOG = [
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
 let db = { prodotti: [] };
 let globalHistory = {}; 
-let curIdx = -1, qty = 1;
+let curIdx = -1, curDayEdit = -1, qty = 1;
 let numBuffer = "";
 
 function init() { loadData(); }
@@ -365,7 +366,6 @@ function render() {
         </div>`;
     }).join('');
 
-    // Summary Inventario
     const summaryDiffEl = document.getElementById('inv-diff-euro');
     summaryDiffEl.innerText = (totalInvDiffEuro > 0 ? '+' : '') + totalInvDiffEuro.toFixed(2) + "€";
     summaryDiffEl.style.color = totalInvDiffEuro < 0 ? 'var(--red)' : (totalInvDiffEuro > 0 ? 'var(--lime)' : 'white');
@@ -374,23 +374,45 @@ function render() {
     renderCalendar(); save();
 }
 
-function applyInventoryAsInitial() {
-    document.getElementById('confirm-title').innerText = "CONFERMA INVENTARIO";
-    document.getElementById('confirm-msg').innerText = "Le giacenze reali inserite diventeranno le nuove giacenze iniziali. I conteggi di vendite e carichi verranno azzerati per il nuovo turno. Procedere?";
-    document.getElementById('confirm-yes').onclick = () => {
-        exportReport(true);
-        db.prodotti.forEach(p => { 
-            p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
-            p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; 
-        });
-        showToast("Inventario Salvato!");
-        closeModal('mod-confirm'); render();
-    };
-    document.getElementById('mod-confirm').style.display = 'flex';
+function renderCalendar() {
+    const now = new Date();
+    const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    let h = "";
+    for(let d=1; d<=days; d++) {
+        let v = globalHistory[d] || 0;
+        h += `<div class="day-cell ${d === now.getDate() ? 'today' : ''}" onclick="openCalendarEdit(${d})">
+                <b>${d}</b>
+                ${v > 0 ? `<span class="val">${v.toFixed(0)}€</span>` : ''}
+              </div>`;
+    }
+    document.getElementById('calendar-body').innerHTML = h;
+    renderBuste();
+}
+
+function openCalendarEdit(day) {
+    curDayEdit = day;
+    curIdx = -1; // Flag per distinguere da inventario prodotto
+    numBuffer = globalHistory[day] ? globalHistory[day].toString() : "";
+    document.getElementById('num-prod-name').innerText = "INCASSO GIORNO " + day;
+    document.getElementById('num-display').innerText = numBuffer;
+    document.getElementById('mod-numpad').style.display = 'flex';
+}
+
+function renderBuste() {
+    let h = "";
+    [{ n: "1ª QUINDICINA", r: [1, 15] }, { n: "2ª QUINDICINA", r: [16, 31] }].forEach(q => {
+        let tot = 0, gg = 0;
+        for (let d = q.r[0]; d <= q.r[1]; d++) { if (globalHistory[d] > 0) { tot += globalHistory[d]; gg++; } }
+        h += `<div style="background:#1c1c1e; margin:10px; border-radius:12px; padding:15px; border:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <div><small style="color:#888">${q.n}</small><br><b style="font-size:16px;">${tot.toFixed(2)}€</b></div>
+            <div style="text-align:right"><small style="color:var(--lime)">EXTRA</small><br><b style="color:var(--lime); font-size:20px;">${(gg * 26 + tot * 0.05).toFixed(2)}€</b></div>
+        </div>`;
+    });
+    document.getElementById('quindicine-container').innerHTML = h;
 }
 
 function openNumpad(i) {
-    curIdx = i; numBuffer = "";
+    curIdx = i; curDayEdit = -1; numBuffer = "";
     document.getElementById('num-prod-name').innerText = db.prodotti[i].n;
     document.getElementById('num-display').innerText = "";
     document.getElementById('mod-numpad').style.display = 'flex';
@@ -405,34 +427,34 @@ function numIn(v) {
 function numDone() {
     try {
         const clean = numBuffer.replace(/[^0-9+\-*/.]/g, '');
-        if (!clean) db.prodotti[curIdx].reale = null;
-        else db.prodotti[curIdx].reale = parseFloat(eval(clean).toFixed(2));
+        let finalVal = clean ? parseFloat(eval(clean).toFixed(2)) : 0;
+
+        if (curIdx === -1) {
+            // Modifica Calendario
+            if (finalVal <= 0) delete globalHistory[curDayEdit];
+            else globalHistory[curDayEdit] = finalVal;
+            showToast("Incasso giorno " + curDayEdit + " aggiornato");
+        } else {
+            // Modifica Inventario Prodotto
+            db.prodotti[curIdx].reale = clean ? finalVal : null;
+        }
         closeModal('mod-numpad'); render();
     } catch (e) { showToast("Errore Calcolo!"); }
 }
 
-function renderCalendar() {
-    const days = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-    let h = "";
-    for(let d=1; d<=days; d++) {
-        let v = globalHistory[d] || 0;
-        h += `<div class="day-cell ${d === new Date().getDate() ? 'today' : ''}" onclick="showToast('Incasso: '+${v}+'€')"><b>${d}</b>${v > 0 ? `<span class="val">${v.toFixed(0)}€</span>` : ''}</div>`;
-    }
-    document.getElementById('calendar-body').innerHTML = h;
-    renderBuste();
-}
-
-function renderBuste() {
-    let h = "";
-    [{ n: "1ª QUINDICINA", r: [1, 15] }, { n: "2ª QUINDICINA", r: [16, 31] }].forEach(q => {
-        let tot = 0, gg = 0;
-        for (let d = q.r[0]; d <= q.r[1]; d++) { if (globalHistory[d] > 0) { tot += globalHistory[d]; gg++; } }
-        h += `<div style="background:#1c1c1e; margin:10px; border-radius:12px; padding:15px; border:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <div><small style="color:#888">${q.n}</small><br><b style="font-size:16px;">${tot.toFixed(2)}€</b></div>
-            <div style="text-align:right"><small style="color:var(--lime)">EXTRA</small><br><b style="color:var(--lime); font-size:20px;">${(gg * 26 + tot * 0.05).toFixed(2)}€</b></div>
-        </div>`;
-    });
-    document.getElementById('quindicine-container').innerHTML = h;
+function applyInventoryAsInitial() {
+    document.getElementById('confirm-title').innerText = "CONFERMA INVENTARIO";
+    document.getElementById('confirm-msg').innerText = "Le giacenze reali inserite diventeranno le nuove giacenze iniziali. I conteggi verranno azzerati. Procedere?";
+    document.getElementById('confirm-yes').onclick = () => {
+        exportReport(true);
+        db.prodotti.forEach(p => { 
+            p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
+            p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; 
+        });
+        showToast("Inventario Salvato!");
+        closeModal('mod-confirm'); render();
+    };
+    document.getElementById('mod-confirm').style.display = 'flex';
 }
 
 function openDDT() {
@@ -516,30 +538,18 @@ function exportReport(isFinal = false) {
     if(!isFinal) showToast("Report Generato!");
 }
 
-// NUOVE FUNZIONI JSON
 function exportJSON() {
     const boatName = FLEET[parseInt(currentBoatID) - 1];
-    const data = {
-        boatID: currentBoatID,
-        boatName: boatName,
-        db: db,
-        globalHistory: globalHistory,
-        exportDate: new Date().toISOString()
-    };
+    const data = { boatID: currentBoatID, boatName: boatName, db: db, globalHistory: globalHistory, exportDate: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `Backup_${boatName.replace(/ /g,'_')}_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = `Backup_${boatName.replace(/ /g,'_')}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     showToast("Dati Esportati!");
 }
 
-function triggerImport() {
-    document.getElementById('import-file').click();
-}
+function triggerImport() { document.getElementById('import-file').click(); }
 
 function importJSON(event) {
     const file = event.target.files[0];
@@ -548,26 +558,19 @@ function importJSON(event) {
     reader.onload = function(e) {
         try {
             const imported = JSON.parse(e.target.result);
-            if (imported.db && imported.db.prodotti) {
-                // Conferma sovrascrittura
+            if (imported.db) {
                 document.getElementById('confirm-title').innerText = "IMPORTA DATI";
-                document.getElementById('confirm-msg').innerText = `Vuoi caricare il backup di "${imported.boatName || 'Sconosciuta'}"? I dati attuali della barca selezionata verranno sovrascritti.`;
+                document.getElementById('confirm-msg').innerText = `Caricare il backup? I dati attuali verranno sovrascritti.`;
                 document.getElementById('confirm-yes').onclick = () => {
                     db = imported.db;
                     if (imported.globalHistory) globalHistory = imported.globalHistory;
-                    save();
-                    render();
-                    closeModal('mod-confirm');
-                    showToast("Dati Importati con Successo!");
+                    save(); render(); closeModal('mod-confirm');
+                    showToast("Dati Importati!");
                 };
                 document.getElementById('mod-confirm').style.display = 'flex';
-            } else {
-                showToast("File JSON non valido!");
             }
-        } catch (err) {
-            showToast("Errore nel caricamento del file!");
-        }
-        event.target.value = ""; // Reset input
+        } catch (err) { showToast("File non valido!"); }
+        event.target.value = "";
     };
     reader.readAsText(file);
 }
