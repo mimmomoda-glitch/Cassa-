@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -95,6 +96,9 @@
             <button onclick="openDDT()" class="btn-big" style="background:var(--orange); color:black; margin:0;">📝 CARICA DDT</button>
             <button onclick="exportReport()" class="btn-big" style="background:var(--purple); color:white; margin:0;">📄 REPORT TESTO</button>
         </div>
+        <button onclick="triggerImportReport()" class="btn-big" style="background:#333; color:var(--purple); border:1px solid var(--purple); margin:0;">📥 CARICA REPORT (DA TESTO)</button>
+        <input type="file" id="import-report-file" style="display:none" onchange="importReportFromText(event)" accept=".txt">
+
         <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--lime); color:black;">☀️ CHIUDI GIORNATA (FINE TURNO)</button>
         <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size: 12px;">📦 RESET STOCK SALERNO JET (DEF)</button>
     </div>
@@ -212,10 +216,8 @@
 </div>
 
 <script>
-// Lista Flotta
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
 
-// Catalogo Master Predefinito
 const MASTER_CATALOG = [
     {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def: 115},
     {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def: 16},
@@ -255,34 +257,29 @@ const MASTER_CATALOG = [
     {n:"TU", i:"⚓", pas:0.0, pen:0.0, def: 0}
 ];
 
-// Stato Applicazione
 let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
 let db = { prodotti: [] };
 let globalHistory = {}; 
 let curIdx = -1, curDayEdit = -1, qty = 1;
 let numBuffer = "";
 
-// Inizializzazione
 function init() { loadData(); }
 
-// UI Feedback
 function showToast(msg) {
     const t = document.getElementById("toast");
     t.innerText = msg; t.className = "show";
     setTimeout(() => { t.className = ""; }, 3000);
 }
 
-// Persistenza Dati
 function loadData() {
     const savedGlobal = localStorage.getItem('NAV_GLOBAL_HISTORY');
     globalHistory = savedGlobal ? JSON.parse(savedGlobal) : {};
-
     const saved = localStorage.getItem('NAV_DATA_B' + currentBoatID);
-    if(saved) {
-        db = JSON.parse(saved);
-        syncPricesAndCatalog();
-    } else {
-        hardReset(false);
+    if(saved) { 
+        db = JSON.parse(saved); 
+        syncPricesAndCatalog(); 
+    } else { 
+        hardReset(false); 
     }
     render();
 }
@@ -293,7 +290,6 @@ function save() {
     localStorage.setItem('NAV_GLOBAL_HISTORY', JSON.stringify(globalHistory));
 }
 
-// Sincronizzazione con catalogo master (mantenendo stock locali)
 function syncPricesAndCatalog() {
     MASTER_CATALOG.forEach(pMaster => {
         const localIdx = db.prodotti.findIndex(p => p.n === pMaster.n);
@@ -309,7 +305,6 @@ function syncPricesAndCatalog() {
     save();
 }
 
-// Reset Dati
 function hardReset(full = false) {
     db.prodotti = MASTER_CATALOG.map(p => ({ n: p.n, i: p.i, pas: p.pas, pen: p.pen, q: p.def, c:0, vePas:0, vePen:0, omaggio:0, reale:null }));
     if(full) { globalHistory = {}; localStorage.removeItem('NAV_GLOBAL_HISTORY'); }
@@ -321,37 +316,34 @@ function applyDefaultStock() {
         const m = MASTER_CATALOG.find(mi => mi.n === p.n);
         if(m) { p.q = m.def; p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; }
     });
-    showToast("Stock Salerno Jet Predefinito Caricato!");
+    showToast("Stock Salerno Jet Predefinito!"); 
     render();
 }
 
-// Logica Calcolo
-function calcGiacenza(p) { return Math.round((p.q + p.c) - (p.vePas + p.vePen + p.omaggio)); }
+function calcGiacenza(p) { 
+    return Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.omaggio||0))); 
+}
 
-// Rendering UI
 function render() {
     const boatName = FLEET[parseInt(currentBoatID) - 1];
     document.getElementById('current-boat-name').innerText = boatName;
     let tIncasso = 0, tValRimanenze = 0;
     
-    // Calcolo Totali
     db.prodotti.forEach(p => {
         const giac = calcGiacenza(p);
-        tIncasso += (p.vePas * p.pas) + (p.vePen * p.pen);
+        tIncasso += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
         tValRimanenze += (giac * p.pas);
     });
 
     document.getElementById('tot-incasso').innerText = tIncasso.toFixed(2) + "€";
     document.getElementById('header-val-rimanenze').innerText = tValRimanenze.toFixed(2) + "€";
     
-    // Grid Cassa
     document.getElementById('grid-cassa').innerHTML = db.prodotti.map((p, i) => `
         <div class="product-btn" onclick="openGest(${i})">
             <i>${p.i}</i>
             <div><b>${p.n}</b><span class="stock">${calcGiacenza(p)}</span></div>
         </div>`).join('');
     
-    // Accordion Report
     document.getElementById('accordion-list').innerHTML = db.prodotti.map((p, i) => `
         <div class="accordion">
             <div class="acc-header" onclick="toggleAcc(${i})">
@@ -367,11 +359,10 @@ function render() {
             </div>
         </div>`).join('');
     
-    // Lista Inventario
     let totalInvDiffEuro = 0, totalDiffCount = 0, totalMerceUscitaVal = 0;
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
         const teo = calcGiacenza(p);
-        const uscitoFisico = (p.q + p.c) - (p.reale !== null ? p.reale : teo);
+        const uscitoFisico = (p.q + (p.c||0)) - (p.reale !== null ? p.reale : teo);
         totalMerceUscitaVal += (uscitoFisico * p.pas);
         const diffQty = (p.reale !== null) ? (p.reale - teo) : 0;
         const diffEuro = diffQty * p.pas;
@@ -387,7 +378,6 @@ function render() {
         </div>`;
     }).join('');
 
-    // Riconciliazione
     const totalCal = Object.values(globalHistory).reduce((a, b) => a + b, 0);
     document.getElementById('rec-calendario').innerText = totalCal.toFixed(2) + "€";
     document.getElementById('rec-merce').innerText = totalMerceUscitaVal.toFixed(2) + "€";
@@ -398,7 +388,8 @@ function render() {
     document.getElementById('inv-diff-euro').style.color = totalInvDiffEuro < 0 ? 'var(--red)' : (totalInvDiffEuro > 0 ? 'var(--lime)' : 'white');
     document.getElementById('inv-diff-count').innerText = totalDiffCount;
 
-    renderCalendar(); save();
+    renderCalendar(); 
+    save();
 }
 
 function renderCalendar() {
@@ -425,7 +416,6 @@ function renderBuste() {
     document.getElementById('quindicine-container').innerHTML = h;
 }
 
-// Logica Numpad
 function openNumpad(i) {
     curIdx = i; curDayEdit = -1; numBuffer = "";
     document.getElementById('num-prod-name').innerText = db.prodotti[i].n;
@@ -460,22 +450,23 @@ function numDone() {
     } catch (e) { showToast("Errore Calcolo!"); }
 }
 
-// Chiusura e Inventario
 function applyInventoryAsInitial() {
     document.getElementById('confirm-title').innerText = "CONFERMA INVENTARIO";
-    document.getElementById('confirm-msg').innerText = "Le giacenze reali inserite diventeranno le nuove giacenze iniziali. I conteggi verranno azzerati. Procedere?";
+    document.getElementById('confirm-msg').innerText = "Le giacenze reali inserite diventeranno le nuove giacenze iniziali. Procedere?";
     document.getElementById('confirm-yes').onclick = () => {
         exportReport(true);
-        db.prodotti.forEach(p => { p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; });
+        db.prodotti.forEach(p => { 
+            p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
+            p.c = 0; p.vePas = 0; p.vePen = 0; p.omaggio = 0; p.reale = null; 
+        });
         showToast("Inventario Salvato!"); closeModal('mod-confirm'); render();
     };
     document.getElementById('mod-confirm').style.display = 'flex';
 }
 
-// Funzioni Cassa e Gestione
 function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').innerText = db.prodotti[i].n; document.getElementById('g-qty').innerText = qty; document.getElementById('mod-gest').style.display = 'flex'; }
 function changeQty(v) { qty = Math.max(1, qty + v); document.getElementById('g-qty').innerText = qty; }
-function conferma(f) { db.prodotti[curIdx][f] += qty; closeModal('mod-gest'); render(); }
+function conferma(f) { db.prodotti[curIdx][f] = (db.prodotti[curIdx][f]||0) + qty; closeModal('mod-gest'); render(); }
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
 function up(i, f, v) { db.prodotti[i][f] = v === '' ? 0 : parseFloat(v); render(); }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -492,7 +483,7 @@ function openDDT() {
     document.getElementById('confirm-title').innerText = "NUOVA BOLLETTA (DDT)";
     document.getElementById('confirm-msg').innerHTML = h; document.getElementById('confirm-yes').style.display = "none"; document.getElementById('mod-confirm').style.display = 'flex';
 }
-function saveDDT() { db.prodotti.forEach((p, i) => { const val = parseFloat(document.getElementById(`ddt-${i}`).value); if(!isNaN(val)) p.c += val; }); closeModal('mod-confirm'); document.getElementById('confirm-yes').style.display = "block"; render(); showToast("Bolletta Caricata!"); }
+function saveDDT() { db.prodotti.forEach((p, i) => { const val = parseFloat(document.getElementById(`ddt-${i}`).value); if(!isNaN(val)) p.c = (p.c||0) + val; }); closeModal('mod-confirm'); document.getElementById('confirm-yes').style.display = "block"; render(); showToast("Bolletta Caricata!"); }
 
 function switchTab(t) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page')); document.getElementById('page-'+t).classList.add('active-page');
@@ -505,7 +496,7 @@ function showConfirm(type) {
         document.getElementById('confirm-msg').innerText = "Vuoi chiudere il turno? Verrà generato il report e salvato l'incasso nel calendario.";
         document.getElementById('confirm-yes').onclick = () => {
             let d = new Date().getDate(), inc = 0;
-            db.prodotti.forEach(p => inc += (p.vePas * p.pas) + (p.vePen * p.pen));
+            db.prodotti.forEach(p => inc += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen));
             globalHistory[d] = (globalHistory[d] || 0) + inc;
             applyInventoryAsInitial(); 
         };
@@ -516,16 +507,56 @@ function showConfirm(type) {
     document.getElementById('mod-confirm').style.display = 'flex';
 }
 
-// Export e Backup
+// LOGICA IMPORTAZIONE DA REPORT TESTO
+function triggerImportReport() { document.getElementById('import-report-file').click(); }
+
+function importReportFromText(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const lines = e.target.result.split('\n');
+        let currentProd = null;
+        let count = 0;
+
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('*') && trimmed.endsWith('*')) {
+                const pName = trimmed.replace(/\*/g, '').trim();
+                currentProd = db.prodotti.find(p => p.n.toUpperCase() === pName.toUpperCase());
+            } else if (currentProd) {
+                if (trimmed.startsWith('Inizio:')) currentProd.q = parseFloat(trimmed.split(':')[1]) || 0;
+                if (trimmed.startsWith('Carico:')) currentProd.c = parseFloat(trimmed.split(':')[1]) || 0;
+                if (trimmed.startsWith('Venduti:')) {
+                    currentProd.vePas = parseFloat(trimmed.split(':')[1]) || 0;
+                    currentProd.vePen = 0;
+                }
+                if (trimmed.startsWith('Scarico:')) currentProd.omaggio = Math.abs(parseFloat(trimmed.split(':')[1])) || 0;
+                if (trimmed.startsWith('Fisico:')) currentProd.reale = parseFloat(trimmed.split(':')[1]) || null;
+                count++;
+            }
+        });
+
+        if (count > 0) {
+            render();
+            showToast("Report Testo Caricato!");
+        } else {
+            showToast("Formato file non valido!");
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ""; 
+}
+
 function exportReport(isFinal = false) {
     const boatName = FLEET[parseInt(currentBoatID) - 1], timestamp = new Date().toLocaleString();
     let text = `--- REPORT ${boatName} ---\nData: ${timestamp}\n\n`, tInc = 0;
     db.prodotti.forEach(p => {
-        const v = p.vePas + p.vePen;
-        if (v > 0 || p.c > 0 || p.omaggio > 0 || p.q > 0) {
-            text += `* ${p.n.toUpperCase()} *\n  Inizio: ${p.q}\n${p.c > 0 ? `  Carico: +${p.c}\n` : ''}${v > 0 ? `  Venduti: ${v}\n` : ''}${p.omaggio > 0 ? `  Scarico: -${p.omaggio}\n` : ''}  Teorico: ${calcGiacenza(p)}\n${p.reale !== null ? `  Fisico: ${p.reale}\n` : ''}----------------------\n`;
+        const v = (p.vePas||0) + (p.vePen||0);
+        if (v > 0 || (p.c||0) > 0 || (p.omaggio||0) > 0 || p.q > 0) {
+            text += `* ${p.n.toUpperCase()} *\n  Inizio: ${p.q}\n${(p.c||0) > 0 ? `  Carico: +${p.c}\n` : ''}${v > 0 ? `  Venduti: ${v}\n` : ''}${(p.omaggio||0) > 0 ? `  Scarico: -${p.omaggio}\n` : ''}  Teorico: ${calcGiacenza(p)}\n${p.reale !== null ? `  Fisico: ${p.reale}\n` : ''}----------------------\n`;
         }
-        tInc += (p.vePas * p.pas) + (p.vePen * p.pen);
+        tInc += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
     });
     text += `\n💰 INCASSO TURNO: ${tInc.toFixed(2)}€`;
     const blob = new Blob([text], { type: 'text/plain' });
@@ -545,7 +576,14 @@ function triggerImport() { document.getElementById('import-file').click(); }
 function importJSON(event) {
     const file = event.target.files[0]; if (!file) return;
     const reader = new FileReader(); reader.onload = function(e) {
-        try { const imported = JSON.parse(e.target.result); if (imported.db) { db = imported.db; globalHistory = imported.globalHistory || {}; save(); render(); showToast("Dati Importati!"); } } catch (err) { showToast("Errore!"); }
+        try { 
+            const imported = JSON.parse(e.target.result); 
+            if (imported.db) { 
+                db = imported.db; 
+                globalHistory = imported.globalHistory || {}; 
+                save(); render(); showToast("Dati Importati!"); 
+            } 
+        } catch (err) { showToast("Errore!"); }
     }; reader.readAsText(file);
 }
 </script>
