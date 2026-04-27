@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -317,11 +318,23 @@ function applyDefaultStock() {
     showToast("Stock Resettato!"); render();
 }
 
+/**
+ * Funzione Cruciale: Calcola la giacenza da mostrare.
+ * Se esiste un valore REALE (fisico), usa quello. 
+ * Altrimenti calcola matematicamente.
+ */
 function calcGiacenza(p) { 
+    if (p.reale !== null) {
+        return Math.round(p.reale);
+    }
     return Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.vePenOld||0) + (p.omaggio||0))); 
 }
 
+/**
+ * Giacenza usata per i calcoli monetari (rimanenze valore)
+ */
 function calcGiacenzaPerValore(p) {
+    if (p.reale !== null) return Math.round(p.reale);
     return Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.omaggio||0)));
 }
 
@@ -369,13 +382,18 @@ function render() {
     
     db.prodotti.forEach(p => {
         const giacVisualizzata = calcGiacenza(p);
-        const giacValore = calcGiacenzaPerValore(p);
         tIncasso += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
-        const giacRiferimentoHeader = (p.reale !== null) ? p.reale : giacValore;
-        tValRimanenze += (giacRiferimentoHeader * p.pas);
+        
+        // Rimanenze sempre basate sulla giacenza visualizzata (fisico o calcolato)
+        tValRimanenze += (giacVisualizzata * p.pas);
+        
         tStornoPen += ((p.vePen||0) + (p.vePenOld||0)) * (p.pas - p.pen);
-        const unitaUsciteReali = (p.q + (p.c||0)) - (p.reale !== null ? p.reale : giacValore);
+        
+        // Calcolo merce uscita per riconciliazione mensile
+        const teoSenzaVendite = (p.q + (p.c||0));
+        const unitaUsciteReali = teoSenzaVendite - giacVisualizzata;
         totalMerceUscitaVal += (unitaUsciteReali * p.pas);
+        
         if(p.reale !== null) diffCount++;
     });
 
@@ -406,12 +424,13 @@ function render() {
         </div>`).join('');
     
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
-        const teoConfronto = calcGiacenzaPerValore(p);
-        const diffQty = (p.reale !== null) ? (p.reale - teoConfronto) : 0;
+        // In questa tab mostriamo il teorico matematico puro per confronto
+        const teoPuro = Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.vePenOld||0) + (p.omaggio||0)));
+        const diffQty = (p.reale !== null) ? (p.reale - teoPuro) : 0;
         const color = diffQty < 0 ? 'var(--red)' : (diffQty > 0 ? 'var(--lime)' : 'var(--apple-blue)');
         return `
         <div class="inv-row" style="${p.reale !== null ? 'border-left-color:'+color : ''}">
-            <div><b>${p.n}</b><br><small>Teo: ${teoConfronto} ${p.reale !== null ? '| Diff: '+diffQty : ''}</small></div>
+            <div><b>${p.n}</b><br><small>Teo: ${teoPuro} ${p.reale !== null ? '| Diff: '+diffQty : ''}</small></div>
             <div class="inv-input-trigger" style="border-color:${p.reale !== null ? color : '#555'}; color:${p.reale !== null ? 'white' : '#888'}" onclick="openNumpad(${i})">
                  ${p.reale !== null ? p.reale : 'FISICO'}
             </div>
@@ -491,7 +510,8 @@ function applyInventoryAsInitial() {
     document.getElementById('confirm-msg').innerText = "Il fisico diventerà la nuova giacenza iniziale. I conteggi vendite e pendolari saranno azzerati. Procedere?";
     document.getElementById('confirm-yes').onclick = () => {
         db.prodotti.forEach(p => { 
-            p.q = (p.reale !== null) ? p.reale : calcGiacenza(p); 
+            // La nuova giacenza d'inizio è il fisico (o il teorico se il fisico manca)
+            p.q = calcGiacenza(p); 
             p.c = 0; p.vePas = 0; p.vePen = 0; p.vePenOld = 0; p.omaggio = 0; p.reale = null; 
         });
         showToast("Inventario Consolidato!"); closeModal('mod-confirm'); render();
@@ -501,9 +521,45 @@ function applyInventoryAsInitial() {
 
 function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').innerText = db.prodotti[i].n; document.getElementById('g-qty').innerText = qty; document.getElementById('mod-gest').style.display = 'flex'; }
 function changeQty(v) { qty = Math.max(1, qty + v); document.getElementById('g-qty').innerText = qty; }
-function conferma(f) { db.prodotti[curIdx][f] = (db.prodotti[curIdx][f]||0) + qty; closeModal('mod-gest'); render(); }
+
+function conferma(f) { 
+    // Registra la vendita
+    db.prodotti[curIdx][f] = (db.prodotti[curIdx][f]||0) + qty; 
+    
+    // SCALA DAL FISICO se presente
+    if (db.prodotti[curIdx].reale !== null) {
+        db.prodotti[curIdx].reale -= qty;
+    }
+    
+    closeModal('mod-gest'); 
+    render(); 
+}
+
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
-function up(i, f, v) { db.prodotti[i][f] = v === '' ? 0 : parseFloat(v); render(); }
+
+/**
+ * Aggiornamento campi manuali nel report
+ */
+function up(i, f, v) { 
+    let vecchioValore = db.prodotti[i][f] || 0;
+    let nuovoValore = v === '' ? 0 : parseFloat(v);
+    db.prodotti[i][f] = nuovoValore; 
+
+    // Se modifichiamo uscite (vendite o scarichi) e c'è il fisico, aggiorniamo il fisico per differenza
+    const campiUscita = ['vePas', 'vePen', 'omaggio', 'vePenOld'];
+    if (campiUscita.includes(f) && db.prodotti[i].reale !== null) {
+        let diff = nuovoValore - vecchioValore;
+        db.prodotti[i].reale -= diff;
+    }
+    // Se modifichiamo entrate (carico o inizio) e c'è il fisico, aggiorniamo il fisico per differenza
+    if ((f === 'q' || f === 'c') && db.prodotti[i].reale !== null) {
+        let diff = nuovoValore - vecchioValore;
+        db.prodotti[i].reale += diff;
+    }
+    
+    render(); 
+}
+
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function toggleAcc(i) { let e = document.getElementById('acc-'+i); if(e) e.style.display = e.style.display === 'block' ? 'none' : 'block'; }
 
@@ -520,7 +576,19 @@ function openDDT() {
     document.getElementById('confirm-msg').innerHTML = h; document.getElementById('confirm-yes').style.display = "none"; document.getElementById('mod-confirm').style.display = 'flex';
 }
 
-function saveDDT() { db.prodotti.forEach((p, i) => { const val = parseFloat(document.getElementById(`ddt-${i}`).value); if(!isNaN(val)) p.c = (p.c||0) + val; }); closeModal('mod-confirm'); document.getElementById('confirm-yes').style.display = "block"; render(); }
+function saveDDT() { 
+    db.prodotti.forEach((p, i) => { 
+        const val = parseFloat(document.getElementById(`ddt-${i}`).value); 
+        if(!isNaN(val) && val !== 0) {
+            p.c = (p.c||0) + val; 
+            // Aggiorna anche il fisico se presente
+            if (p.reale !== null) p.reale += val;
+        }
+    }); 
+    closeModal('mod-confirm'); 
+    document.getElementById('confirm-yes').style.display = "block"; 
+    render(); 
+}
 
 function switchTab(t) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page')); document.getElementById('page-'+t).classList.add('active-page');
