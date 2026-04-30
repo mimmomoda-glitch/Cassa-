@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -58,9 +59,7 @@
         .num-display { background: #000; border: 1px solid #444; color: var(--cyan); width: 100%; padding: 15px; font-size: 24px; border-radius: 12px; text-align: center; margin-bottom: 10px; min-height: 60px; font-family: monospace; }
 
         #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 5000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        #toast.show { visibility: visible; }
 
         .import-area { width: 100%; height: 120px; background: #000; color: var(--lime); border: 1px dashed #444; border-radius: 10px; padding: 10px; font-size: 12px; font-family: monospace; margin-top: 10px; resize: none; }
         
@@ -135,15 +134,17 @@
     <div id="quindicine-container"></div>
 </div>
 
+<!-- MODALE IMPORTAZIONE TXT AGGIORNATA -->
 <div id="mod-import-txt" class="modal-overlay">
     <div class="modal-card">
         <h3 style="color:var(--cyan); margin-bottom:10px;">IMPORTA DATI TXT</h3>
-        <p style="font-size: 12px; color: #888;">Incolla il testo del report (formato Prodotto: Quantità)</p>
+        <p style="font-size: 11px; color: #888;">Incolla il testo (es. Acqua: 10) e scegli cosa aggiornare:</p>
         <textarea id="import-txt-area" class="import-area" placeholder="Esempio:&#10;Acqua: 100&#10;Peroni: 50"></textarea>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
-            <button onclick="processTxtImport('q')" class="btn-big" style="background:var(--cyan); color:black; font-size:12px;">AGGIORNA INIZIO</button>
-            <button onclick="processTxtImport('c')" class="btn-big" style="background:var(--orange); color:black; font-size:12px;">AGGIORNA CARICO</button>
+            <button onclick="processTxtImport('q')" class="btn-big" style="background:var(--cyan); color:black; font-size:12px; margin:0; padding:12px 5px;">AGGIORNA INIZIO</button>
+            <button onclick="processTxtImport('c')" class="btn-big" style="background:var(--orange); color:black; font-size:12px; margin:0; padding:12px 5px;">AGGIORNA CARICO</button>
         </div>
+        <button onclick="processTxtImport('vePenOld')" class="btn-big" style="background:var(--apple-blue); color:white; font-size:12px; margin-top:10px;">AGGIORNA PEND. PREGRESSI</button>
         <button onclick="closeModal('mod-import-txt')" class="btn-big" style="background:#444; color:white; margin-top:10px;">ANNULLA</button>
     </div>
 </div>
@@ -247,8 +248,8 @@ function init() { loadData(); }
 
 function showToast(msg) {
     const t = document.getElementById("toast");
-    t.innerText = msg; t.className = "show";
-    setTimeout(() => { t.className = ""; }, 3000);
+    t.innerText = msg; t.style.visibility = "visible";
+    setTimeout(() => { t.style.visibility = "hidden"; }, 3000);
 }
 
 function loadData() {
@@ -300,13 +301,13 @@ function applyDefaultStock() {
     showToast("Stock Resettato!"); render();
 }
 
-/**
- * LOGICA GIACENZA: vePenOld ESCLUSO dal calcolo delle quantità
- */
 function calcGiacenza(p) { 
     if (p.reale !== null) return Math.round(p.reale);
+    // vePenOld NON scarica la merce
     return Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.omaggio||0))); 
 }
+
+function openImporter() { document.getElementById('import-txt-area').value = ""; document.getElementById('mod-import-txt').style.display = 'flex'; }
 
 function processTxtImport(field) {
     const rawText = document.getElementById('import-txt-area').value;
@@ -317,9 +318,7 @@ function processTxtImport(field) {
         let parts = line.split(/[:\t\-]/); 
         if(parts.length < 2) {
             const lastSpaceIdx = line.trim().lastIndexOf(' ');
-            if(lastSpaceIdx !== -1) {
-                parts = [line.substring(0, lastSpaceIdx), line.substring(lastSpaceIdx)];
-            }
+            if(lastSpaceIdx !== -1) parts = [line.substring(0, lastSpaceIdx), line.substring(lastSpaceIdx)];
         }
         if(parts.length >= 2) {
             const name = parts[0].trim().toLowerCase();
@@ -328,7 +327,8 @@ function processTxtImport(field) {
                 const pIdx = db.prodotti.findIndex(p => p.n.toLowerCase() === name || name.includes(p.n.toLowerCase()) || p.n.toLowerCase().includes(name));
                 if(pIdx !== -1) {
                     if(field === 'q') db.prodotti[pIdx].q = val;
-                    else db.prodotti[pIdx].c = (db.prodotti[pIdx].c || 0) + val;
+                    else if(field === 'c') db.prodotti[pIdx].c = (db.prodotti[pIdx].c || 0) + val;
+                    else if(field === 'vePenOld') db.prodotti[pIdx].vePenOld = (db.prodotti[pIdx].vePenOld || 0) + val;
                     count++;
                 }
             }
@@ -349,14 +349,9 @@ function render() {
         const giacVisualizzata = calcGiacenza(p);
         tIncasso += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
         tValRimanenze += (giacVisualizzata * p.pas);
-        
-        // Lo storno economico calcola il differenziale pas/pen anche sui pregressi
         tStornoPen += ((p.vePen||0) + (p.vePenOld||0)) * (p.pas - p.pen);
-        
-        // Merce uscita (esclude vePenOld perché non scarica il magazzino)
         const unitaUsciteReali = (p.q + (p.c||0)) - giacVisualizzata;
         totalMerceUscitaVal += (unitaUsciteReali * p.pas);
-        
         if(p.reale !== null) diffCount++;
     });
 
@@ -381,8 +376,8 @@ function render() {
                 <div class="edit-row"><span>Carico:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
                 <div class="edit-row"><span>V.Pas (Oggi):</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
                 <div class="edit-row"><span>V.Pen (Oggi):</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
-                <div class="edit-row"><span style="color:var(--apple-blue)">Storno Pen. (Pregressi):</span> <input type="number" value="${p.vePenOld||0}" onchange="up(${i},'vePenOld',this.value)" style="border-color:var(--apple-blue)"></div>
-                <div class="edit-row"><span>Scarico:</span> <input type="number" value="${p.omaggio}" onchange="up(${i},'omaggio',this.value)"></div>
+                <div class="edit-row"><span style="color:var(--apple-blue)">Pend. Pregressi:</span> <input type="number" value="${p.vePenOld||0}" onchange="up(${i},'vePenOld',this.value)" style="border-color:var(--apple-blue)"></div>
+                <div class="edit-row"><span>Scarico/Omaggio:</span> <input type="number" value="${p.omaggio}" onchange="up(${i},'omaggio',this.value)"></div>
             </div>
         </div>`).join('');
     
@@ -495,15 +490,9 @@ function up(i, f, v) {
     let vecchioValore = db.prodotti[i][f] || 0;
     let nuovoValore = v === '' ? 0 : parseFloat(v);
     db.prodotti[i][f] = nuovoValore; 
-
-    // Solo vePas, vePen e omaggio scaricano il fisico. vePenOld NO.
     const campiScaricoFisico = ['vePas', 'vePen', 'omaggio'];
-    if (campiScaricoFisico.includes(f) && db.prodotti[i].reale !== null) {
-        db.prodotti[i].reale -= (nuovoValore - vecchioValore);
-    }
-    if ((f === 'q' || f === 'c') && db.prodotti[i].reale !== null) {
-        db.prodotti[i].reale += (nuovoValore - vecchioValore);
-    }
+    if (campiScaricoFisico.includes(f) && db.prodotti[i].reale !== null) db.prodotti[i].reale -= (nuovoValore - vecchioValore);
+    if ((f === 'q' || f === 'c') && db.prodotti[i].reale !== null) db.prodotti[i].reale += (nuovoValore - vecchioValore);
     render(); 
 }
 
@@ -577,3 +566,5 @@ function importJSON(event) {
 </script>
 </body>
 </html>
+
+```
