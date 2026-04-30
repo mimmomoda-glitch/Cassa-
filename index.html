@@ -9,18 +9,15 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--txt); height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; width: 100%; }
         
-        /* Header */
         .header { background: #000; padding: 10px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; height: 65px; flex-shrink: 0; z-index: 100; }
         .header b { font-size: 14px; color: var(--lime); }
         .header small { color: #888; text-transform: uppercase; font-size: 8px; }
         
         .boat-box { background: #1c1c1e; padding: 8px 10px; border-radius: 10px; border: 1px solid #333; color: var(--cyan); font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 5px; max-width: 160px; overflow: hidden; cursor: pointer; border-left: 3px solid var(--cyan); }
         
-        /* Pages */
         .page { display: none; overflow-y: auto; flex-grow: 1; padding-bottom: 120px; -webkit-overflow-scrolling: touch; width: 100%; }
         .active-page { display: block; }
         
-        /* Cassa Grid */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
         .product-btn { background: var(--card); height: 85px; border-radius: 14px; display: flex; align-items: center; padding: 10px; border: 1px solid #333; color: white; text-align: left; width: 100%; position: relative; cursor: pointer; }
         .product-btn i { font-size: 20px; margin-right: 10px; font-style: normal; pointer-events: none; }
@@ -28,7 +25,6 @@
         .product-btn b { font-size: 9px; text-transform: uppercase; display: block; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .product-btn .stock { font-size: 16px; font-weight: bold; color: var(--cyan); }
         
-        /* Accordion Report */
         .accordion { background: var(--card); border-radius: 12px; margin: 10px; border: 1px solid #333; overflow: hidden; }
         .acc-header { padding: 15px; background: #2c2c2e; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .acc-body { display: none; padding: 10px; background: #1c1c1e; }
@@ -37,28 +33,23 @@
         .edit-row span { font-size: 12px; color: #ccc; }
         .edit-row input { background: #000; border: 1px solid #444; color: var(--cyan); text-align: right; width: 90px; border-radius: 8px; padding: 8px; font-size: 16px; font-weight: bold; }
         
-        /* Inventory List */
         .inv-row { border-bottom: 1px solid #333; display: flex; align-items: center; padding: 12px 15px; background: var(--card); justify-content: space-between; border-left: 4px solid transparent; }
         .inv-input-trigger { width: 100px; background: #000; border: 1px solid #555; color: var(--txt); text-align: center; border-radius: 8px; padding: 12px 8px; font-size: 16px; font-weight: bold; cursor: pointer; min-height: 45px; }
         
-        /* Recon Box */
         .recon-box { background: #1c1c1e; margin: 10px 15px; padding: 15px; border-radius: 15px; border: 1px solid #333; }
         .recon-title { color: var(--cyan); text-align: center; font-weight: 800; font-size: 11px; margin-bottom: 12px; text-transform: uppercase; }
         .recon-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
         .recon-row span { color: #888; }
         .recon-total { border-top: 1px solid #333; margin-top: 10px; padding-top: 10px; }
 
-        /* Footer Navigation */
         .footer { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; height: 75px; border-top: 1px solid #333; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
         .footer button { flex: 1; background: none; border: none; color: #888; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
         .footer button.active { color: var(--cyan); }
         
-        /* Modals */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; padding: 20px; }
         .modal-card { background: #1c1c1e; padding: 25px; border-radius: 25px; border: 1px solid #444; text-align: center; max-height: 90vh; overflow-y: auto; width: 100%; max-width: 400px; margin: auto; }
         .btn-big { width: 100%; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 16px; margin-top: 12px; border: none; cursor: pointer; }
         
-        /* Numpad */
         .numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
         .num-btn { background: #3a3a3c; border: none; color: white; border-radius: 10px; padding: 15px 5px; font-size: 20px; font-weight: bold; cursor: pointer; }
         .num-btn.op { background: var(--orange); }
@@ -66,16 +57,13 @@
         .num-btn.done { background: var(--lime); color: black; grid-column: span 2; }
         .num-display { background: #000; border: 1px solid #444; color: var(--cyan); width: 100%; padding: 15px; font-size: 24px; border-radius: 12px; text-align: center; margin-bottom: 10px; min-height: 60px; font-family: monospace; }
 
-        /* Toast */
         #toast { visibility: hidden; min-width: 200px; background-color: var(--apple-blue); color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 5000; left: 50%; bottom: 100px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
-        /* Import Area */
         .import-area { width: 100%; height: 120px; background: #000; color: var(--lime); border: 1px dashed #444; border-radius: 10px; padding: 10px; font-size: 12px; font-family: monospace; margin-top: 10px; resize: none; }
         
-        /* Calendar */
         .day-cell { background: #2c2c2e; border-radius: 8px; padding: 8px; text-align: center; border: 1px solid #333; position: relative; min-height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .day-cell.today { border: 2px solid var(--lime); }
         .day-cell .val { font-size: 9px; color: var(--lime); margin-top: 4px; }
@@ -93,12 +81,10 @@
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
 </div>
 
-<!-- Tab Cassa -->
 <div id="page-c" class="page active-page">
     <div class="grid" id="grid-cassa"></div>
 </div>
 
-<!-- Tab Report / Magazzino -->
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -123,7 +109,6 @@
     </div>
 </div>
 
-<!-- Tab Inventario -->
 <div id="page-i" class="page">
     <div style="position: sticky; top: 0; z-index: 50; background: #000; padding: 10px 15px; border-bottom: 1px solid #333;">
         <div style="background: #1c1c1e; padding: 12px; border-radius: 12px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -144,14 +129,12 @@
     <div id="inventory-list"></div>
 </div>
 
-<!-- Tab Buste / Calendario -->
 <div id="page-h" class="page">
     <div style="padding: 15px 15px 5px 15px;"><small style="color:#888;">CALENDARIO INCASSI</small></div>
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
 </div>
 
-<!-- Modals Overlay -->
 <div id="mod-import-txt" class="modal-overlay">
     <div class="modal-card">
         <h3 style="color:var(--cyan); margin-bottom:10px;">IMPORTA DATI TXT</h3>
@@ -318,28 +301,11 @@ function applyDefaultStock() {
 }
 
 /**
- * Funzione Cruciale: Calcola la giacenza da mostrare.
- * Se esiste un valore REALE (fisico), usa quello. 
- * Altrimenti calcola matematicamente.
+ * LOGICA GIACENZA: vePenOld ESCLUSO dal calcolo delle quantità
  */
 function calcGiacenza(p) { 
-    if (p.reale !== null) {
-        return Math.round(p.reale);
-    }
-    return Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.vePenOld||0) + (p.omaggio||0))); 
-}
-
-/**
- * Giacenza usata per i calcoli monetari (rimanenze valore)
- */
-function calcGiacenzaPerValore(p) {
     if (p.reale !== null) return Math.round(p.reale);
-    return Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.omaggio||0)));
-}
-
-function openImporter() {
-    document.getElementById('import-txt-area').value = "";
-    document.getElementById('mod-import-txt').style.display = 'flex';
+    return Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.omaggio||0))); 
 }
 
 function processTxtImport(field) {
@@ -382,15 +348,13 @@ function render() {
     db.prodotti.forEach(p => {
         const giacVisualizzata = calcGiacenza(p);
         tIncasso += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
-        
-        // Rimanenze sempre basate sulla giacenza visualizzata (fisico o calcolato)
         tValRimanenze += (giacVisualizzata * p.pas);
         
+        // Lo storno economico calcola il differenziale pas/pen anche sui pregressi
         tStornoPen += ((p.vePen||0) + (p.vePenOld||0)) * (p.pas - p.pen);
         
-        // Calcolo merce uscita per riconciliazione mensile
-        const teoSenzaVendite = (p.q + (p.c||0));
-        const unitaUsciteReali = teoSenzaVendite - giacVisualizzata;
+        // Merce uscita (esclude vePenOld perché non scarica il magazzino)
+        const unitaUsciteReali = (p.q + (p.c||0)) - giacVisualizzata;
         totalMerceUscitaVal += (unitaUsciteReali * p.pas);
         
         if(p.reale !== null) diffCount++;
@@ -417,14 +381,13 @@ function render() {
                 <div class="edit-row"><span>Carico:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
                 <div class="edit-row"><span>V.Pas (Oggi):</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
                 <div class="edit-row"><span>V.Pen (Oggi):</span> <input type="number" value="${p.vePen}" onchange="up(${i},'vePen',this.value)"></div>
-                <div class="edit-row"><span style="color:var(--apple-blue)">V.Pen (Pregresse):</span> <input type="number" value="${p.vePenOld||0}" onchange="up(${i},'vePenOld',this.value)" style="border-color:var(--apple-blue)"></div>
+                <div class="edit-row"><span style="color:var(--apple-blue)">Storno Pen. (Pregressi):</span> <input type="number" value="${p.vePenOld||0}" onchange="up(${i},'vePenOld',this.value)" style="border-color:var(--apple-blue)"></div>
                 <div class="edit-row"><span>Scarico:</span> <input type="number" value="${p.omaggio}" onchange="up(${i},'omaggio',this.value)"></div>
             </div>
         </div>`).join('');
     
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
-        // In questa tab mostriamo il teorico matematico puro per confronto
-        const teoPuro = Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.vePenOld||0) + (p.omaggio||0)));
+        const teoPuro = Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.omaggio||0)));
         const diffQty = (p.reale !== null) ? (p.reale - teoPuro) : 0;
         const color = diffQty < 0 ? 'var(--red)' : (diffQty > 0 ? 'var(--lime)' : 'var(--apple-blue)');
         return `
@@ -506,10 +469,9 @@ function numDone() {
 
 function applyInventoryAsInitial() {
     document.getElementById('confirm-title').innerText = "CONSOLIDAMENTO";
-    document.getElementById('confirm-msg').innerText = "Il fisico diventerà la nuova giacenza iniziale. I conteggi vendite e pendolari saranno azzerati. Procedere?";
+    document.getElementById('confirm-msg').innerText = "Il fisico diventerà la nuova giacenza iniziale. I conteggi vendite e storni saranno azzerati. Procedere?";
     document.getElementById('confirm-yes').onclick = () => {
         db.prodotti.forEach(p => { 
-            // La nuova giacenza d'inizio è il fisico (o il teorico se il fisico manca)
             p.q = calcGiacenza(p); 
             p.c = 0; p.vePas = 0; p.vePen = 0; p.vePenOld = 0; p.omaggio = 0; p.reale = null; 
         });
@@ -522,40 +484,26 @@ function openGest(i) { curIdx = i; qty = 1; document.getElementById('g-nome').in
 function changeQty(v) { qty = Math.max(1, qty + v); document.getElementById('g-qty').innerText = qty; }
 
 function conferma(f) { 
-    // Registra la vendita
     db.prodotti[curIdx][f] = (db.prodotti[curIdx][f]||0) + qty; 
-    
-    // SCALA DAL FISICO se presente
-    if (db.prodotti[curIdx].reale !== null) {
-        db.prodotti[curIdx].reale -= qty;
-    }
-    
-    closeModal('mod-gest'); 
-    render(); 
+    if (db.prodotti[curIdx].reale !== null) db.prodotti[curIdx].reale -= qty;
+    closeModal('mod-gest'); render(); 
 }
 
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
 
-/**
- * Aggiornamento campi manuali nel report
- */
 function up(i, f, v) { 
     let vecchioValore = db.prodotti[i][f] || 0;
     let nuovoValore = v === '' ? 0 : parseFloat(v);
     db.prodotti[i][f] = nuovoValore; 
 
-    // Se modifichiamo uscite (vendite o scarichi) e c'è il fisico, aggiorniamo il fisico per differenza
-    const campiUscita = ['vePas', 'vePen', 'omaggio', 'vePenOld'];
-    if (campiUscita.includes(f) && db.prodotti[i].reale !== null) {
-        let diff = nuovoValore - vecchioValore;
-        db.prodotti[i].reale -= diff;
+    // Solo vePas, vePen e omaggio scaricano il fisico. vePenOld NO.
+    const campiScaricoFisico = ['vePas', 'vePen', 'omaggio'];
+    if (campiScaricoFisico.includes(f) && db.prodotti[i].reale !== null) {
+        db.prodotti[i].reale -= (nuovoValore - vecchioValore);
     }
-    // Se modifichiamo entrate (carico o inizio) e c'è il fisico, aggiorniamo il fisico per differenza
     if ((f === 'q' || f === 'c') && db.prodotti[i].reale !== null) {
-        let diff = nuovoValore - vecchioValore;
-        db.prodotti[i].reale += diff;
+        db.prodotti[i].reale += (nuovoValore - vecchioValore);
     }
-    
     render(); 
 }
 
@@ -580,13 +528,10 @@ function saveDDT() {
         const val = parseFloat(document.getElementById(`ddt-${i}`).value); 
         if(!isNaN(val) && val !== 0) {
             p.c = (p.c||0) + val; 
-            // Aggiorna anche il fisico se presente
             if (p.reale !== null) p.reale += val;
         }
     }); 
-    closeModal('mod-confirm'); 
-    document.getElementById('confirm-yes').style.display = "block"; 
-    render(); 
+    closeModal('mod-confirm'); document.getElementById('confirm-yes').style.display = "block"; render(); 
 }
 
 function switchTab(t) {
@@ -632,5 +577,3 @@ function importJSON(event) {
 </script>
 </body>
 </html>
-
-```
