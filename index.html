@@ -1,10 +1,10 @@
-
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NAV-PRO V162 - STORNO PREGRESSI</title>
+    <title>NAV-PRO V162 - VESUVIO JET</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -69,18 +69,18 @@
 
 <div class="header">
     <div class="boat-box" onclick="openBoatMenu()">
-        <span id="current-boat-name">SALERNO JET</span>
+        <span id="current-boat-name">VESUVIO JET</span>
     </div>
     <div style="text-align:center"><small>Incasso Oggi</small><br><b id="tot-incasso">0.00€</b></div>
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
 </div>
 
-<!-- CASSA -->
+<!-- PAGINA CASSA -->
 <div id="page-c" class="page active-page">
     <div class="grid" id="grid-cassa"></div>
 </div>
 
-<!-- REPORT & MANUTENZIONE -->
+<!-- PAGINA REPORT & MANUTENZIONE -->
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -91,8 +91,8 @@
         <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--lime); color:black;">☀️ CHIUDI GIORNATA</button>
         
         <div style="margin-top: 20px; padding: 15px; background: #1c1c1e; border-radius: 15px; border: 1px solid #333;">
-            <small style="color:#888; display: block; text-align: center; margin-bottom: 10px;">GESTIONE DATI E BACKUP</small>
-            <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size: 13px; margin-top: 0;">📦 RESET STOCK SALERNO JET (DEF)</button>
+            <small style="color:#888; display: block; text-align: center; margin-bottom: 10px;">GESTIONE DATI E GIACENZE INIZIALI</small>
+            <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size: 13px; margin-top: 0;">📦 RESET GIACENZE VESUVIO JET (INIZIALI)</button>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
                 <button onclick="exportJSON()" class="btn-big" style="background:#333; color:var(--cyan); font-size: 12px; margin:0;">💾 BACKUP JSON</button>
@@ -106,7 +106,7 @@
     <div id="accordion-list"></div>
 </div>
 
-<!-- RICONCILIAZIONE -->
+<!-- PAGINA RICONCILIAZIONE -->
 <div id="page-i" class="page">
     <div style="position: sticky; top: 0; z-index: 50; background: #000; padding: 10px 15px; border-bottom: 1px solid #333;">
         <div style="background: #1c1c1e; padding: 12px; border-radius: 12px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -128,7 +128,7 @@
     <div id="inventory-list"></div>
 </div>
 
-<!-- CALENDARIO -->
+<!-- PAGINA CALENDARIO -->
 <div id="page-h" class="page">
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
@@ -189,6 +189,7 @@
     <div class="modal-card" style="padding:0;"><div id="boat-list-container" style="max-height:60vh; overflow-y:auto;"></div><button onclick="closeModal('mod-boat')" class="btn-big" style="background:#333; color:white; width:90%; margin:15px auto;">CHIUDI</button></div>
 </div>
 
+<!-- FOOTER -->
 <div class="footer">
     <button id="t-c" class="active" onclick="switchTab('c')">🛒 CASSA</button>
     <button id="t-m" onclick="switchTab('m')">📊 REPORT</button>
@@ -198,46 +199,48 @@
 
 <script>
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
+
+// CATALOGO CONFIGURATO CON LE QUANTITÀ INIZIALI ESTRATTE DALLE IMMAGINI
 const MASTER_CATALOG = [
-    {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def: 115},
-    {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def: 16},
-    {n:"Borse Piccole", i:"👜", pas:6.0, pen:5.0, def: 0},
+    {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def: 259}, // 221 + 38
+    {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def: 23}, // 18 + 5
+    {n:"Borse Piccole", i:"👜", pas:6.0, pen:5.0, def: 138},
     {n:"Borse Medie", i:"👜", pas:7.0, pen:7.0, def: 0},
-    {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, def: 23},
+    {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, def: 16},
     {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, def: 35},
-    {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, def: 116},
-    {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, def: 77},
-    {n:"Cialde", i:"☕", pas:2.0, pen:1.0, def: 140},
-    {n:"Deca", i:"☕", pas:2.0, pen:1.0, def: 4},
-    {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, def: 22},
-    {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, def: 15},
-    {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, def: 61},
-    {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, def: 18},
-    {n:"Impermeabili", i:"🧥", pas:3.5, pen:1.0, def: 0},
-    {n:"Latte", i:"🥛", pas:0.5, pen:0.5, def: 4},
-    {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, def: 234},
-    {n:"Maglie", i:"👕", pas:5.0, pen:5.0, def: 137},
-    {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, def: 17},
-    {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, def: 28},
-    {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, def: 17},
-    {n:"Orzo", i:"☕", pas:2.0, pen:1.0, def: 50},
-    {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, def: 18},
-    {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, def: 156},
-    {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, def: 44},
-    {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, def: 64},
-    {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, def: 80},
-    {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, def: 38},
-    {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, def: 100},
-    {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, def: 25},
-    {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, def: 50},
-    {n:"Succo", i:"🧃", pas:3.5, pen:2.0, def: 16},
-    {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, def: 63},
-    {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, def: 14},
-    {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, def: 82},
+    {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, def: 60},
+    {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, def: 60},
+    {n:"Cialde", i:"☕", pas:2.0, pen:1.0, def: 280}, // 262 + 18
+    {n:"Deca", i:"☕", pas:2.0, pen:1.0, def: 5},
+    {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, def: 40},
+    {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, def: 8},
+    {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, def: 115},
+    {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, def: 21},
+    {n:"Impermeabili", i:"🧥", pas:3.5, pen:1.0, def: 3},
+    {n:"Latte", i:"🥛", pas:0.5, pen:0.5, def: 220}, // 215 + 5
+    {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, def: 44},
+    {n:"Maglie", i:"👕", pas:5.0, pen:5.0, def: 14},
+    {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, def: 13},
+    {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, def: 39},
+    {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, def: 10},
+    {n:"Orzo", i:"☕", pas:2.0, pen:1.0, def: 25},
+    {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, def: 58},
+    {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, def: 0},
+    {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, def: 42},
+    {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, def: 58},
+    {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, def: 49},
+    {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, def: 44},
+    {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, def: 24},
+    {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, def: 12},
+    {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, def: 25},
+    {n:"Succo", i:"🧃", pas:3.5, pen:2.0, def: 13},
+    {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, def: 42},
+    {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, def: 9},
+    {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, def: 24},
     {n:"TU", i:"⚓", pas:0.0, pen:0.0, def: 0}
 ];
 
-let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "2"; 
+let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "8"; // Default su Vesuvio Jet
 let db = { prodotti: [] };
 let globalHistory = {}; 
 let curIdx = -1, curDayEdit = -1, qty = 1, numBuffer = "";
@@ -248,7 +251,12 @@ function showToast(msg) { const t = document.getElementById("toast"); t.innerTex
 function loadData() {
     globalHistory = JSON.parse(localStorage.getItem('NAV_GLOBAL_HISTORY')) || {};
     const saved = localStorage.getItem('NAV_DATA_B' + currentBoatID);
-    if(saved) { db = JSON.parse(saved); syncCatalog(); } else { hardReset(); }
+    if(saved) { 
+        db = JSON.parse(saved); 
+        syncCatalog(); 
+    } else { 
+        hardReset(); 
+    }
     render();
 }
 
@@ -277,7 +285,7 @@ function applyDefaultStock() {
         const m = MASTER_CATALOG.find(mi => mi.n === p.n);
         if(m) { p.q = m.def; p.c = 0; p.vePas = 0; p.vePen = 0; p.vePenOld = 0; p.omaggio = 0; p.reale = null; }
     });
-    showToast("Stock Resettato!"); render();
+    showToast("Giacenze Iniziali Resettate!"); render();
 }
 
 function calcGiacenza(p) {
@@ -292,13 +300,11 @@ function render() {
 
     db.prodotti.forEach(p => {
         const giac = calcGiacenza(p);
-        // Incasso dei soldi fisici che devono entrare oggi
         tIncassoOggi += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
         tRimanenzeVal += (giac * p.pas);
         if(p.reale !== null) diffCount++;
         
-        // LOGICA DI STORNO RICHIESTA: 
-        // Il valore merce uscita totale sottrae i pregressi perché sono già stati "incassati" contabilmente.
+        // Logica storno pregressi
         tValoreUscitaNetto += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen) - ((p.vePenOld||0) * p.pen);
     });
 
@@ -408,7 +414,6 @@ function showConfirm(type) {
         if(confirm("Chiudere la giornata?")) {
             let incAggiuntoOggi = 0; 
             db.prodotti.forEach(p => {
-                // In busta oggi mettiamo (Vendite Oggi) - (Rimborsi Merce Pregressa)
                 incAggiuntoOggi += ((p.vePas||0)*p.pas) + ((p.vePen||0)*p.pen) - ((p.vePenOld||0)*p.pen);
             });
             let d = new Date().getDate(); 
