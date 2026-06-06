@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NAV-PRO V163</title>
+    <title>NAV-PRO V164</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -77,6 +77,7 @@
 
 <div id="toast">Messaggio</div>
 
+<!-- SEZIONE DI STAMPA DI SERVIZIO -->
 <div id="print-section"></div>
 
 <div class="header">
@@ -87,20 +88,24 @@
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
 </div>
 
+<!-- PAGINA CASSA -->
 <div id="page-c" class="page active-page">
     <div class="grid" id="grid-cassa"></div>
 </div>
 
+<!-- PAGINA REPORT & MANUTENZIONE -->
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
         
+        <!-- SEZIONE MERCE VENDUTA QUOTIDIANAMENTE -->
         <div style="background: #1c1c1e; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-bottom: 5px;">
             <h3 style="color:var(--cyan); margin-top:0; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #333; padding-bottom:8px; display:flex; justify-content:space-between;">
                 <span>📈 MERCE VENDUTA OGGI</span>
                 <span id="tot-pezzi-venduti" style="color:var(--lime);">0 pz</span>
             </h3>
             <div id="sold-today-list" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; padding-right:5px;">
-                </div>
+                <!-- Popolato dinamicamente da JS -->
+            </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -108,6 +113,7 @@
             <button onclick="openImporter()" class="btn-big" style="background:var(--cyan); color:black; margin:0;">📂 IMPORTA TXT</button>
         </div>
         
+        <!-- PULSANTI STAMPA E REPORT -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <button onclick="printInventory()" class="btn-big" style="background:var(--lime); color:black; margin:0; font-weight:800; border:1px solid #fff;">🖨️ STAMPA INV.</button>
             <button onclick="exportReport()" class="btn-big" style="background:var(--purple); color:white; margin:0;">📄 REPORT TESTO</button>
@@ -131,6 +137,7 @@
     <div id="accordion-list"></div>
 </div>
 
+<!-- PAGINA RICONCILIAZIONE -->
 <div id="page-i" class="page">
     <div style="position: sticky; top: 0; z-index: 50; background: #000; padding: 10px 15px; border-bottom: 1px solid #333;">
         <div style="background: #1c1c1e; padding: 12px; border-radius: 12px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -153,11 +160,13 @@
     <div id="inventory-list"></div>
 </div>
 
+<!-- PAGINA CALENDARIO -->
 <div id="page-h" class="page">
     <div id="calendar-body" class="grid" style="grid-template-columns: repeat(7, 1fr); padding:10px; background:#1c1c1e; margin:10px; border-radius:12px; gap:5px;"></div>
     <div id="quindicine-container"></div>
 </div>
 
+<!-- MODALE CHIUSURA GIORNATA CON VERIFICA PLUS/AMMANCO -->
 <div id="mod-close-day" class="modal-overlay">
     <div class="modal-card" style="max-width: 460px; width: 95%; max-height: 90vh; overflow-y: auto; text-align: left;">
         <h3 style="color:var(--lime); text-align: center; margin-top: 0; font-size: 18px;">☀️ CHIUSURA GIORNATA</h3>
@@ -166,7 +175,8 @@
         <div style="background: #111; padding: 12px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333;">
             <b style="font-size: 11px; color: #888; text-transform: uppercase; display: block; margin-bottom: 5px;">Riepilogo Merce Venduta Oggi:</b>
             <div id="close-sold-list" style="max-height: 140px; overflow-y: auto; font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
-                </div>
+                <!-- Righe dei prodotti venduti -->
+            </div>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 10px;">
@@ -194,6 +204,7 @@
     </div>
 </div>
 
+<!-- ALTRI MODALI -->
 <div id="mod-import-txt" class="modal-overlay">
     <div class="modal-card">
         <h3 style="color:var(--cyan);">IMPORTA TXT</h3>
@@ -248,6 +259,7 @@
     <div class="modal-card" style="padding:0;"><div id="boat-list-container" style="max-height:60vh; overflow-y:auto;"></div><button onclick="closeModal('mod-boat')" class="btn-big" style="background:#333; color:white; width:90%; margin:15px auto;">CHIUDI</button></div>
 </div>
 
+<!-- FOOTER -->
 <div class="footer">
     <button id="t-c" class="active" onclick="switchTab('c')">🛒 CASSA</button>
     <button id="t-m" onclick="switchTab('m')">📊 REPORT</button>
@@ -256,10 +268,10 @@
 </div>
 
 <script>
-const APP_VERSION = "163.0"; // Versione aggiornata per modifiche teorico
+const APP_VERSION = "164.0"; // Aggiornamento versione: Aggiunta gestione dinamica dei prezzi
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
 
-// CATALOGO MASTER CON PREZZI CORRETTI E PRODOTTO "TU" RIMOSSO
+// CATALOGO MASTER CON PREZZI DI DEFAULT
 const MASTER_CATALOG = [
     {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def:0},
     {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def:0},
@@ -297,15 +309,11 @@ const MASTER_CATALOG = [
     {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, def:0},
     {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, def:0},
     {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, def:0},
-    
-    // NUOVI PRODOTTI (3.00€ Passeggero / 2.00€ Pendolare)
     {n:"Costumi", i:"🩳", pas:3.0, pen:2.0, def:0},
     {n:"Calamite", i:"🧲", pas:3.0, pen:2.0, def:0},
     {n:"Cucchiai", i:"🥄", pas:3.0, pen:2.0, def:0},
     {n:"Bracciale", i:"📿", pas:3.0, pen:2.0, def:0},
     {n:"Portachiavi", i:"🔑", pas:3.0, pen:2.0, def:0},
-    
-    // TRAMEZZINI (4.00€ Passeggero / 3.00€ Pendolare)
     {n:"Tramezzini", i:"🥪", pas:4.0, pen:3.0, def:0}
 ];
 
@@ -359,7 +367,7 @@ let db = { prodotti: [] };
 let globalHistory = {}; 
 let curIdx = -1, curDayEdit = -1, qty = 1, numBuffer = "";
 let currentClosingTeorico = 0; 
-let cassaRettifica = 0; // Nuova variabile per gestire spese extra in cassa
+let cassaRettifica = 0;
 
 function init() { loadData(); }
 function showToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
@@ -396,8 +404,10 @@ function syncCatalog() {
         if(!p) {
             db.prodotti.push({...m, q:specificStock, c:0, vePas:0, vePen:0, vePenOld:0, omaggio:0, reale:null});
         } else { 
-            p.pas = m.pas; 
-            p.pen = m.pen; 
+            // Rispetta i prezzi salvati (se modificati dall'utente)
+            if(p.pas === undefined) p.pas = m.pas; 
+            if(p.pen === undefined) p.pen = m.pen; 
+            
             p.i = m.i; 
             if (tuttoVuoto) {
                 p.q = specificStock;
@@ -441,7 +451,7 @@ function calcGiacenza(p) {
 function render() {
     const boatName = FLEET[parseInt(currentBoatID)-1];
     document.getElementById('current-boat-name').innerText = boatName;
-    document.title = "NAV-PRO V163 - " + boatName;
+    document.title = "NAV-PRO V164 - " + boatName;
     
     let tIncassoOggi = 0, tRimanenzeVal = 0, tValoreUscitaNetto = 0, diffCount = 0;
     let tScontiPendolari = 0;
@@ -449,6 +459,10 @@ function render() {
     let soldTodayHtml = "";
 
     db.prodotti.forEach(p => {
+        // Prevenzione per eventuali dati corrotti
+        if (p.pas === undefined) p.pas = 0;
+        if (p.pen === undefined) p.pen = 0;
+
         const giac = calcGiacenza(p);
         tIncassoOggi += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
         tRimanenzeVal += (giac * p.pas);
@@ -494,6 +508,14 @@ function render() {
                 <b>${(calcGiacenza(p)*p.pas).toFixed(2)}€</b>
             </div>
             <div id="acc-${i}" class="acc-body">
+                <div class="edit-row" style="background:#2a2a2c; padding:8px; border-radius:8px; margin-bottom:10px;">
+                    <span style="color:var(--gold); font-weight:bold;">Prezzo Passeggero (€):</span> 
+                    <input type="number" step="0.1" value="${(p.pas||0).toFixed(2)}" onchange="up(${i},'pas',this.value)" style="color:var(--gold)">
+                </div>
+                <div class="edit-row" style="background:#1a222c; padding:8px; border-radius:8px; margin-bottom:15px;">
+                    <span style="color:var(--apple-blue); font-weight:bold;">Prezzo Pendolare (€):</span> 
+                    <input type="number" step="0.1" value="${(p.pen||0).toFixed(2)}" onchange="up(${i},'pen',this.value)" style="color:var(--apple-blue)">
+                </div>
                 <div class="edit-row"><span>Giacenza Iniziale:</span> <input type="number" value="${p.q}" onchange="up(${i},'q',this.value)"></div>
                 <div class="edit-row"><span>Carico DDT:</span> <input type="number" value="${p.c}" onchange="up(${i},'c',this.value)"></div>
                 <div class="edit-row"><span>Venduto Passeggeri:</span> <input type="number" value="${p.vePas}" onchange="up(${i},'vePas',this.value)"></div>
@@ -503,7 +525,6 @@ function render() {
             </div>
         </div>`).join('');
 
-    // QUI HO AGGIUNTO IL PULSANTE PER MODIFICARE IL TEORICO DELL'INVENTARIO
     document.getElementById('inventory-list').innerHTML = db.prodotti.map((p, i) => {
         const teo = Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.vePenOld||0) + (p.omaggio||0)));
         return `
@@ -527,7 +548,6 @@ function render() {
     renderCalendar(); save();
 }
 
-// FUNZIONE PER FORZARE UN NUOVO TEORICO INVENTARIO
 function editTeorico(i) {
     const p = db.prodotti[i];
     const currentTeo = Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.vePenOld||0) + (p.omaggio||0)));
@@ -537,7 +557,7 @@ function editTeorico(i) {
         const parsed = parseFloat(newVal);
         if(!isNaN(parsed)) {
             const diff = parsed - currentTeo;
-            p.q += diff; // Compensa modificando silenziosamente la base di partenza
+            p.q += diff;
             save();
             render();
             showToast("Teorico aggiornato con successo!");
@@ -545,14 +565,13 @@ function editTeorico(i) {
     }
 }
 
-// FUNZIONE PER AGGIUNGERE SPESE ALLA CASSA
 function editTeoricoCassa() {
     const val = prompt("RETTIFICA CASSA:\n\nInserisci un importo da AGGIUNGERE (es. 20) o da SOTTRARRE (es. -10.50 per una spesa extra) all'incasso teorico atteso:", "0");
     if(val !== null && val.trim() !== "") {
         const parsed = parseFloat(val);
         if(!isNaN(parsed)) {
             cassaRettifica += parsed;
-            openCloseDayModal(); // Ricarica il modale con i nuovi dati
+            openCloseDayModal(); 
         }
     }
 }
@@ -630,7 +649,6 @@ function openCloseDayModal() {
         }
     });
 
-    // Aggiungo la rettifica cassa (spese/extra) al teorico totale
     currentClosingTeorico = tIncassoOggi + cassaRettifica;
     
     document.getElementById('close-teorico-val').innerText = currentClosingTeorico.toFixed(2) + "€";
@@ -676,7 +694,7 @@ function confirmCloseDay() {
         globalHistory[d] = (globalHistory[d] || 0) + reale;
         applyInventoryAsInitial();
         
-        cassaRettifica = 0; // Azzera la rettifica per i giorni successivi
+        cassaRettifica = 0; 
         closeModal('mod-close-day');
         showToast("Giornata Chiusa con Successo e Busta Registrata!");
     }
@@ -751,7 +769,7 @@ function printInventory() {
                 <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.vePen || 0}</td>
                 <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.omaggio || 0}</td>
                 <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold;">${teo}</td>
-                <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold; background-color: #e2e2e2;">${p.reale !== null ? p.reale : ''}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold; background-color: #f9f9f9;">${p.reale !== null ? p.reale : ''}</td>
             </tr>
         `;
     });
