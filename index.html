@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NAV-PRO V162 - VESUVIO JET</title>
+    <title>NAV-PRO V162</title>
     <style>
         :root { --bg: #000; --card: #1c1c1e; --txt: #fff; --cyan: #5ac8fa; --apple-blue: #007aff; --lime: #4cd964; --red: #ff3b30; --gold: #ffcc00; --orange: #ff9500; --purple: #af52de; }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -60,15 +60,29 @@
         .day-cell { background: #2c2c2e; border-radius: 8px; padding: 8px; text-align: center; border: 1px solid #333; min-height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .day-cell.today { border: 2px solid var(--lime); }
         .day-cell .val { font-size: 9px; color: var(--lime); margin-top: 4px; }
+
+        /* AREA STAMPA */
+        #print-section { display: none; }
+        @media print {
+            body { background: white !important; color: black !important; font-size: 12pt; height: auto; overflow: visible; position: relative; }
+            .header, .footer, .page, .modal-overlay, #toast { display: none !important; }
+            #print-section { display: block !important; width: 100%; color: black; background: white; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            th, td { border: 1px solid #333; padding: 8px; text-align: left; font-size: 10pt; }
+            th { background-color: #f2f2f2 !important; color: black !important; }
+        }
     </style>
 </head>
 <body onload="init()">
 
 <div id="toast">Messaggio</div>
 
+<!-- SEZIONE DI STAMPA DI SERVIZIO -->
+<div id="print-section"></div>
+
 <div class="header">
     <div class="boat-box" onclick="openBoatMenu()">
-        <span id="current-boat-name">VESUVIO JET</span>
+        <span id="current-boat-name">BARCA</span>
     </div>
     <div style="text-align:center"><small>Incasso Oggi</small><br><b id="tot-incasso">0.00€</b></div>
     <div style="text-align:right"><small>RIMANENZE (PAS)</small><br><b id="header-val-rimanenze" style="color:var(--gold)">0.00€</b></div>
@@ -82,16 +96,34 @@
 <!-- PAGINA REPORT & MANUTENZIONE -->
 <div id="page-m" class="page">
     <div style="padding:15px; display: flex; flex-direction: column; gap: 10px;">
+        
+        <!-- SEZIONE MERCE VENDUTA QUOTIDIANAMENTE -->
+        <div style="background: #1c1c1e; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-bottom: 5px;">
+            <h3 style="color:var(--cyan); margin-top:0; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #333; padding-bottom:8px; display:flex; justify-content:space-between;">
+                <span>📈 MERCE VENDUTA OGGI</span>
+                <span id="tot-pezzi-venduti" style="color:var(--lime);">0 pz</span>
+            </h3>
+            <div id="sold-today-list" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; padding-right:5px;">
+                <!-- Popolato dinamicamente da JS -->
+            </div>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <button onclick="openDDT()" class="btn-big" style="background:var(--orange); color:black; margin:0;">📝 CARICA DDT</button>
             <button onclick="openImporter()" class="btn-big" style="background:var(--cyan); color:black; margin:0;">📂 IMPORTA TXT</button>
         </div>
-        <button onclick="exportReport()" class="btn-big" style="background:var(--purple); color:white; margin:0;">📄 REPORT TESTO</button>
-        <button onclick="showConfirm('fine')" class="btn-big" style="background:var(--lime); color:black;">☀️ CHIUDI GIORNATA</button>
+        
+        <!-- PULSANTI STAMPA E REPORT -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button onclick="printInventory()" class="btn-big" style="background:var(--lime); color:black; margin:0; font-weight:800; border:1px solid #fff;">🖨️ STAMPA INV.</button>
+            <button onclick="exportReport()" class="btn-big" style="background:var(--purple); color:white; margin:0;">📄 REPORT TESTO</button>
+        </div>
+        
+        <button onclick="openCloseDayModal()" class="btn-big" style="background:var(--lime); color:black; font-weight: bold; border-left: 5px solid var(--gold);">☀️ CHIUDI GIORNATA</button>
         
         <div style="margin-top: 20px; padding: 15px; background: #1c1c1e; border-radius: 15px; border: 1px solid #333;">
             <small style="color:#888; display: block; text-align: center; margin-bottom: 10px;">GESTIONE DATI E GIACENZE INIZIALI</small>
-            <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size: 13px; margin-top: 0;">📦 RESET GIACENZE VESUVIO JET (INIZIALI)</button>
+            <button onclick="applyDefaultStock()" class="btn-big" style="background:var(--cyan); color:black; font-size: 13px; margin-top: 0;">📦 RESET GIACENZE BARCA (FOTO)</button>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
                 <button onclick="exportJSON()" class="btn-big" style="background:#333; color:var(--cyan); font-size: 12px; margin:0;">💾 BACKUP JSON</button>
@@ -109,7 +141,7 @@
 <div id="page-i" class="page">
     <div style="position: sticky; top: 0; z-index: 50; background: #000; padding: 10px 15px; border-bottom: 1px solid #333;">
         <div style="background: #1c1c1e; padding: 12px; border-radius: 12px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div><small style="font-size: 10px; color: #888;">Incasso Cassa</small><br><b id="inv-diff-euro" style="font-size: 18px;">0.00€</b></div>
+            <div><small style="font-size: 10px; color: #888;">Incasso Effettivo</small><br><b id="inv-diff-euro" style="font-size: 18px; color:var(--lime)">0.00€</b></div>
             <div style="text-align:right"><small style="font-size: 10px; color: #888;">Prodotti Fisici</small><br><b id="inv-diff-count" style="font-size: 18px;">0</b></div>
         </div>
         <button onclick="applyInventoryAsInitial()" class="btn-big" style="background:var(--lime); color:black; margin:0;">✅ CONFERMA FISICO E RESET</button>
@@ -119,10 +151,11 @@
         <div class="recon-title">CONSOLIDAMENTO REALE</div>
         <div class="recon-row"><span>Incassi Busta (Calendario):</span><b id="rec-calendario" style="color:var(--lime)">0.00€</b></div>
         <div class="recon-row"><span>Valore Merce Uscita (Netto):</span><b id="rec-merce" style="color:var(--orange)">0.00€</b></div>
+        <div class="recon-row"><span>Storno Sconti Pendolari erogati:</span><b id="rec-sconto-pendolari" style="color:var(--cyan)">0.00€</b></div>
         <div class="recon-total">
             <div class="recon-row" style="margin-bottom:0;"><b style="font-size:16px;">DIFFERENZA NETTA:</b><b id="rec-differenza" style="font-size:18px;">0.00€</b></div>
         </div>
-        <div style="margin-top:10px; font-size:10px; color:#666; text-align:center;">* I Pendolari Pregressi stornano il valore merce uscita.</div>
+        <div style="margin-top:10px; font-size:10px; color:#666; text-align:center;">* Gli sconti pendolari compensano il calo a prezzo pieno delle rimanenze.</div>
     </div>
     <div id="inventory-list"></div>
 </div>
@@ -133,7 +166,39 @@
     <div id="quindicine-container"></div>
 </div>
 
-<!-- MODALI -->
+<!-- MODALE CHIUSURA GIORNATA CON VERIFICA PLUS/AMMANCO -->
+<div id="mod-close-day" class="modal-overlay">
+    <div class="modal-card" style="max-width: 460px; width: 95%; max-height: 90vh; overflow-y: auto; text-align: left;">
+        <h3 style="color:var(--lime); text-align: center; margin-top: 0; font-size: 18px;">☀️ CHIUSURA GIORNATA</h3>
+        <h4 id="close-boat-name" style="text-align: center; margin: -5px 0 15px 0; color: var(--cyan); font-weight: bold;">NOME BARCA</h4>
+        
+        <div style="background: #111; padding: 12px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333;">
+            <b style="font-size: 11px; color: #888; text-transform: uppercase; display: block; margin-bottom: 5px;">Riepilogo Merce Venduta Oggi:</b>
+            <div id="close-sold-list" style="max-height: 140px; overflow-y: auto; font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
+                <!-- Righe dei prodotti venduti -->
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+            <span>Incasso Teorico Atteso:</span>
+            <b id="close-teorico-val" style="color: var(--gold); font-size: 16px;">0.00€</b>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 12px; color: #aaa; display: block; margin-bottom: 6px; font-weight: bold;">INSERISCI INCASSO REALE CONTATO (€):</label>
+            <input type="number" id="close-reale-input" step="0.01" placeholder="0.00" oninput="calculateClosingDifference()" style="width: 100%; background: #000; border: 2px solid var(--cyan); color: var(--txt); padding: 12px; border-radius: 10px; font-size: 22px; font-weight: bold; text-align: center;">
+        </div>
+
+        <div id="close-diff-box" style="padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 15px; background: #222; border: 1px solid #444;">
+            Differenza: 0.00€
+        </div>
+
+        <button onclick="confirmCloseDay()" class="btn-big" style="background:var(--lime); color:black; font-weight:bold; margin:0; width:100%;">💾 REGISTRA BUSTA E CHIUDI</button>
+        <button onclick="closeModal('mod-close-day')" class="btn-big" style="background:#333; color:white; width:100%; margin-top: 10px;">ANNULLA</button>
+    </div>
+</div>
+
+<!-- ALTRI MODALI -->
 <div id="mod-import-txt" class="modal-overlay">
     <div class="modal-card">
         <h3 style="color:var(--cyan);">IMPORTA TXT</h3>
@@ -199,50 +264,106 @@
 <script>
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
 
-// CATALOGO CONFIGURATO CON LE QUANTITÀ INIZIALI ESTRATTE DALLE IMMAGINI
+// CATALOGO MASTER CON PREZZI CORRETTI E PRODOTTO "TU" COMPLETAMENTE RIMOSSO
 const MASTER_CATALOG = [
-    {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def: 259}, // 221 + 38
-    {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def: 23}, // 18 + 5
-    {n:"Borse Piccole", i:"👜", pas:6.0, pen:5.0, def: 138},
-    {n:"Borse Medie", i:"👜", pas:7.0, pen:7.0, def: 0},
-    {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, def: 16},
-    {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, def: 35},
-    {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, def: 60},
-    {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, def: 60},
-    {n:"Cialde", i:"☕", pas:2.0, pen:1.0, def: 280}, // 262 + 18
-    {n:"Deca", i:"☕", pas:2.0, pen:1.0, def: 5},
-    {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, def: 40},
-    {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, def: 8},
-    {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, def: 115},
-    {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, def: 21},
-    {n:"Impermeabili", i:"🧥", pas:3.5, pen:1.0, def: 3},
-    {n:"Latte", i:"🥛", pas:0.5, pen:0.5, def: 220}, // 215 + 5
-    {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, def: 44},
-    {n:"Maglie", i:"👕", pas:5.0, pen:5.0, def: 14},
-    {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, def: 13},
-    {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, def: 39},
-    {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, def: 10},
-    {n:"Orzo", i:"☕", pas:2.0, pen:1.0, def: 25},
-    {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, def: 58},
-    {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, def: 0},
-    {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, def: 42},
-    {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, def: 58},
-    {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, def: 49},
-    {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, def: 44},
-    {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, def: 24},
-    {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, def: 12},
-    {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, def: 25},
-    {n:"Succo", i:"🧃", pas:3.5, pen:2.0, def: 13},
-    {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, def: 42},
-    {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, def: 9},
-    {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, def: 24},
-    {n:"TU", i:"⚓", pas:0.0, pen:0.0, def: 0}
+    {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def:0},
+    {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def:0},
+    {n:"Borse Piccole", i:"👜", pas:6.0, pen:5.0, def:0},
+    {n:"Borse Medie", i:"👜", pas:7.0, pen:7.0, def:0},
+    {n:"Borse Grandi", i:"👜", pas:10.0, pen:10.0, def:0},
+    {n:"Bueno/B-Ready/Biscuits", i:"🍫", pas:3.0, pen:1.0, def:0},
+    {n:"Cappelli", i:"🧢", pas:5.0, pen:5.0, def:0},
+    {n:"Caramelle / Gomme", i:"🍬", pas:2.5, pen:1.0, def:0},
+    {n:"Cialde", i:"☕", pas:2.0, pen:1.0, def:0},
+    {n:"Deca", i:"☕", pas:2.0, pen:1.0, def:0},
+    {n:"Dietor", i:"🍬", pas:0.0, pen:0.0, def:0},
+    {n:"Fitness / Cereal Yo", i:"🌾", pas:2.5, pen:1.0, def:0},
+    {n:"Fonzies / Patatine", i:"🍟", pas:2.5, pen:1.0, def:0},
+    {n:"Ginseng", i:"☕", pas:2.0, pen:1.0, def:0},
+    {n:"Impermeabili", i:"🧥", pas:3.5, pen:1.0, def:0},
+    {n:"Kinder Cards", i:"🍫", pas:2.5, pen:1.0, def:0},
+    {n:"Latte", i:"🥛", pas:0.5, pen:0.5, def:0},
+    {n:"Lattine", i:"🥤", pas:2.5, pen:1.5, def:0},
+    {n:"Maglie", i:"👕", pas:5.0, pen:5.0, def:0},
+    {n:"Mikado", i:"🥖", pas:3.0, pen:1.0, def:0},
+    {n:"Muffin", i:"🧁", pas:3.0, pen:1.0, def:0},
+    {n:"Nik Nok", i:"🥜", pas:2.5, pen:1.0, def:0},
+    {n:"Orzo", i:"☕", pas:2.0, pen:1.0, def:0},
+    {n:"Pavesini", i:"🍪", pas:2.5, pen:1.0, def:0},
+    {n:"Peroni", i:"🍺", pas:4.5, pen:1.5, def:0},
+    {n:"Peroni Capri", i:"🍋", pas:7.5, pen:5.5, def:0},
+    {n:"Pringles", i:"🥔", pas:3.5, pen:2.0, def:0},
+    {n:"Prosecco / Vino", i:"🍷", pas:6.0, pen:3.0, def:0},
+    {n:"Red Bull / Gatorade", i:"⚡", pas:4.5, pen:2.5, def:0},
+    {n:"Ringo / Oreo / Baiocchi", i:"🍪", pas:2.5, pen:1.0, def:0},
+    {n:"Ritz / Cipster", i:"🍪", pas:2.5, pen:1.0, def:0},
+    {n:"Spritz", i:"🍹", pas:8.0, pen:5.0, def:0},
+    {n:"Succo", i:"🧃", pas:3.5, pen:2.0, def:0},
+    {n:"The Camomilla", i:"🍵", pas:2.5, pen:1.5, def:0},
+    {n:"Tuc", i:"🍪", pas:2.5, pen:1.0, def:0},
+    {n:"Twix/KitKat/M&M...", i:"🍫", pas:2.5, pen:1.5, def:0},
+    
+    // NUOVI PRODOTTI (3.00€ Passeggero / 2.00€ Pendolare)
+    {n:"Costumi", i:"🩳", pas:3.0, pen:2.0, def:0},
+    {n:"Calamite", i:"🧲", pas:3.0, pen:2.0, def:0},
+    {n:"Cucchiai", i:"🥄", pas:3.0, pen:2.0, def:0},
+    {n:"Bracciale", i:"📿", pas:3.0, pen:2.0, def:0},
+    {n:"Portachiavi", i:"🔑", pas:3.0, pen:2.0, def:0},
+    
+    // TRAMEZZINI (4.00€ Passeggero / 3.00€ Pendolare)
+    {n:"Tramezzini", i:"🥪", pas:4.0, pen:3.0, def:0}
 ];
 
-let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "8"; // Default su Vesuvio Jet
+// DATA MAPPING COMPLETO ESTRATTO DALLE IMMAGINI FORNITE
+const INITIAL_STOCKS = {
+    "1": { // NAPOLI JET
+        "Acqua": 180, "Arachidi / Frutta S.": 85, "Borse Piccole": 71, "Borse Grandi": 20, "Bueno/B-Ready/Biscuits": 123,
+        "Cappelli": 183, "Caramelle / Gomme": 103, "Cialde": 107, "Dietor": 4, "Fitness / Cereal Yo": 38,
+        "Fonzies / Patatine": 34, "Impermeabili": 54, "Kinder Cards": 0, "Latte": 0, "Lattine": 380, "Maglie": 28,
+        "Mikado": 48, "Muffin": 33, "Nik Nok": 6, "Pavesini": 21, "Peroni": 202, "Peroni Capri": 54, "Pringles": 86,
+        "Prosecco / Vino": 111, "Red Bull / Gatorade": 55, "Ringo / Oreo / Baiocchi": 62, "Ritz / Cipster": 28,
+        "Spritz": 45, "Succo": 34, "The Camomilla": 41, "Tuc": 16, "Twix/KitKat/M&M...": 124
+    },
+    "4": { // SUPER JET
+        "Acqua": 827, "Arachidi / Frutta S.": 7, "Borse Piccole": 366, "Borse Grandi": 134, "Bueno/B-Ready/Biscuits": 58,
+        "Cappelli": 119, "Caramelle / Gomme": 67, "Cialde": 486, "Dietor": 82, "Fitness / Cereal Yo": 24,
+        "Fonzies / Patatine": 106, "Impermeabili": 40, "Kinder Cards": 0, "Latte": 0, "Lattine": 391, "Maglie": 27,
+        "Mikado": 43, "Muffin": 40, "Nik Nok": 15, "Pavesini": 5, "Peroni": 531, "Peroni Capri": 74, "Pringles": 0,
+        "Prosecco / Vino": 254, "Red Bull / Gatorade": 124, "Ringo / Oreo / Baiocchi": 120, "Ritz / Cipster": 19,
+        "Spritz": 152, "Succo": 87, "The Camomilla": 0, "Tuc": 22, "Twix/KitKat/M&M...": 94, "Orzo": 48, "Ginseng": 10, "Tramezzini": 10
+    },
+    "7": { // TREMITI JET
+        "Acqua": 344, "Arachidi / Frutta S.": 32, "Borse Piccole": 285, "Borse Grandi": 39, "Bueno/B-Ready/Biscuits": 101,
+        "Cappelli": 120, "Caramelle / Gomme": 155, "Cialde": 282, "Dietor": 70, "Fitness / Cereal Yo": 40,
+        "Fonzies / Patatine": 93, "Impermeabili": 18, "Kinder Cards": 0, "Latte": 6, "Lattine": 435, "Maglie": 49,
+        "Mikado": 38, "Muffin": 21, "Nik Nok": 34, "Pavesini": 0, "Peroni": 310, "Peroni Capri": 13, "Pringles": 114,
+        "Prosecco / Vino": 131, "Red Bull / Gatorade": 63, "Ringo / Oreo / Baiocchi": 129, "Ritz / Cipster": 13,
+        "Spritz": 62, "Succo": 25, "The Camomilla": 30, "Tuc": 27, "Twix/KitKat/M&M...": 170, "Orzo": 32, "Ginseng": 18,
+        "Deca": 14, "Costumi": 13, "Calamite": 186, "Cucchiai": 10, "Bracciale": 22, "Portachiavi": 21
+    },
+    "8": { // VESUVIO JET
+        "Acqua": 149, "Arachidi / Frutta S.": 4, "Borse Piccole": 142, "Borse Grandi": 20, "Bueno/B-Ready/Biscuits": 51,
+        "Cappelli": 63, "Caramelle / Gomme": 103, "Cialde": 107, "Dietor": 4, "Fitness / Cereal Yo": 38,
+        "Fonzies / Patatine": 34, "Impermeabili": 54, "Kinder Cards": 0, "Latte": 0, "Lattine": 291, "Maglie": 28,
+        "Mikado": 12, "Muffin": 33, "Nik Nok": 6, "Pavesini": 21, "Peroni": 202, "Peroni Capri": 54, "Pringles": 86,
+        "Prosecco / Vino": 83, "Red Bull / Gatorade": 43, "Ringo / Oreo / Baiocchi": 62, "Ritz / Cipster": 28,
+        "Spritz": 45, "Succo": 34, "The Camomilla": 41, "Tuc": 15, "Twix/KitKat/M&M...": 95
+    },
+    "11": { // GIUNONE JET
+        "Acqua": 703, "Arachidi / Frutta S.": 4, "Borse Piccole": 66, "Borse Grandi": 66, "Bueno/B-Ready/Biscuits": 14,
+        "Cappelli": 93, "Caramelle / Gomme": 54, "Cialde": 68, "Dietor": 0, "Fitness / Cereal Yo": 12,
+        "Fonzies / Patatine": 118, "Impermeabili": 22, "Kinder Cards": 0, "Latte": 3, "Lattine": 261, "Maglie": 10,
+        "Mikado": 0, "Muffin": 32, "Nik Nok": 24, "Pavesini": 6, "Peroni": 216, "Peroni Capri": 31, "Pringles": 13,
+        "Prosecco / Vino": 57, "Red Bull / Gatorade": 44, "Ringo / Oreo / Baiocchi": 117, "Ritz / Cipster": 0,
+        "Spritz": 56, "Succo": 5, "The Camomilla": 62, "Tuc": 0, "Twix/KitKat/M&M...": 40
+    }
+};
+
+let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "8"; 
 let db = { prodotti: [] };
 let globalHistory = {}; 
 let curIdx = -1, curDayEdit = -1, qty = 1, numBuffer = "";
+let currentClosingTeorico = 0; // Memorizza temporaneamente l'incasso teorico per la chiusura
 
 function init() { loadData(); }
 function showToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
@@ -260,11 +381,17 @@ function loadData() {
 }
 
 function syncCatalog() {
+    const boatStocks = INITIAL_STOCKS[currentBoatID] || {};
     MASTER_CATALOG.forEach(m => {
         let p = db.prodotti.find(x => x.n === m.n);
-        if(!p) db.prodotti.push({...m, q:m.def, c:0, vePas:0, vePen:0, vePenOld:0, omaggio:0, reale:null});
+        const specificStock = (boatStocks[m.n] !== undefined) ? boatStocks[m.n] : m.def;
+        if(!p) db.prodotti.push({...m, q:specificStock, c:0, vePas:0, vePen:0, vePenOld:0, omaggio:0, reale:null});
         else { p.pas = m.pas; p.pen = m.pen; p.i = m.i; }
     });
+    
+    // Rimuoviamo elementi non più presenti nel master catalog
+    db.prodotti = db.prodotti.filter(p => MASTER_CATALOG.some(m => m.n === p.n));
+    
     render();
 }
 
@@ -275,16 +402,21 @@ function save() {
 }
 
 function hardReset() {
-    db.prodotti = MASTER_CATALOG.map(p => ({...p, q:p.def, c:0, vePas:0, vePen:0, vePenOld:0, omaggio:0, reale:null}));
+    const boatStocks = INITIAL_STOCKS[currentBoatID] || {};
+    db.prodotti = MASTER_CATALOG.map(p => {
+        const stock = (boatStocks[p.n] !== undefined) ? boatStocks[p.n] : p.def;
+        return {...p, q:stock, c:0, vePas:0, vePen:0, vePenOld:0, omaggio:0, reale:null};
+    });
     save();
 }
 
 function applyDefaultStock() {
+    const boatStocks = INITIAL_STOCKS[currentBoatID] || {};
     db.prodotti.forEach(p => {
-        const m = MASTER_CATALOG.find(mi => mi.n === p.n);
-        if(m) { p.q = m.def; p.c = 0; p.vePas = 0; p.vePen = 0; p.vePenOld = 0; p.omaggio = 0; p.reale = null; }
+        const stock = (boatStocks[p.n] !== undefined) ? boatStocks[p.n] : p.def;
+        p.q = stock; p.c = 0; p.vePas = 0; p.vePen = 0; p.vePenOld = 0; p.omaggio = 0; p.reale = null;
     });
-    showToast("Giacenze Iniziali Resettate!"); render();
+    showToast("Giacenze Iniziali Aggiornate!"); render();
 }
 
 function calcGiacenza(p) {
@@ -293,19 +425,44 @@ function calcGiacenza(p) {
 }
 
 function render() {
-    document.getElementById('current-boat-name').innerText = FLEET[parseInt(currentBoatID)-1];
+    const boatName = FLEET[parseInt(currentBoatID)-1];
+    document.getElementById('current-boat-name').innerText = boatName;
+    document.title = "NAV-PRO V162 - " + boatName;
     
     let tIncassoOggi = 0, tRimanenzeVal = 0, tValoreUscitaNetto = 0, diffCount = 0;
+    let tScontiPendolari = 0;
+    let totPezziVendutiOggi = 0;
+    let soldTodayHtml = "";
 
     db.prodotti.forEach(p => {
         const giac = calcGiacenza(p);
         tIncassoOggi += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
         tRimanenzeVal += (giac * p.pas);
         if(p.reale !== null) diffCount++;
-        
-        // Logica storno pregressi
         tValoreUscitaNetto += ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen) - ((p.vePenOld||0) * p.pen);
+        
+        tScontiPendolari += (p.vePen||0) * (p.pas - p.pen);
+
+        // Composizione della lista merce venduta oggi
+        const venduti = (p.vePas||0) + (p.vePen||0);
+        if (venduti > 0) {
+            totPezziVendutiOggi += venduti;
+            const ricavoArticolo = ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
+            soldTodayHtml += `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2c2c2e; padding:6px 0; font-size:12px;">
+                    <span>${p.i} <b>${p.n}</b></span>
+                    <div style="text-align:right;">
+                        <span style="color:var(--cyan); font-weight:bold;">${venduti} pz</span>
+                        <small style="color:#888;">(Pas: ${p.vePas||0}, Pen: ${p.vePen||0})</small>
+                        <br><b style="color:var(--lime); font-size:11px;">+${ricavoArticolo.toFixed(2)}€</b>
+                    </div>
+                </div>`;
+        }
     });
+
+    // Aggiornamento Box "Merce Venduta Oggi"
+    document.getElementById('tot-pezzi-venduti').innerText = totPezziVendutiOggi + " pz";
+    document.getElementById('sold-today-list').innerHTML = soldTodayHtml || `<div style="text-align:center; color:#666; font-size:12px; padding:20px 0;">Nessun articolo venduto oggi.</div>`;
 
     document.getElementById('tot-incasso').innerText = tIncassoOggi.toFixed(2) + "€";
     document.getElementById('header-val-rimanenze').innerText = tRimanenzeVal.toFixed(2) + "€";
@@ -347,6 +504,7 @@ function render() {
     const diffNetta = totalCal - tValoreUscitaNetto;
     document.getElementById('rec-calendario').innerText = totalCal.toFixed(2) + "€";
     document.getElementById('rec-merce').innerText = tValoreUscitaNetto.toFixed(2) + "€";
+    document.getElementById('rec-sconto-pendolari').innerText = tScontiPendolari.toFixed(2) + "€";
     document.getElementById('rec-differenza').innerText = (diffNetta >= 0 ? '+' : '') + diffNetta.toFixed(2) + "€";
     document.getElementById('rec-differenza').style.color = Math.abs(diffNetta) < 0.1 ? 'var(--lime)' : (diffNetta > 0 ? 'var(--lime)' : 'var(--red)');
 
@@ -402,24 +560,84 @@ function openBoatMenu() {
 function selectBoat(id) { currentBoatID = id; closeModal('mod-boat'); loadData(); }
 
 function applyInventoryAsInitial() {
-    if(confirm("Consolidare il fisico?")) {
-        db.prodotti.forEach(p => { p.q = calcGiacenza(p); p.c=0; p.vePas=0; p.vePen=0; p.vePenOld=0; p.omaggio=0; p.reale=null; });
-        render();
+    db.prodotti.forEach(p => { p.q = calcGiacenza(p); p.c=0; p.vePas=0; p.vePen=0; p.vePenOld=0; p.omaggio=0; p.reale=null; });
+    render();
+}
+
+// GESTIONE NUOVO MODALE CHIUSURA CON CALCOLO DI PLUS / AMMANCO
+function openCloseDayModal() {
+    const boatName = FLEET[parseInt(currentBoatID)-1];
+    document.getElementById('close-boat-name').innerText = boatName;
+    
+    let tIncassoOggi = 0;
+    let soldListHtml = "";
+    
+    db.prodotti.forEach(p => {
+        const venduti = (p.vePas||0) + (p.vePen||0);
+        if (venduti > 0) {
+            const ricavo = ((p.vePas||0) * p.pas) + ((p.vePen||0) * p.pen);
+            tIncassoOggi += ricavo;
+            soldListHtml += `
+                <div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom: 1px dashed #222;">
+                    <span>${p.i} ${p.n} x${venduti} <small style="color:#777;">(P:${p.vePas||0} - C:${p.vePen||0})</small></span>
+                    <b style="color:var(--gold);">${ricavo.toFixed(2)}€</b>
+                </div>`;
+        }
+    });
+
+    currentClosingTeorico = tIncassoOggi;
+    document.getElementById('close-teorico-val').innerText = tIncassoOggi.toFixed(2) + "€";
+    document.getElementById('close-sold-list').innerHTML = soldListHtml || `<div style="text-align:center; color:#555; padding:15px 0;">Nessun prodotto venduto oggi.</div>`;
+    
+    // Inizializza l'input del totale contato reale con il teorico per comodità
+    document.getElementById('close-reale-input').value = tIncassoOggi ? tIncassoOggi.toFixed(2) : "";
+    
+    calculateClosingDifference();
+    document.getElementById('mod-close-day').style.display = 'flex';
+}
+
+function calculateClosingDifference() {
+    const inputVal = parseFloat(document.getElementById('close-reale-input').value);
+    const reale = isNaN(inputVal) ? 0 : inputVal;
+    const differenza = reale - currentClosingTeorico;
+    
+    const diffBox = document.getElementById('close-diff-box');
+    
+    if (Math.abs(differenza) < 0.01) {
+        diffBox.innerHTML = `Differenza: <span style="color:var(--cyan);">0.00€ (Pareggio Perfetto)</span>`;
+        diffBox.style.borderColor = 'var(--cyan)';
+        diffBox.style.background = '#0a191f';
+    } else if (differenza > 0) {
+        diffBox.innerHTML = `SOPRANNOLE (Plus): <span style="color:var(--lime);">+${differenza.toFixed(2)}€</span>`;
+        diffBox.style.borderColor = 'var(--lime)';
+        diffBox.style.background = '#0c1f12';
+    } else {
+        diffBox.innerHTML = `AMMANCO (Meno): <span style="color:var(--red);">${differenza.toFixed(2)}€</span>`;
+        diffBox.style.borderColor = 'var(--red)';
+        diffBox.style.background = '#240a0a';
+    }
+}
+
+function confirmCloseDay() {
+    const inputVal = parseFloat(document.getElementById('close-reale-input').value);
+    const reale = isNaN(inputVal) ? 0 : inputVal;
+    
+    if (confirm("Sei sicuro di voler confermare la chiusura giornaliera? Questa operazione consoliderà l'inventario fisico corrente e salverà l'incasso reale nel calendario.")) {
+        const d = new Date().getDate(); 
+        
+        // Salviamo l'incasso reale contato nel giorno di calendario (accumulando se ci sono più barche nello stesso giorno)
+        globalHistory[d] = (globalHistory[d] || 0) + reale;
+        
+        // Applica consolidamento inventario (Theoretical diventa il nuovo Initial Stock e pulisce i deltas)
+        applyInventoryAsInitial();
+        
+        closeModal('mod-close-day');
+        showToast("Giornata Chiusa con Successo e Busta Registrata!");
     }
 }
 
 function showConfirm(type) {
-    if(type==='fine') {
-        if(confirm("Chiudere la giornata?")) {
-            let incAggiuntoOggi = 0; 
-            db.prodotti.forEach(p => {
-                incAggiuntoOggi += ((p.vePas||0)*p.pas) + ((p.vePen||0)*p.pen) - ((p.vePenOld||0)*p.pen);
-            });
-            let d = new Date().getDate(); 
-            globalHistory[d] = (globalHistory[d]||0) + incAggiuntoOggi;
-            applyInventoryAsInitial();
-        }
-    } else if(type==='reset') {
+    if(type==='reset') {
         if(confirm("Cancellare tutti i dati di questa barca?")) { hardReset(); render(); }
     }
 }
@@ -449,6 +667,61 @@ function processTxtImport(f) {
 function exportReport() {
     const text = `REPORT ${FLEET[parseInt(currentBoatID)-1]} - ${new Date().toLocaleDateString()}\n\n` + db.prodotti.map(p => `${p.n}: ${calcGiacenza(p)}`).join('\n');
     const blob = new Blob([text], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download=`Report_${FLEET[parseInt(currentBoatID)-1]}.txt`; a.click();
+}
+
+function printInventory() {
+    const boatName = FLEET[parseInt(currentBoatID)-1];
+    let h = `
+        <div style="font-family: sans-serif; color: black; background: white; padding: 10px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="margin: 0; font-size: 20pt; text-transform: uppercase;">Inventario ${boatName}</h1>
+                <p style="margin: 5px 0; font-size: 10pt; color: #555;">Solo Rimanenze Fisiche — Generato il: ${new Date().toLocaleDateString()} alle ${new Date().toLocaleTimeString().slice(0,5)}</p>
+                <div style="border-bottom: 2px solid #000; margin-top: 15px;"></div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 9pt;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="border: 1px solid #333; padding: 6px; text-align: left;">ARTICOLO</th>
+                        <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 80px;">INIZIALE</th>
+                        <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 60px;">CARICO</th>
+                        <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 80px;">VEND. PAS</th>
+                        <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 80px;">VEND. PEN</th>
+                        <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 70px;">OMAGGI</th>
+                        <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 85px; font-weight: bold;">TEORICO</th>
+                        <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 85px; font-weight: bold; background-color: #e2e2e2;">FISICO</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    db.prodotti.forEach(p => {
+        const teo = Math.round((p.q + (p.c||0)) - ((p.vePas||0) + (p.vePen||0) + (p.vePenOld||0) + (p.omaggio||0)));
+        h += `
+            <tr>
+                <td style="border: 1px solid #333; padding: 6px;">${p.i} ${p.n}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.q}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.c || 0}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.vePas || 0}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.vePen || 0}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.omaggio || 0}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold;">${teo}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold; background-color: #f9f9f9;">${p.reale !== null ? p.reale : ''}</td>
+            </tr>
+        `;
+    });
+
+    h += `
+                </tbody>
+            </table>
+            <div style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 10pt;">
+                <div>Firma Marinaio: _________________________</div>
+                <div>Firma Responsabile: _________________________</div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('print-section').innerHTML = h;
+    window.print();
 }
 
 function exportJSON() {
