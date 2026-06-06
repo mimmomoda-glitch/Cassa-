@@ -262,9 +262,10 @@
 </div>
 
 <script>
+const APP_VERSION = "162.2"; // Nuova versione per forzare l'allineamento automatico dei dati
 const FLEET = ["NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", "ISCHIA JET", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "APOLLO", "FRECCIA D ARGENTO", "BLIZ", "ISCHIA MAR 3", "URAGANO", "ACQUARIUS", "RAID"];
 
-// CATALOGO MASTER CON PREZZI CORRETTI E PRODOTTO "TU" COMPLETAMENTE RIMOSSO
+// CATALOGO MASTER CON PREZZI CORRETTI E PRODOTTO "TU" RIMOSSO
 const MASTER_CATALOG = [
     {n:"Acqua", i:"💧", pas:2.0, pen:1.0, def:0},
     {n:"Arachidi / Frutta S.", i:"🥜", pas:2.5, pen:1.0, def:0},
@@ -314,7 +315,7 @@ const MASTER_CATALOG = [
     {n:"Tramezzini", i:"🥪", pas:4.0, pen:3.0, def:0}
 ];
 
-// DATA MAPPING COMPLETO ESTRATTO DALLE IMMAGINI FORNITE
+// QUANTITÀ REALI DELLE FOTO MAPPATE SUI RISPETTIVI ID BARCA
 const INITIAL_STOCKS = {
     "1": { // NAPOLI JET
         "Acqua": 180, "Arachidi / Frutta S.": 85, "Borse Piccole": 71, "Borse Grandi": 20, "Bueno/B-Ready/Biscuits": 123,
@@ -370,6 +371,18 @@ function showToast(msg) { const t = document.getElementById("toast"); t.innerTex
 
 function loadData() {
     globalHistory = JSON.parse(localStorage.getItem('NAV_GLOBAL_HISTORY')) || {};
+    
+    // GESTIONE AUTO-VERSIONAMENTO: se la versione è differente, forza il reset delle barche ai dati nuovi
+    const storedVersion = localStorage.getItem('NAV_APP_VERSION');
+    if (storedVersion !== APP_VERSION) {
+        // Forza l'aggiornamento pulendo le vecchie configurazioni ma preservando globalHistory
+        FLEET.forEach((_, idx) => {
+            localStorage.removeItem('NAV_DATA_B' + (idx + 1));
+        });
+        localStorage.setItem('NAV_APP_VERSION', APP_VERSION);
+        showToast("Aggiornamento Applicazione completato alla v" + APP_VERSION);
+    }
+
     const saved = localStorage.getItem('NAV_DATA_B' + currentBoatID);
     if(saved) { 
         db = JSON.parse(saved); 
@@ -383,8 +396,8 @@ function loadData() {
 function syncCatalog() {
     const boatStocks = INITIAL_STOCKS[currentBoatID] || {};
     
-    // CONTROLLO DI SICUREZZA: se nel salvataggio in memoria tutte le quantità iniziali sono 0,
-    // significa che è rimasto un vecchio schema vuoto nel browser. Forza la sincronizzazione corretta.
+    // Se per qualche motivo tutte le quantità del catalogo in memoria locale sono azzerate,
+    // andiamo a forzare la reinstallazione corretta per questa barca.
     const tuttoVuoto = db.prodotti.length === 0 || db.prodotti.every(p => p.q === 0 && p.c === 0 && p.vePas === 0 && p.vePen === 0);
 
     MASTER_CATALOG.forEach(m => {
@@ -396,14 +409,12 @@ function syncCatalog() {
             p.pas = m.pas; 
             p.pen = m.pen; 
             p.i = m.i; 
-            // Se la memoria locale era totalmente vuota/azzerata, sovrascrivi con i dati delle foto!
             if (tuttoVuoto) {
                 p.q = specificStock;
             }
         }
     });
     
-    // Rimuovi vecchi articoli non più catalogati
     db.prodotti = db.prodotti.filter(p => MASTER_CATALOG.some(m => m.n === p.n));
     render();
 }
@@ -711,7 +722,7 @@ function printInventory() {
                 <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.vePen || 0}</td>
                 <td style="border: 1px solid #333; padding: 6px; text-align: center;">${p.omaggio || 0}</td>
                 <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold;">${teo}</td>
-                <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold; background-color: #f9f9f9;">${p.reale !== null ? p.reale : ''}</td>
+                <td style="border: 1px solid #333; padding: 6px; text-align: center; font-weight: bold; background-color: #e2e2e2;">${p.reale !== null ? p.reale : ''}</td>
             </tr>
         `;
     });
