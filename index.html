@@ -363,7 +363,7 @@ let currentBoatID = localStorage.getItem('NAV_LAST_ID') || "8";
 let db = { prodotti: [] };
 let globalHistory = {}; 
 let curIdx = -1, curDayEdit = -1, qty = 1, numBuffer = "";
-let currentClosingTeorico = 0; // Memorizza temporaneamente l'incasso teorico per la chiusura
+let currentClosingTeorico = 0; 
 
 function init() { loadData(); }
 function showToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
@@ -382,16 +382,29 @@ function loadData() {
 
 function syncCatalog() {
     const boatStocks = INITIAL_STOCKS[currentBoatID] || {};
+    
+    // CONTROLLO DI SICUREZZA: se nel salvataggio in memoria tutte le quantità iniziali sono 0,
+    // significa che è rimasto un vecchio schema vuoto nel browser. Forza la sincronizzazione corretta.
+    const tuttoVuoto = db.prodotti.length === 0 || db.prodotti.every(p => p.q === 0 && p.c === 0 && p.vePas === 0 && p.vePen === 0);
+
     MASTER_CATALOG.forEach(m => {
         let p = db.prodotti.find(x => x.n === m.n);
         const specificStock = (boatStocks[m.n] !== undefined) ? boatStocks[m.n] : m.def;
-        if(!p) db.prodotti.push({...m, q:specificStock, c:0, vePas:0, vePen:0, vePenOld:0, omaggio:0, reale:null});
-        else { p.pas = m.pas; p.pen = m.pen; p.i = m.i; }
+        if(!p) {
+            db.prodotti.push({...m, q:specificStock, c:0, vePas:0, vePen:0, vePenOld:0, omaggio:0, reale:null});
+        } else { 
+            p.pas = m.pas; 
+            p.pen = m.pen; 
+            p.i = m.i; 
+            // Se la memoria locale era totalmente vuota/azzerata, sovrascrivi con i dati delle foto!
+            if (tuttoVuoto) {
+                p.q = specificStock;
+            }
+        }
     });
     
-    // Rimuoviamo elementi non più presenti nel master catalog
+    // Rimuovi vecchi articoli non più catalogati
     db.prodotti = db.prodotti.filter(p => MASTER_CATALOG.some(m => m.n === p.n));
-    
     render();
 }
 
@@ -443,7 +456,6 @@ function render() {
         
         tScontiPendolari += (p.vePen||0) * (p.pas - p.pen);
 
-        // Composizione della lista merce venduta oggi
         const venduti = (p.vePas||0) + (p.vePen||0);
         if (venduti > 0) {
             totPezziVendutiOggi += venduti;
@@ -460,7 +472,6 @@ function render() {
         }
     });
 
-    // Aggiornamento Box "Merce Venduta Oggi"
     document.getElementById('tot-pezzi-venduti').innerText = totPezziVendutiOggi + " pz";
     document.getElementById('sold-today-list').innerHTML = soldTodayHtml || `<div style="text-align:center; color:#666; font-size:12px; padding:20px 0;">Nessun articolo venduto oggi.</div>`;
 
@@ -564,7 +575,6 @@ function applyInventoryAsInitial() {
     render();
 }
 
-// GESTIONE NUOVO MODALE CHIUSURA CON CALCOLO DI PLUS / AMMANCO
 function openCloseDayModal() {
     const boatName = FLEET[parseInt(currentBoatID)-1];
     document.getElementById('close-boat-name').innerText = boatName;
@@ -589,7 +599,6 @@ function openCloseDayModal() {
     document.getElementById('close-teorico-val').innerText = tIncassoOggi.toFixed(2) + "€";
     document.getElementById('close-sold-list').innerHTML = soldListHtml || `<div style="text-align:center; color:#555; padding:15px 0;">Nessun prodotto venduto oggi.</div>`;
     
-    // Inizializza l'input del totale contato reale con il teorico per comodità
     document.getElementById('close-reale-input').value = tIncassoOggi ? tIncassoOggi.toFixed(2) : "";
     
     calculateClosingDifference();
@@ -625,10 +634,7 @@ function confirmCloseDay() {
     if (confirm("Sei sicuro di voler confermare la chiusura giornaliera? Questa operazione consoliderà l'inventario fisico corrente e salverà l'incasso reale nel calendario.")) {
         const d = new Date().getDate(); 
         
-        // Salviamo l'incasso reale contato nel giorno di calendario (accumulando se ci sono più barche nello stesso giorno)
         globalHistory[d] = (globalHistory[d] || 0) + reale;
-        
-        // Applica consolidamento inventario (Theoretical diventa il nuovo Initial Stock e pulisce i deltas)
         applyInventoryAsInitial();
         
         closeModal('mod-close-day');
