@@ -705,7 +705,7 @@
         "NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", 
         "ISCHIA JET", "SUPER FLYTE", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", 
         "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "PICASSO", "FRECCIA D ARGENTO", 
-        "BLIZ", "DELFINO", "URAGANO", "ACQUARIUS", "RAID", "Standard"
+        "BLIZ", "DELFINO", "URAGANO", "ACQUARIUS", "RAID", "Standard", "Festa"
     ];
 
     function popolaSelectBarche() {
@@ -1055,7 +1055,7 @@
     }
 
     // ==========================================
-    // LOGICA APP 2: CALCOLATORE INCASSI (DATI ESTRATTI DALLE IMMAGINI WHATSAPP)
+    // LOGICA APP 2: CALCOLATORE INCASSI (CORRETTO CON 16 AGOSTO SUPER FLYTE E 21 AGOSTO FESTA)
     // ==========================================
     const datiInizialiIncassi = [
         { giorno: "1 Agosto", postazione: "CAPRI JET", cash: 265, pos: 545, festa: false },
@@ -1073,17 +1073,18 @@
         { giorno: "13 Agosto", postazione: "SUPER FLYTE", cash: 165, pos: 151, festa: false },
         { giorno: "14 Agosto", postazione: "TREMITI JET", cash: 355, pos: 672.50, festa: false },
         { giorno: "15 Agosto", postazione: "FRECCIA D ARGENTO", cash: 120, pos: 193.50, festa: false },
-        { giorno: "17 Agosto", postazione: "SUPER FLYTE", cash: 235, pos: 83.50, festa: false },
-        { giorno: "18 Agosto", postazione: "SUPER FLYTE", cash: 315, pos: 150, festa: false },
-        { giorno: "19 Agosto", postazione: "JUMBO JET", cash: 265, pos: 393.50, festa: false },
-        { giorno: "20 Agosto", postazione: "TREMITI JET", cash: 530, pos: 465.50, festa: false },
-        { giorno: "21 Agosto", postazione: "DELFINO", cash: 95, pos: 0, festa: false }
+        { giorno: "16 Agosto", postazione: "SUPER FLYTE", cash: 235, pos: 83.50, festa: false },
+        { giorno: "17 Agosto", postazione: "SUPER FLYTE", cash: 315, pos: 150, festa: false },
+        { giorno: "18 Agosto", postazione: "JUMBO JET", cash: 265, pos: 393.50, festa: false },
+        { giorno: "19 Agosto", postazione: "TREMITI JET", cash: 530, pos: 465.50, festa: false },
+        { giorno: "20 Agosto", postazione: "DELFINO", cash: 95, pos: 0, festa: false },
+        { giorno: "21 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true }
     ];
 
     let datiIncassi = [];
 
     function caricaDatiIncassi() {
-        const salvati = localStorage.getItem('calcolatore_incassi_dati_v3');
+        const salvati = localStorage.getItem('calcolatore_incassi_dati_v5');
         if (salvati) {
             try { datiIncassi = JSON.parse(salvati); } catch(e) { datiIncassi = [...datiInizialiIncassi]; }
         } else {
@@ -1092,7 +1093,7 @@
     }
 
     function salvaDatiIncassi() {
-        localStorage.setItem('calcolatore_incassi_dati_v3', JSON.stringify(datiIncassi));
+        localStorage.setItem('calcolatore_incassi_dati_v5', JSON.stringify(datiIncassi));
     }
 
     function formatValuta(val) {
@@ -1181,7 +1182,7 @@
     }
 
     function ripristinaDefaultIncassi() {
-        if (confirm('Sei sicuro di voler ripristinare i dati di Agosto estratti esattamente dagli screenshot?')) {
+        if (confirm('Sei sicuro di voler ripristinare i dati di Agosto con la Domenica 16 su Super Flyte e la festa il 21?')) {
             datiIncassi = JSON.parse(JSON.stringify(datiInizialiIncassi));
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
@@ -1207,4 +1208,3 @@
 
 </body>
 </html>
-```
