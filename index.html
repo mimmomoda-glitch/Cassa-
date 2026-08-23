@@ -3,115 +3,456 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcolatore Incassi</title>
+    <title>Hub Gestionale Cassa & Incassi Barche</title>
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --danger: #e74c3c;
-            --success: #27ae60;
-            --bg: #f4f7f6;
-            --card-bg: #ffffff;
-            --text: #333333;
-            --border: #ddd;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --warning: #f59e0b;
+            --bg: #1e222d;
+            --card-bg: #262b38;
+            --input-bg: #2b3245;
+            --subcard-bg: #1f2430;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --nav-bg: #1a1d27;
         }
 
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background: var(--bg); 
-            margin: 0; 
-            padding: 15px; 
-            color: var(--text); 
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 75px;
+            color: var(--text);
+            -webkit-tap-highlight-color: transparent;
             line-height: 1.5;
         }
 
-        .container { 
-            max-width: 900px; 
-            margin: auto; 
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        /* NAVIGAZIONE SCHEDE */
+        .app-view {
+            display: none;
+            padding: 16px;
+            animation: fadeIn 0.25s ease-in-out;
         }
 
-        h1 { 
-            color: var(--primary); 
-            font-size: 24px; 
-            margin-top: 0; 
-            display: flex; 
-            justify-content: space-between; 
+        .app-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--nav-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            padding-bottom: env(safe-area-inset-bottom, 8px);
+            z-index: 1000;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 16px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            width: 50%;
+        }
+
+        .nav-item.active {
+            color: #818cf8;
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+            filter: grayscale(80%);
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* STILI GENERALI */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        h2, h1, h3 {
+            color: var(--text);
+            margin-top: 0;
+        }
+
+        h2, h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
         }
 
-        .cards { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-            gap: 12px; 
-            margin-bottom: 25px; 
+        .title-centered {
+            justify-content: center;
         }
 
-        .card { 
-            background: #eef2f3; 
-            padding: 16px; 
-            border-radius: 8px; 
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+        input, select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: white;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            width: 100%;
         }
 
-        .card h3 { 
-            margin: 0 0 6px 0; 
-            font-size: 13px; 
-            color: #555; 
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn {
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s;
+        }
+
+        .btn-danger {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+        .btn-danger:active {
+            background: var(--danger-hover);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:active {
+            background: var(--success-hover);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:active {
+            background: var(--primary-hover);
+        }
+
+        .btn-warning {
+            background: #d97706;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #374151;
+            color: #d1d5db;
+        }
+
+        /* CASSA VELOCE */
+        .card-totale {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            border: 2px solid #34d399;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 10px;
+            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+        }
+
+        .card-totale .label {
+            font-size: 0.9rem;
+            color: #a7f3d0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .card-totale .amount {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-top: 5px;
+        }
+
+        .card-totale .details {
+            font-size: 0.85rem;
+            color: #d1fae5;
+            margin-top: 6px;
+            opacity: 0.9;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            background: var(--subcard-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .settings-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .settings-field label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .prodotti-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .prodotto-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 14px 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .prodotto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .prodotto-nome {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .prezzi-info {
+            font-size: 0.8rem;
+            color: #34d399;
+            margin-bottom: 10px;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .categorie-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: var(--subcard-bg);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .categoria-box {
+            text-align: center;
+        }
+
+        .categoria-titolo {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .controlli-qta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-qta {
+            width: 32px;
+            height: 32px;
+            background: #374151;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: background 0.1s;
+        }
+
+        .btn-qta:active {
+            background: #4b5563;
+        }
+
+        .input-qta {
+            width: 35px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            background: transparent;
+            color: white;
+        }
+
+        .actions-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-full {
+            grid-column: span 2;
+        }
+
+        /* STORICO CASSA VELOCE */
+        .storico-section {
+            margin-top: 30px;
+            background: var(--subcard-bg);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .storico-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .storico-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            color: #818cf8;
+        }
+
+        .storico-dettaglio {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .storico-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        /* CALCOLATORE INCASSI */
+        .cards-incassi {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .card-incassi {
+            background: var(--subcard-bg);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .card-incassi h3 {
+            margin: 0 0 6px 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .card p { 
-            margin: 0; 
-            font-size: 20px; 
-            font-weight: 700; 
-            color: var(--primary); 
-        }
-
-        .card.highlight {
-            background: var(--primary);
+        .card-incassi p {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
             color: white;
         }
 
-        .card.highlight h3 {
-            color: #ecf0f1;
+        .card-incassi.highlight {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            border-color: #6366f1;
         }
 
-        .card.highlight p {
-            color: white;
-        }
-
-        .actions-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .form-group { 
-            background: #fafbfc; 
-            padding: 20px; 
-            border-radius: 8px; 
-            margin-bottom: 25px; 
-            border: 1px solid var(--border); 
+        .form-group-incassi {
+            background: var(--subcard-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
 
-        .form-group h3 {
+        .form-group-incassi h3 {
             grid-column: 1 / -1;
             margin: 0 0 5px 0;
-            color: var(--primary);
-            font-size: 18px;
+            color: white;
+            font-size: 1.1rem;
         }
 
         .field {
@@ -119,83 +460,12 @@
             flex-direction: column;
         }
 
-        label {
-            font-size: 13px;
+        .field label {
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 5px;
-            color: #444;
+            margin-bottom: 6px;
+            color: var(--text-muted);
         }
-
-        input, select { 
-            width: 100%; 
-            padding: 10px; 
-            box-sizing: border-box; 
-            border: 1px solid var(--border); 
-            border-radius: 6px; 
-            font-size: 14px;
-            background: white;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
-        }
-
-        .full-width {
-            grid-column: 1 / -1;
-        }
-
-        button { 
-            background: var(--accent); 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 15px; 
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        button:hover { background: #2980b9; }
-
-        .btn-success { background: var(--success); }
-        .btn-success:hover { background: #219653; }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 14px; 
-            min-width: 650px;
-        }
-
-        th, td { 
-            padding: 12px 10px; 
-            border-bottom: 1px solid var(--border); 
-            text-align: left; 
-        }
-
-        th { 
-            background: var(--primary); 
-            color: white; 
-            font-weight: 600;
-        }
-
-        tr:hover { background-color: #f8f9fa; }
-
-        .del-btn { 
-            background: var(--danger); 
-            padding: 6px 12px; 
-            font-size: 12px; 
-            width: auto; 
-        }
-        .del-btn:hover { background: #c0392b; }
 
         .checkbox-container {
             display: flex;
@@ -204,6 +474,8 @@
             cursor: pointer;
             font-weight: 500;
             user-select: none;
+            color: var(--text);
+            font-size: 0.85rem;
         }
 
         .checkbox-container input {
@@ -213,157 +485,621 @@
             cursor: pointer;
         }
 
-        .toolbar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 650px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th {
+            background: var(--subcard-bg);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .del-btn {
+            background: var(--danger);
+            color: white;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .del-btn:hover {
+            background: var(--danger-hover);
         }
 
         @media (max-width: 600px) {
-            body { padding: 8px; }
-            .container { padding: 12px; }
+            body { padding: 8px; padding-bottom: 75px; }
+            .container { padding: 14px; }
+            .actions-box { grid-template-columns: 1fr; }
+            .btn-full { grid-column: span 1; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>
-        Gestione Incassi & Postazioni
-        <button onclick="ripristinaDefault()" style="font-size: 13px; padding: 6px 12px; background: #7f8c8d;">Ripristina Dati Iniziali</button>
-    </h1>
-    
-    <div class="cards">
-        <div class="card">
-            <h3>Totale Incassato</h3>
-            <p id="lblIncasso">€ 0,00</p>
-        </div>
-        <div class="card">
-            <h3>5% sugli Incassi</h3>
-            <p id="lbl5p">€ 0,00</p>
-        </div>
-        <div class="card">
-            <h3>Quota Fissa (€26)</h3>
-            <p id="lblFissa">€ 0,00</p>
-        </div>
-        <div class="card highlight">
-            <h3>Totale Complessivo</h3>
-            <p id="lblTotale">€ 0,00</p>
+    <!-- SCHEDA 1: GESTIONE CASSA VELOCE -->
+    <div id="app-cassa" class="app-view active">
+        <div class="container">
+            <h2 class="title-centered">Controllo Cassa Barche</h2>
+            
+            <!-- SELEZIONE POSTAZIONE & DATA -->
+            <div class="settings-grid">
+                <div class="settings-field">
+                    <label for="selectBarca">Postazione / Barca:</label>
+                    <select id="selectBarca">
+                        <!-- Popolato via JS -->
+                    </select>
+                </div>
+                <div class="settings-field">
+                    <label for="txtDataCassa">Giorno / Data:</label>
+                    <input type="text" id="txtDataCassa" placeholder="es. Oggi, 23 Agosto">
+                </div>
+                <div class="settings-field">
+                    <label for="fondoCassa">Fondo cassa iniziale (€):</label>
+                    <input type="number" id="fondoCassa" value="50.00" step="0.50" min="0" oninput="calcolaTotaleCassa()">
+                </div>
+            </div>
+
+            <div class="card-totale">
+                <div class="label">Totale da avere in cassa</div>
+                <div class="amount" id="totaleCassa">50.00 €</div>
+                <div class="details" id="dettaglioIncasso">Incasso: 0.00 €</div>
+            </div>
+
+            <div class="prodotti-lista" id="listaProdotti">
+                <!-- Generati da JavaScript -->
+            </div>
+
+            <div class="actions-box">
+                <button class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">💾 Salva Giornata in Storico</button>
+                <button class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia Report WhatsApp</button>
+                <button class="btn btn-danger" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
+                <button class="btn btn-primary" onclick="ripristinaDefaultCassa()">Ripristina Default</button>
+            </div>
+
+            <!-- REGISTRO STORICO GIORNATE CASSA -->
+            <div class="storico-section">
+                <h3 style="font-size: 1.1rem; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📜 Storico Giornate Salvate</span>
+                    <button class="btn btn-secondary" onclick="svuotaStoricoCassa()" style="font-size: 0.75rem; padding: 4px 8px;">Cancella Storico</button>
+                </h3>
+                <div id="listaStoricoCassa">
+                    <!-- Dati dinamici dallo storico -->
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="form-group">
-        <h3>Aggiungi Nuova Giornata</h3>
-        <div class="field">
-            <label>Giorno / Data:</label>
-            <input type="text" id="txtGiorno" placeholder="es. 22 Agosto">
-        </div>
-        
-        <div class="field">
-            <label>Postazione:</label>
-            <input type="text" id="txtPostazione" placeholder="es. Capri Jet o Standard">
-        </div>
-        
-        <div class="field">
-            <label>Cash (€):</label>
-            <input type="number" id="txtCash" value="0" step="0.01" min="0">
-        </div>
-        
-        <div class="field">
-            <label>POS (€):</label>
-            <input type="number" id="txtPos" value="0" step="0.01" min="0">
-        </div>
+    <!-- SCHEDA 2: CALCOLATORE INCASSI & POSTAZIONI -->
+    <div id="app-incassi" class="app-view">
+        <div class="container">
+            <h1>
+                <span>Gestione Incassi</span>
+                <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.8rem; padding: 6px 12px;">Ripristina Dati Iniziali</button>
+            </h1>
+            
+            <div class="cards-incassi">
+                <div class="card-incassi">
+                    <h3>Totale Incassato</h3>
+                    <p id="lblIncasso">€ 0,00</p>
+                </div>
+                <div class="card-incassi">
+                    <h3>5% sugli Incassi</h3>
+                    <p id="lbl5p">€ 0,00</p>
+                </div>
+                <div class="card-incassi">
+                    <h3>Quota Fissa (€26)</h3>
+                    <p id="lblFissa">€ 0,00</p>
+                </div>
+                <div class="card-incassi highlight">
+                    <h3>Totale Complessivo</h3>
+                    <p id="lblTotale">€ 0,00</p>
+                </div>
+            </div>
 
-        <div class="field" style="justify-content: flex-end; padding-top: 5px;">
-            <label class="checkbox-container">
-                <input type="checkbox" id="chkFesta">
-                <span>Giorno di Festa (Escludi Quota Fissa €26)</span>
-            </label>
-        </div>
-        
-        <div class="field" style="justify-content: flex-end;">
-            <button class="btn-success" onclick="aggiungiRecord()">Aggiungi Incasso</button>
+            <div class="form-group-incassi">
+                <h3>Aggiungi Nuova Giornata</h3>
+                <div class="field">
+                    <label>Giorno / Data:</label>
+                    <input type="text" id="txtGiorno" placeholder="es. 23 Agosto">
+                </div>
+                
+                <div class="field">
+                    <label>Postazione / Barca:</label>
+                    <select id="selectPostazioneIncassi">
+                        <!-- Popolato via JS -->
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <label>Cash (€):</label>
+                    <input type="number" id="txtCash" value="0" step="0.01" min="0">
+                </div>
+                
+                <div class="field">
+                    <label>POS (€):</label>
+                    <input type="number" id="txtPos" value="0" step="0.01" min="0">
+                </div>
+
+                <div class="field" style="justify-content: flex-end; padding-top: 5px;">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="chkFesta">
+                        <span>Giorno di Festa (Escludi €26)</span>
+                    </label>
+                </div>
+                
+                <div class="field" style="justify-content: flex-end;">
+                    <button class="btn btn-success" onclick="aggiungiRecordIncasso()">Aggiungi Incasso</button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <div style="flex: 1; max-width: 300px;">
+                    <input type="text" id="txtFiltro" placeholder="Filtra giorno o postazione..." oninput="aggiornaTabellaIncassi()">
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);" id="lblContatore">Mostrando 0 record</div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="tabellaIncassi">
+                    <thead>
+                        <tr>
+                            <th>Giorno</th>
+                            <th>Postazione</th>
+                            <th>Cash</th>
+                            <th>POS</th>
+                            <th>Tot. Incasso</th>
+                            <th>5%</th>
+                            <th>Fissa</th>
+                            <th>Tot. Giorno</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dati dinamici -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="actions-bar">
-        <div style="flex: 1; max-width: 300px;">
-            <input type="text" id="txtFiltro" placeholder="Filtra per giorno o postazione..." oninput="aggiornaTabella()">
-        </div>
-        <div style="font-size: 14px; color: #666;" id="lblContatore">Mostrando 0 record</div>
-    </div>
-
-    <div class="table-responsive">
-        <table id="tabellaIncassi">
-            <thead>
-                <tr>
-                    <th>Giorno</th>
-                    <th>Postazione</th>
-                    <th>Cash</th>
-                    <th>POS</th>
-                    <th>Tot. Incasso</th>
-                    <th>5%</th>
-                    <th>Fissa</th>
-                    <th>Tot. Giorno</th>
-                    <th>Azioni</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Dati dinamici -->
-            </tbody>
-        </table>
-    </div>
-</div>
+    <!-- NAVBAR INFERIORE -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="cambiaApp('app-cassa', this)">
+            <span class="nav-icon">💶</span>
+            <span>Cassa Veloce</span>
+        </button>
+        <button class="nav-item" onclick="cambiaApp('app-incassi', this)">
+            <span class="nav-icon">📊</span>
+            <span>Calcolatore Incassi</span>
+        </button>
+    </nav>
 
 <script>
-    const datiIniziali = [
-        { giorno: "1 Agosto", postazione: "Capri Jet", cash: 0, pos: 810, festa: false },
-        { giorno: "2 Agosto", postazione: "Capri Jet", cash: 0, pos: 836, festa: false },
-        { giorno: "3 Agosto", postazione: "Capri Jet", cash: 0, pos: 1033.50, festa: false },
-        { giorno: "4 Agosto", postazione: "Standard", cash: 0, pos: 301, festa: false },
-        { giorno: "5 Agosto", postazione: "Standard", cash: 0, pos: 670, festa: false },
-        { giorno: "6 Agosto", postazione: "Standard", cash: 0, pos: 863, festa: false },
-        { giorno: "7 Agosto", postazione: "Standard", cash: 0, pos: 650, festa: false },
-        { giorno: "8 Agosto", postazione: "Standard", cash: 0, pos: 610, festa: false },
-        { giorno: "9 Agosto", postazione: "Standard", cash: 0, pos: 235, festa: false },
-        { giorno: "10 Agosto", postazione: "Standard", cash: 0, pos: 252, festa: false },
-        { giorno: "11 Agosto", postazione: "Standard", cash: 0, pos: 430, festa: false },
-        { giorno: "12 Agosto", postazione: "Standard", cash: 0, pos: 400, festa: false },
-        { giorno: "13 Agosto", postazione: "Standard", cash: 0, pos: 316, festa: false },
-        { giorno: "14 Agosto", postazione: "Capri Jet", cash: 0, pos: 1027, festa: false },
-        { giorno: "15 Agosto", postazione: "Standard", cash: 0, pos: 315, festa: false },
-        { giorno: "16 Agosto", postazione: "Standard", cash: 0, pos: 320, festa: false },
-        { giorno: "17 Agosto", postazione: "Standard", cash: 0, pos: 465, festa: false },
-        { giorno: "18 Agosto", postazione: "Standard", cash: 0, pos: 659, festa: false },
-        { giorno: "19 Agosto", postazione: "Standard", cash: 0, pos: 995, festa: false },
-        { giorno: "20 Agosto", postazione: "Standard", cash: 0, pos: 95, festa: false },
-        { giorno: "21 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true }
+    // ELENCO BARCHE / POSTAZIONI
+    const listaBarche = [
+        "NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", 
+        "ISCHIA JET", "SUPER FLYTE", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", 
+        "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "PICASSO", "FRECCIA D ARGENTO", 
+        "BLIZ", "DELFINO", "URAGANO", "ACQUARIUS", "RAID", "Standard"
     ];
 
-    let dati = [];
+    function popolaSelectBarche() {
+        const selectCassa = document.getElementById("selectBarca");
+        const selectIncassi = document.getElementById("selectPostazioneIncassi");
+        
+        selectCassa.innerHTML = "";
+        selectIncassi.innerHTML = "";
 
-    function caricaDati() {
-        const salvati = localStorage.getItem('calcolatore_incassi_dati');
-        if (salvati) {
-            try {
-                dati = JSON.parse(salvati);
-            } catch(e) {
-                dati = [...datiIniziali];
-            }
-        } else {
-            dati = [...datiIniziali];
+        listaBarche.forEach(barca => {
+            let opt1 = document.createElement("option");
+            opt1.value = barca;
+            opt1.textContent = barca;
+            selectCassa.appendChild(opt1);
+
+            let opt2 = document.createElement("option");
+            opt2.value = barca;
+            opt2.textContent = barca;
+            selectIncassi.appendChild(opt2);
+        });
+
+        if (listaBarche.includes("TREMITI JET")) {
+            selectCassa.value = "TREMITI JET";
+            selectIncassi.value = "TREMITI JET";
         }
     }
 
-    function salvaDati() {
-        localStorage.setItem('calcolatore_incassi_dati', JSON.stringify(dati));
+    function cambiaApp(idApp, bottoneCliccato) {
+        document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(idApp).classList.add('active');
+        bottoneCliccato.classList.add('active');
+        window.scrollTo(0, 0);
     }
 
-    function format(val) {
+    // ==========================================
+    // LOGICA APP 1: GESTIONE CASSA VELOCE
+    // ==========================================
+    let prodottiDefault = [
+        {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0},
+        {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0},
+        {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:0, qtaPen:0},
+        {id:'bue', n:"Bueno/B-Ready/Biscuits", i:"🍫", p:3, pen:1, qtaPass:0, qtaPen:0},
+        {id:'cap', n:"Cappelli", i:"🧢", p:5, pen:5, qtaPass:0, qtaPen:0},
+        {id:'car', n:"Caramelle / Gomme", i:"🍬", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'cia', n:"Cialde", i:"☕", p:2, pen:1, qtaPass:0, qtaPen:0},
+        {id:'die', n:"Dietor", i:"🍬", p:0, pen:0, qtaPass:0, qtaPen:0},
+        {id:'fit', n:"Fitness / Cereal Yo", i:"🌾", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'fon', n:"Fonzies / Patatine", i:"🍟", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:0, qtaPen:0},
+        {id:'kin', n:"Kinder Cards", i:"🃏", p:2.5, pen:1.5, qtaPass:0, qtaPen:0},
+        {id:'lat', n:"Latte", i:"🥛", p:0.5, pen:0.5, qtaPass:0, qtaPen:0},
+        {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:0, qtaPen:0},
+        {id:'mag', n:"Maglie", i:"👕", p:5, pen:5, qtaPass:0, qtaPen:0},
+        {id:'mik', n:"Mikado", i:"🥖", p:3, pen:1.5, qtaPass:0, qtaPen:0},
+        {id:'muf', n:"Muffin", i:"🧁", p:3, pen:1, qtaPass:0, qtaPen:0},
+        {id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'pav', n:"Pavesini", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:0, qtaPen:0},
+        {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:0, qtaPen:0},
+        {id:'pri', n:"Pringles", i:"🥔", p:3.5, pen:2, qtaPass:0, qtaPen:0},
+        {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:0, qtaPen:0},
+        {id:'red', n:"Red Bull / Gatorade", i:"⚡", p:4.5, pen:2.5, qtaPass:0, qtaPen:0},
+        {id:'rin', n:"Ringo / Oreo / Baiocchi", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'rit', n:"Ritz / Cipster", i:"🍪", p:4.5, pen:2.5, qtaPass:0, qtaPen:0},
+        {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:0, qtaPen:0},
+        {id:'suc', n:"Succo", i:"🧃", p:3.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'the', n:"The Camomilla", i:"🍵", p:2.5, pen:1.5, qtaPass:0, qtaPen:0},
+        {id:'tuc', n:"Tuc", i:"🍪", p:4, pen:2, qtaPass:0, qtaPen:0},
+        {id:'twi', n:"Twix/KitKat/M&M...", i:"🍫", p:2.5, pen:1, qtaPass:0, qtaPen:0},
+        {id:'clm', n:"Calamite", i:"🧲", p:3.0, pen:3.0, qtaPass:0, qtaPen:0},
+        {id:'ptc', n:"Portachiavi", i:"🔑", p:3.0, pen:3.0, qtaPass:0, qtaPen:0},
+        {id:'cuc', n:"Cucchiaio", i:"🥄", p:3.0, pen:3.0, qtaPass:0, qtaPen:0},
+        {id:'cos', n:"Costumi", i:"🩳", p:5.0, pen:5.0, qtaPass:0, qtaPen:0},
+        {id:'dec', n:"Decaffeinato", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0},
+        {id:'gin', n:"Ginseng", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0},
+        {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0}
+    ];
+
+    let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
+    let storicoGiornate = [];
+
+    function renderizzaTabellaCassa() {
+        const container = document.getElementById("listaProdotti");
+        container.innerHTML = "";
+        
+        prodotti.forEach(p => {
+            let div = document.createElement("div");
+            div.className = "prodotto-card";
+            div.innerHTML = `
+                <div class="prodotto-header">
+                    <div class="prodotto-nome">${p.i} ${p.n}</div>
+                </div>
+                <div class="prezzi-info">Pas: €${p.p.toFixed(2)} / Pen: €${p.pen.toFixed(2)}</div>
+                <div class="categorie-grid">
+                    <div class="categoria-box">
+                        <div class="categoria-titolo">Passeggeri</div>
+                        <div class="controlli-qta">
+                            <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', -1)">-</button>
+                            <input type="number" class="input-qta" value="${p.qtaPass}" id="pass_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pass', this.value)" min="0">
+                            <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="categoria-box">
+                        <div class="categoria-titolo">Pendolari</div>
+                        <div class="controlli-qta">
+                            <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', -1)">-</button>
+                            <input type="number" class="input-qta" value="${p.qtaPen}" id="pen_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pen', this.value)" min="0">
+                            <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        calcolaTotaleCassa();
+    }
+
+    function modificaQtaCassa(id, tipo, variazione) {
+        let p = prodotti.find(item => item.id === id);
+        if (p) {
+            if (tipo === 'Pass') {
+                p.qtaPass = Math.max(0, p.qtaPass + variazione);
+                document.getElementById(`pass_${id}`).value = p.qtaPass;
+            } else {
+                p.qtaPen = Math.max(0, p.qtaPen + variazione);
+                document.getElementById(`pen_${id}`).value = p.qtaPen;
+            }
+            calcolaTotaleCassa();
+        }
+    }
+
+    function impostaQtaCassa(id, tipo, valore) {
+        let p = prodotti.find(item => item.id === id);
+        if (p) {
+            let val = Math.max(0, parseInt(valore) || 0);
+            if (tipo === 'Pass') {
+                p.qtaPass = val;
+            } else {
+                p.qtaPen = val;
+            }
+            calcolaTotaleCassa();
+        }
+    }
+
+    function calcolaTotaleCassa() {
+        let incassoTotale = 0;
+        prodotti.forEach(p => {
+            incassoTotale += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+        });
+
+        let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
+        let totaleComplessivo = fondoCassa + incassoTotale;
+
+        document.getElementById("totaleCassa").innerText = totaleComplessivo.toFixed(2) + " €";
+        document.getElementById("dettaglioIncasso").innerText = `Incasso vendite: ${incassoTotale.toFixed(2)} € (Fondo: ${fondoCassa.toFixed(2)} €)`;
+    }
+
+    function generaReportTesto() {
+        let barca = document.getElementById("selectBarca").value;
+        let dataStr = document.getElementById("txtDataCassa").value.trim() || new Date().toLocaleDateString('it-IT');
+        let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
+        let incassoTotale = 0;
+
+        let testo = `📋 *REPORT VENDITE BAR* 📋\n`;
+        testo += `🚢 *Postazione:* ${barca}\n`;
+        testo += `📅 *Data:* ${dataStr}\n`;
+        testo += `💵 *Fondo cassa iniziale:* €${fondoCassa.toFixed(2)}\n`;
+        testo += `----------------------------\n`;
+        
+        let venditeEffettuate = false;
+
+        prodotti.forEach(p => {
+            if (p.qtaPass > 0 || p.qtaPen > 0) {
+                venditeEffettuate = true;
+                testo += `${p.i} *${p.n}*\n`;
+                if (p.qtaPass > 0) testo += `   • Passeggeri: ${p.qtaPass} pz (€${(p.qtaPass * p.p).toFixed(2)})\n`;
+                if (p.qtaPen > 0) testo += `   • Pendolari: ${p.qtaPen} pz (€${(p.qtaPen * p.pen).toFixed(2)})\n`;
+                incassoTotale += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+            }
+        });
+
+        if (!venditeEffettuate) {
+            return null;
+        }
+
+        let totaleComplessivo = fondoCassa + incassoTotale;
+        testo += `----------------------------\n`;
+        testo += `💰 *Incasso totale:* €${incassoTotale.toFixed(2)}\n`;
+        testo += `💵 *Totale da avere in cassa:* €${totaleComplessivo.toFixed(2)}`;
+
+        return {
+            testo: testo,
+            barca: barca,
+            dataStr: dataStr,
+            incassoTotale: incassoTotale,
+            fondoCassa: fondoCassa,
+            prodotti: JSON.parse(JSON.stringify(prodotti.filter(p => p.qtaPass > 0 || p.qtaPen > 0)))
+        };
+    }
+
+    function inviaWhatsApp() {
+        let report = generaReportTesto();
+        if (!report) {
+            alert("Nessuna vendita registrata al momento!");
+            return;
+        }
+
+        try {
+            let el = document.createElement('textarea');
+            el.value = report.testo;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        } catch (e) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(report.testo).catch(() => {});
+            }
+        }
+
+        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(report.testo)}`;
+        window.open(url, '_blank');
+    }
+
+    function salvaGiornataInStorico() {
+        let report = generaReportTesto();
+        if (!report) {
+            alert("Inserisci almeno una vendita prima di salvare la giornata!");
+            return;
+        }
+
+        let nuovaGiornata = {
+            id: Date.now(),
+            barca: report.barca,
+            dataStr: report.dataStr,
+            incassoTotale: report.incassoTotale,
+            fondoCassa: report.fondoCassa,
+            prodotti: report.prodotti,
+            reportTesto: report.testo
+        };
+
+        storicoGiornate.unshift(nuovaGiornata);
+        salvaStoricoCassaLocal();
+        renderizzaStoricoCassa();
+
+        if (confirm(`Giornata salvata per ${report.barca}!\n\nVuoi aggiungere l'incasso (€${report.incassoTotale.toFixed(2)}) al "Calcolatore Incassi"?`)) {
+            datiIncassi.push({
+                giorno: report.dataStr,
+                postazione: report.barca,
+                cash: report.incassoTotale,
+                pos: 0,
+                festa: false
+            });
+            salvaDatiIncassi();
+            aggiornaTabellaIncassi();
+        }
+    }
+
+    function renderizzaStoricoCassa() {
+        const container = document.getElementById("listaStoricoCassa");
+        container.innerHTML = "";
+
+        if (storicoGiornate.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Nessuna giornata salvata ancora.</div>`;
+            return;
+        }
+
+        storicoGiornate.forEach(item => {
+            let div = document.createElement("div");
+            div.className = "storico-card";
+
+            let elencoArticoli = item.prodotti.map(p => {
+                let dettagli = [];
+                if (p.qtaPass > 0) dettagli.push(`Pass: ${p.qtaPass}`);
+                if (p.qtaPen > 0) dettagli.push(`Pen: ${p.qtaPen}`);
+                return `${p.i} ${p.n} (${dettagli.join(', ')})`;
+            }).join(' • ');
+
+            div.innerHTML = `
+                <div class="storico-header">
+                    <span>🚢 ${item.barca}</span>
+                    <span>📅 ${item.dataStr}</span>
+                </div>
+                <div class="storico-dettaglio">
+                    <strong>Incasso:</strong> €${item.incassoTotale.toFixed(2)} | <strong>Articoli:</strong> ${elencoArticoli}
+                </div>
+                <div class="storico-actions">
+                    <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.8rem;" onclick="condividiStorico(${item.id})">📱 WhatsApp</button>
+                    <button class="btn btn-danger" style="padding: 6px 10px; font-size: 0.8rem;" onclick="eliminaStoricoItem(${item.id})">Elimina</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function condividiStorico(id) {
+        let item = storicoGiornate.find(g => g.id === id);
+        if (item) {
+            let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(item.reportTesto)}`;
+            window.open(url, '_blank');
+        }
+    }
+
+    function eliminaStoricoItem(id) {
+        if (confirm("Vuoi eliminare questa giornata dallo storico?")) {
+            storicoGiornate = storicoGiornate.filter(g => g.id !== id);
+            salvaStoricoCassaLocal();
+            renderizzaStoricoCassa();
+        }
+    }
+
+    function svuotaStoricoCassa() {
+        if (confirm("Vuoi davvero cancellare tutto lo storico delle giornate salvate?")) {
+            storicoGiornate = [];
+            salvaStoricoCassaLocal();
+            renderizzaStoricoCassa();
+        }
+    }
+
+    function salvaStoricoCassaLocal() {
+        localStorage.setItem("storico_cassa_barche", JSON.stringify(storicoGiornate));
+    }
+
+    function caricaStoricoCassaLocal() {
+        const salvati = localStorage.getItem("storico_cassa_barche");
+        if (salvati) {
+            try { storicoGiornate = JSON.parse(salvati); } catch(e) { storicoGiornate = []; }
+        }
+    }
+
+    function azzeraQuantitaCassa() {
+        if(confirm("Vuoi azzerare tutte le quantità vendute della giornata corrente?")) {
+            prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
+            renderizzaTabellaCassa();
+        }
+    }
+
+    function ripristinaDefaultCassa() {
+        if(confirm("Vuoi ripristinare le quantità iniziali?")) {
+            prodotti = JSON.parse(JSON.stringify(prodottiDefault));
+            renderizzaTabellaCassa();
+        }
+    }
+
+    // ==========================================
+    // LOGICA APP 2: CALCOLATORE INCASSI (DATI ESTRATTI DALLE IMMAGINI WHATSAPP)
+    // ==========================================
+    const datiInizialiIncassi = [
+        { giorno: "1 Agosto", postazione: "CAPRI JET", cash: 265, pos: 545, festa: false },
+        { giorno: "2 Agosto", postazione: "TREMITI JET", cash: 285, pos: 551, festa: false },
+        { giorno: "3 Agosto", postazione: "SUPER JET", cash: 345, pos: 688.50, festa: false },
+        { giorno: "4 Agosto", postazione: "SUPER JET / CAPRI JET", cash: 145, pos: 156, festa: false },
+        { giorno: "5 Agosto", postazione: "NAPOLI JET", cash: 445, pos: 225.50, festa: false },
+        { giorno: "6 Agosto", postazione: "SALERNO JET", cash: 385, pos: 478, festa: false },
+        { giorno: "7 Agosto", postazione: "CAPRI JET", cash: 280, pos: 368.50, festa: false },
+        { giorno: "8 Agosto", postazione: "CAPRI JET", cash: 240, pos: 351, festa: false },
+        { giorno: "9 Agosto", postazione: "PICASSO", cash: 120, pos: 115.50, festa: false },
+        { giorno: "10 Agosto", postazione: "PICASSO", cash: 120, pos: 132.50, festa: false },
+        { giorno: "11 Agosto", postazione: "PICASSO", cash: 340, pos: 89.50, festa: false },
+        { giorno: "12 Agosto", postazione: "EUROPA JET", cash: 115, pos: 281.50, festa: false },
+        { giorno: "13 Agosto", postazione: "SUPER FLYTE", cash: 165, pos: 151, festa: false },
+        { giorno: "14 Agosto", postazione: "TREMITI JET", cash: 355, pos: 672.50, festa: false },
+        { giorno: "15 Agosto", postazione: "FRECCIA D ARGENTO", cash: 120, pos: 193.50, festa: false },
+        { giorno: "17 Agosto", postazione: "SUPER FLYTE", cash: 235, pos: 83.50, festa: false },
+        { giorno: "18 Agosto", postazione: "SUPER FLYTE", cash: 315, pos: 150, festa: false },
+        { giorno: "19 Agosto", postazione: "JUMBO JET", cash: 265, pos: 393.50, festa: false },
+        { giorno: "20 Agosto", postazione: "TREMITI JET", cash: 530, pos: 465.50, festa: false },
+        { giorno: "21 Agosto", postazione: "DELFINO", cash: 95, pos: 0, festa: false }
+    ];
+
+    let datiIncassi = [];
+
+    function caricaDatiIncassi() {
+        const salvati = localStorage.getItem('calcolatore_incassi_dati_v3');
+        if (salvati) {
+            try { datiIncassi = JSON.parse(salvati); } catch(e) { datiIncassi = [...datiInizialiIncassi]; }
+        } else {
+            datiIncassi = [...datiInizialiIncassi];
+        }
+    }
+
+    function salvaDatiIncassi() {
+        localStorage.setItem('calcolatore_incassi_dati_v3', JSON.stringify(datiIncassi));
+    }
+
+    function formatValuta(val) {
         return '€ ' + val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function aggiornaTabella() {
+    function aggiornaTabellaIncassi() {
         const tbody = document.querySelector('#tabellaIncassi tbody');
         tbody.innerHTML = '';
         
@@ -374,18 +1110,16 @@
         let totFissa = 0;
         let recordVisibili = 0;
 
-        dati.forEach((item, index) => {
+        datiIncassi.forEach((item, index) => {
             let incassoGiorno = (item.cash || 0) + (item.pos || 0);
             let p5 = incassoGiorno * 0.05;
             let fissa = item.festa ? 0 : 26;
             let totGiorno = p5 + fissa;
 
-            // Calcoli globali basati su TUTTI i dati
             totIncasso += incassoGiorno;
             tot5p += p5;
             totFissa += fissa;
 
-            // Filtro ricerca
             let matchGiorno = item.giorno.toLowerCase().includes(filtro);
             let matchPostazione = item.postazione.toLowerCase().includes(filtro);
             if (filtro && !matchGiorno && !matchPostazione) {
@@ -397,27 +1131,27 @@
             tr.innerHTML = `
                 <td>${item.giorno}</td>
                 <td>${item.postazione}</td>
-                <td>${format(item.cash || 0)}</td>
-                <td>${format(item.pos || 0)}</td>
-                <td><b>${format(incassoGiorno)}</b></td>
-                <td>${format(p5)}</td>
-                <td>${format(fissa)}</td>
-                <td><b>${format(totGiorno)}</b></td>
-                <td><button class="del-btn" onclick="elimina(${index})">Elimina</button></td>
+                <td>${formatValuta(item.cash || 0)}</td>
+                <td>${formatValuta(item.pos || 0)}</td>
+                <td><b>${formatValuta(incassoGiorno)}</b></td>
+                <td>${formatValuta(p5)}</td>
+                <td>${formatValuta(fissa)}</td>
+                <td><b>${formatValuta(totGiorno)}</b></td>
+                <td><button class="del-btn" onclick="eliminaRecordIncasso(${index})">Elimina</button></td>
             `;
             tbody.appendChild(tr);
         });
 
-        document.getElementById('lblIncasso').innerText = format(totIncasso);
-        document.getElementById('lbl5p').innerText = format(tot5p);
-        document.getElementById('lblFissa').innerText = format(totFissa);
-        document.getElementById('lblTotale').innerText = format(tot5p + totFissa);
-        document.getElementById('lblContatore').innerText = `Mostrando ${recordVisibili} di ${dati.length} record`;
+        document.getElementById('lblIncasso').innerText = formatValuta(totIncasso);
+        document.getElementById('lbl5p').innerText = formatValuta(tot5p);
+        document.getElementById('lblFissa').innerText = formatValuta(totFissa);
+        document.getElementById('lblTotale').innerText = formatValuta(tot5p + totFissa);
+        document.getElementById('lblContatore').innerText = `Mostrando ${recordVisibili} di ${datiIncassi.length} record`;
     }
 
-    function aggiungiRecord() {
+    function aggiungiRecordIncasso() {
         let g = document.getElementById('txtGiorno').value.trim();
-        let p = document.getElementById('txtPostazione').value.trim();
+        let p = document.getElementById('selectPostazioneIncassi').value;
         let c = parseFloat(document.getElementById('txtCash').value) || 0;
         let pos = parseFloat(document.getElementById('txtPos').value) || 0;
         let festa = document.getElementById('chkFesta').checked;
@@ -426,42 +1160,48 @@
             alert('Inserisci un giorno o una data.');
             return;
         }
-        if (!p) {
-            p = 'Standard';
-        }
 
-        dati.push({ giorno: g, postazione: p, cash: c, pos: pos, festa: festa });
-        salvaDati();
+        datiIncassi.push({ giorno: g, postazione: p, cash: c, pos: pos, festa: festa });
+        salvaDatiIncassi();
         
-        // Reset form
         document.getElementById('txtGiorno').value = '';
-        document.getElementById('txtPostazione').value = '';
         document.getElementById('txtCash').value = '0';
         document.getElementById('txtPos').value = '0';
         document.getElementById('chkFesta').checked = false;
 
-        aggiornaTabella();
+        aggiornaTabellaIncassi();
     }
 
-    function elimina(index) {
+    function eliminaRecordIncasso(index) {
         if (confirm('Vuoi davvero eliminare questo record?')) {
-            dati.splice(index, 1);
-            salvaDati();
-            aggiornaTabella();
+            datiIncassi.splice(index, 1);
+            salvaDatiIncassi();
+            aggiornaTabellaIncassi();
         }
     }
 
-    function ripristinaDefault() {
-        if (confirm('Sei sicuro di voler ripristinare i dati iniziali di agosto? I dati inseriti andranno persi.')) {
-            dati = [...datiIniziali];
-            salvaDati();
-            aggiornaTabella();
+    function ripristinaDefaultIncassi() {
+        if (confirm('Sei sicuro di voler ripristinare i dati di Agosto estratti esattamente dagli screenshot?')) {
+            datiIncassi = JSON.parse(JSON.stringify(datiInizialiIncassi));
+            salvaDatiIncassi();
+            aggiornaTabellaIncassi();
         }
     }
 
+    // ==========================================
+    // INIZIALIZZAZIONE ALL'AVVIO
+    // ==========================================
     window.onload = function() {
-        caricaDati();
-        aggiornaTabella();
+        popolaSelectBarche();
+        renderizzaTabellaCassa();
+        caricaStoricoCassaLocal();
+        renderizzaStoricoCassa();
+        caricaDatiIncassi();
+        aggiornaTabellaIncassi();
+        
+        let oggi = new Date();
+        let opzioniData = { day: 'numeric', month: 'long' };
+        document.getElementById("txtDataCassa").value = oggi.toLocaleDateString('it-IT', opzioniData);
     };
 </script>
 
