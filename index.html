@@ -77,13 +77,13 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
-            padding: 6px 16px;
+            padding: 6px 8px;
             border-radius: 12px;
             transition: all 0.2s ease;
-            width: 50%;
+            width: 33.33%;
         }
 
         .nav-item.active {
@@ -91,7 +91,7 @@
         }
 
         .nav-icon {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             filter: grayscale(80%);
             opacity: 0.6;
             transition: all 0.2s ease;
@@ -531,6 +531,35 @@
             background: var(--danger-hover);
         }
 
+        /* VENDITE PER PRODOTTO (SCHEDA 3) */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-box {
+            background: var(--subcard-bg);
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .kpi-box span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .kpi-box strong {
+            font-size: 1.3rem;
+            color: white;
+        }
+
         @media (max-width: 600px) {
             body { padding: 8px; padding-bottom: 75px; }
             .container { padding: 14px; }
@@ -575,7 +604,7 @@
             </div>
 
             <div class="actions-box">
-                <button class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">💾 Salva Giornata in Storico</button>
+                <button class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
                 <button class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia Report WhatsApp</button>
                 <button class="btn btn-danger" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
                 <button class="btn btn-primary" onclick="ripristinaDefaultCassa()">Ripristina Default</button>
@@ -687,6 +716,51 @@
         </div>
     </div>
 
+    <!-- SCHEDA 3: RECAP E SALDO VENDITE PER PRODOTTO & BARCA -->
+    <div id="app-report-prodotti" class="app-view">
+        <div class="container">
+            <h2 class="title-centered">📦 Saldo Vendite per Prodotto</h2>
+
+            <div class="settings-grid" style="margin-bottom: 20px;">
+                <div class="settings-field">
+                    <label for="filtroBarcaProdotti">Seleziona Barca / Postazione:</label>
+                    <select id="filtroBarcaProdotti" onchange="aggiornaReportProdotti()">
+                        <option value="TUTTE">-- Tutte le Barche (Totale Complessivo) --</option>
+                        <!-- Popolato via JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="kpi-container">
+                <div class="kpi-box">
+                    <span>Totale Pezzi Venduti</span>
+                    <strong id="kpiPezziTotali">0 pz</strong>
+                </div>
+                <div class="kpi-box">
+                    <span>Incasso Generato</span>
+                    <strong id="kpiIncassoProdotti">€ 0,00</strong>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="tabellaReportProdotti">
+                    <thead>
+                        <tr>
+                            <th>Prodotto</th>
+                            <th>Passeggeri (pz)</th>
+                            <th>Pendolari (pz)</th>
+                            <th>Tot. Pezzi</th>
+                            <th>Incasso Generato</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dati popolati dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- NAVBAR INFERIORE -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="cambiaApp('app-cassa', this)">
@@ -695,7 +769,11 @@
         </button>
         <button class="nav-item" onclick="cambiaApp('app-incassi', this)">
             <span class="nav-icon">📊</span>
-            <span>Calcolatore Incassi</span>
+            <span>Incassi</span>
+        </button>
+        <button class="nav-item" onclick="cambiaApp('app-report-prodotti', this)">
+            <span class="nav-icon">📦</span>
+            <span>Report Prodotti</span>
         </button>
     </nav>
 
@@ -711,9 +789,11 @@
     function popolaSelectBarche() {
         const selectCassa = document.getElementById("selectBarca");
         const selectIncassi = document.getElementById("selectPostazioneIncassi");
+        const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
         
         selectCassa.innerHTML = "";
         selectIncassi.innerHTML = "";
+        selectFiltroProdotti.innerHTML = `<option value="TUTTE">-- Tutte le Barche (Totale Complessivo) --</option>`;
 
         listaBarche.forEach(barca => {
             let opt1 = document.createElement("option");
@@ -725,6 +805,11 @@
             opt2.value = barca;
             opt2.textContent = barca;
             selectIncassi.appendChild(opt2);
+
+            let opt3 = document.createElement("option");
+            opt3.value = barca;
+            opt3.textContent = barca;
+            selectFiltroProdotti.appendChild(opt3);
         });
 
         if (listaBarche.includes("TREMITI JET")) {
@@ -740,6 +825,10 @@
         document.getElementById(idApp).classList.add('active');
         bottoneCliccato.classList.add('active');
         window.scrollTo(0, 0);
+
+        if (idApp === 'app-report-prodotti') {
+            aggiornaReportProdotti();
+        }
     }
 
     // ==========================================
@@ -955,7 +1044,7 @@
         salvaStoricoCassaLocal();
         renderizzaStoricoCassa();
 
-        if (confirm(`Giornata salvata per ${report.barca}!\n\nVuoi aggiungere l'incasso (€${report.incassoTotale.toFixed(2)}) al "Calcolatore Incassi"?`)) {
+        if (confirm(`Giornata salvata per ${report.barca}!\n\nVuoi registrare l'incasso (€${report.incassoTotale.toFixed(2)}) anche nel "Calcolatore Incassi"?`)) {
             datiIncassi.push({
                 giorno: report.dataStr,
                 postazione: report.barca,
@@ -966,6 +1055,11 @@
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
         }
+
+        // Azzera la cassa corrente dopo il salvataggio
+        prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
+        renderizzaTabellaCassa();
+        alert("Vendite azzerate. Cassa pronta per il prossimo turno!");
     }
 
     function renderizzaStoricoCassa() {
@@ -1030,11 +1124,11 @@
     }
 
     function salvaStoricoCassaLocal() {
-        localStorage.setItem("storico_cassa_barche", JSON.stringify(storicoGiornate));
+        localStorage.setItem("storico_cassa_barche_v2", JSON.stringify(storicoGiornate));
     }
 
     function caricaStoricoCassaLocal() {
-        const salvati = localStorage.getItem("storico_cassa_barche");
+        const salvati = localStorage.getItem("storico_cassa_barche_v2");
         if (salvati) {
             try { storicoGiornate = JSON.parse(salvati); } catch(e) { storicoGiornate = []; }
         }
@@ -1055,7 +1149,74 @@
     }
 
     // ==========================================
-    // LOGICA APP 2: CALCOLATORE INCASSI (CORRETTO CON 16 AGOSTO SUPER FLYTE E 21 AGOSTO FESTA)
+    // LOGICA SCHEDA 3: SALDO VENDITE PER PRODOTTO
+    // ==========================================
+    function aggiornaReportProdotti() {
+        const barcaSelezionata = document.getElementById("filtroBarcaProdotti").value;
+        const tbody = document.querySelector("#tabellaReportProdotti tbody");
+        tbody.innerHTML = "";
+
+        // Filtra le giornate salvate in base alla barca
+        let giornateFiltrate = storicoGiornate;
+        if (barcaSelezionata !== "TUTTE") {
+            giornateFiltrate = storicoGiornate.filter(g => g.barca === barcaSelezionata);
+        }
+
+        // Mappa aggregata dei prodotti
+        let mappaProdotti = {};
+
+        giornateFiltrate.forEach(giornata => {
+            giornata.prodotti.forEach(p => {
+                if (!mappaProdotti[p.id]) {
+                    mappaProdotti[p.id] = {
+                        nome: p.n,
+                        icona: p.i,
+                        qtaPass: 0,
+                        qtaPen: 0,
+                        incassoTotale: 0
+                    };
+                }
+                mappaProdotti[p.id].qtaPass += p.qtaPass;
+                mappaProdotti[p.id].qtaPen += p.qtaPen;
+                mappaProdotti[p.id].incassoTotale += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+            });
+        });
+
+        let elencoOrdinato = Object.values(mappaProdotti).sort((a, b) => {
+            let totA = a.qtaPass + a.qtaPen;
+            let totB = b.qtaPass + b.qtaPen;
+            return totB - totA; // Ordina dal più venduto
+        });
+
+        let totalePezziComplessivi = 0;
+        let totaleIncassoComplessivo = 0;
+
+        if (elencoOrdinato.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 15px;">Nessuna vendita registrata per la barca selezionata. Salva le giornate dalla tab "Cassa Veloce".</td></tr>`;
+        } else {
+            elencoOrdinato.forEach(item => {
+                let totPezzi = item.qtaPass + item.qtaPen;
+                totalePezziComplessivi += totPezzi;
+                totaleIncassoComplessivo += item.incassoTotale;
+
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${item.icona} ${item.nome}</strong></td>
+                    <td>${item.qtaPass} pz</td>
+                    <td>${item.qtaPen} pz</td>
+                    <td><b>${totPezzi} pz</b></td>
+                    <td style="color: #34d399; font-weight: bold;">€ ${item.incassoTotale.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById("kpiPezziTotali").innerText = `${totalePezziComplessivi} pz`;
+        document.getElementById("kpiIncassoProdotti").innerText = `€ ${totaleIncassoComplessivo.toFixed(2)}`;
+    }
+
+    // ==========================================
+    // LOGICA APP 2: CALCOLATORE INCASSI
     // ==========================================
     const datiInizialiIncassi = [
         { giorno: "1 Agosto", postazione: "CAPRI JET", cash: 265, pos: 545, festa: false },
@@ -1182,7 +1343,7 @@
     }
 
     function ripristinaDefaultIncassi() {
-        if (confirm('Sei sicuro di voler ripristinare i dati di Agosto con la Domenica 16 su Super Flyte e la festa il 21?')) {
+        if (confirm('Sei sicuro di voler ripristinare i dati di Agosto?')) {
             datiIncassi = JSON.parse(JSON.stringify(datiInizialiIncassi));
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
