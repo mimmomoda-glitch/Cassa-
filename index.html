@@ -195,6 +195,25 @@
             color: #d1d5db;
         }
 
+        /* BARRA STATO SALVATAGGIO */
+        .save-indicator {
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            transition: opacity 0.3s;
+        }
+
         /* CASSA VELOCE */
         .card-totale {
             background: linear-gradient(135deg, #065f46 0%, #047857 100%);
@@ -322,12 +341,12 @@
         }
 
         .btn-qta {
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             background: #374151;
             border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
+            border-radius: 8px;
+            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -335,20 +354,34 @@
             justify-content: center;
             color: white;
             transition: background 0.1s;
+            flex-shrink: 0;
+            user-select: none;
         }
 
         .btn-qta:active {
             background: #4b5563;
         }
 
+        /* CORREZIONE PER VISIBILITÀ NUMERO INTERO DIGITATO */
         .input-qta {
-            width: 35px;
+            width: 58px;
+            padding: 6px 2px !important;
             text-align: center;
-            font-size: 1rem;
+            font-size: 1.15rem;
             font-weight: bold;
-            border: none;
-            background: transparent;
-            color: white;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: #34d399;
+            border-radius: 8px;
+            -moz-appearance: textfield;
+            appearance: textfield;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .input-qta::-webkit-outer-spin-button,
+        .input-qta::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .actions-box {
@@ -560,6 +593,33 @@
             color: white;
         }
 
+        /* SEZIONE IMPORT/EXPORT BACKUP */
+        .backup-section {
+            background: var(--subcard-bg);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .backup-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .backup-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         @media (max-width: 600px) {
             body { padding: 8px; padding-bottom: 75px; }
             .container { padding: 14px; }
@@ -570,6 +630,9 @@
 </head>
 <body>
 
+    <!-- INDICATORE SALVATAGGIO AUTOMATICO -->
+    <div id="saveIndicator" class="save-indicator">✓ Salvato</div>
+
     <!-- SCHEDA 1: GESTIONE CASSA VELOCE -->
     <div id="app-cassa" class="app-view active">
         <div class="container">
@@ -579,17 +642,17 @@
             <div class="settings-grid">
                 <div class="settings-field">
                     <label for="selectBarca">Postazione / Barca:</label>
-                    <select id="selectBarca">
+                    <select id="selectBarca" onchange="cambiaBarcaCorrente()">
                         <!-- Popolato via JS -->
                     </select>
                 </div>
                 <div class="settings-field">
                     <label for="txtDataCassa">Giorno / Data:</label>
-                    <input type="text" id="txtDataCassa" placeholder="es. Oggi, 23 Agosto">
+                    <input type="text" id="txtDataCassa" placeholder="es. Oggi, 23 Agosto" oninput="salvaBozzaCassaInTempoReale()">
                 </div>
                 <div class="settings-field">
                     <label for="fondoCassa">Fondo cassa iniziale (€):</label>
-                    <input type="number" id="fondoCassa" value="50.00" step="0.50" min="0" oninput="calcolaTotaleCassa()">
+                    <input type="number" id="fondoCassa" value="50.00" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
                 </div>
             </div>
 
@@ -618,6 +681,16 @@
                 </h3>
                 <div id="listaStoricoCassa">
                     <!-- Dati dinamici dallo storico -->
+                </div>
+            </div>
+
+            <!-- GESTIONE BACKUP JSON -->
+            <div class="backup-section">
+                <div class="backup-title">📁 Gestione Dati e Backup JSON</div>
+                <div class="backup-buttons">
+                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px;" onclick="esportaDatiJSON()">📥 Scarica Backup JSON</button>
+                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px;" onclick="document.getElementById('inputImportJSON').click()">📤 Importa JSON</button>
+                    <input type="file" id="inputImportJSON" accept=".json" style="display: none;" onchange="importaDatiJSON(event)">
                 </div>
             </div>
         </div>
@@ -778,7 +851,7 @@
     </nav>
 
 <script>
-    // ELENCO BARCHE / POSTAZIONI
+    // LISTA BARCHE / POSTAZIONI
     const listaBarche = [
         "NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET", 
         "ISCHIA JET", "SUPER FLYTE", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET", 
@@ -786,55 +859,8 @@
         "BLIZ", "DELFINO", "URAGANO", "ACQUARIUS", "RAID", "Standard", "Festa"
     ];
 
-    function popolaSelectBarche() {
-        const selectCassa = document.getElementById("selectBarca");
-        const selectIncassi = document.getElementById("selectPostazioneIncassi");
-        const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
-        
-        selectCassa.innerHTML = "";
-        selectIncassi.innerHTML = "";
-        selectFiltroProdotti.innerHTML = `<option value="TUTTE">-- Tutte le Barche (Totale Complessivo) --</option>`;
-
-        listaBarche.forEach(barca => {
-            let opt1 = document.createElement("option");
-            opt1.value = barca;
-            opt1.textContent = barca;
-            selectCassa.appendChild(opt1);
-
-            let opt2 = document.createElement("option");
-            opt2.value = barca;
-            opt2.textContent = barca;
-            selectIncassi.appendChild(opt2);
-
-            let opt3 = document.createElement("option");
-            opt3.value = barca;
-            opt3.textContent = barca;
-            selectFiltroProdotti.appendChild(opt3);
-        });
-
-        if (listaBarche.includes("TREMITI JET")) {
-            selectCassa.value = "TREMITI JET";
-            selectIncassi.value = "TREMITI JET";
-        }
-    }
-
-    function cambiaApp(idApp, bottoneCliccato) {
-        document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-
-        document.getElementById(idApp).classList.add('active');
-        bottoneCliccato.classList.add('active');
-        window.scrollTo(0, 0);
-
-        if (idApp === 'app-report-prodotti') {
-            aggiornaReportProdotti();
-        }
-    }
-
-    // ==========================================
-    // LOGICA APP 1: GESTIONE CASSA VELOCE
-    // ==========================================
-    let prodottiDefault = [
+    // PRODOTTI DI DEFAULT CON PREZZI
+    const prodottiDefault = [
         {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0},
         {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0},
         {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0},
@@ -876,9 +902,224 @@
         {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0}
     ];
 
-    let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
-    let storicoGiornate = [];
+    // DATI STORICI ESTATTI DAL VOSTRO DOCUMENT.JSON
+    const storicoChiusureInizialiJSON = [
+        // NAPOLI JET
+        { id: 1001, barca: "NAPOLI JET", dataStr: "10/06/2026, 09:19:35", incassoTotale: 800.50, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:36, qtaPen:0}, {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:2, qtaPen:0},
+            {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:25, qtaPen:0}, {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:5, qtaPen:0},
+            {id:'cia', n:"Cialde", i:"☕", p:2, pen:1, qtaPass:25, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:31, qtaPen:0},
+            {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:11, qtaPen:0}
+        ]},
+        { id: 1002, barca: "NAPOLI JET", dataStr: "22/07/2026, 12:22:15", incassoTotale: 372.50, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:15, qtaPen:4}, {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:21, qtaPen:0},
+            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:14, qtaPen:4}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:6, qtaPen:0}
+        ]},
+        { id: 1003, barca: "NAPOLI JET", dataStr: "04/08/2026, 17:03:51", incassoTotale: 611.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:50, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:35, qtaPen:0},
+            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:18, qtaPen:0}
+        ]},
+        { id: 1004, barca: "NAPOLI JET", dataStr: "05/08/2026, 21:10:48", incassoTotale: 659.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:58, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:43, qtaPen:0},
+            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:18, qtaPen:0}
+        ]},
+        { id: 1005, barca: "NAPOLI JET", dataStr: "24/08/2026, 09:21:27", incassoTotale: 744.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:46, qtaPen:0}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:16, qtaPen:0},
+            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:30, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:23, qtaPen:0}
+        ]},
+        // SALERNO JET
+        { id: 2001, barca: "SALERNO JET", dataStr: "10/06/2026, 09:18:54", incassoTotale: 645.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:44, qtaPen:3}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:19, qtaPen:0},
+            {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:6, qtaPen:0}, {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:9, qtaPen:0}
+        ]},
+        { id: 2002, barca: "SALERNO JET", dataStr: "11/06/2026, 09:46:33", incassoTotale: 591.50, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:30, qtaPen:6}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:14, qtaPen:0},
+            {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:8, qtaPen:0}, {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:12, qtaPen:0}
+        ]},
+        { id: 2003, barca: "SALERNO JET", dataStr: "24/08/2026, 09:21:35", incassoTotale: 859.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:35, qtaPen:7}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:18, qtaPen:0},
+            {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:16, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:24, qtaPen:6}
+        ]},
+        // AMALFI JET
+        { id: 3001, barca: "AMALFI JET", dataStr: "10/07/2026, 12:36:38", incassoTotale: 849.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:59, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:49, qtaPen:0},
+            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:22, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:8, qtaPen:0}
+        ]},
+        // SUPER JET
+        { id: 4001, barca: "SUPER JET", dataStr: "21/06/2026, 10:00:10", incassoTotale: 1142.50, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:114, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:32, qtaPen:0},
+            {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:27, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:12, qtaPen:0}
+        ]},
+        { id: 4002, barca: "SUPER JET", dataStr: "05/08/2026, 11:31:39", incassoTotale: 981.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:119, qtaPen:4}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:40, qtaPen:3},
+            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:19, qtaPen:6}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:11, qtaPen:0}
+        ]},
+        // TREMITI JET
+        { id: 5001, barca: "TREMITI JET", dataStr: "13/07/2026, 16:05:34", incassoTotale: 1457.50, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:120, qtaPen:8}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:43, qtaPen:6},
+            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:49, qtaPen:6}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:13, qtaPen:0}
+        ]},
+        { id: 5002, barca: "TREMITI JET", dataStr: "02/08/2026, 10:48:52", incassoTotale: 1628.00, fondoCassa: 50, prodotti: [
+            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:149, qtaPen:5}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:67, qtaPen:4},
+            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:35, qtaPen:7}, {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:11, qtaPen:0}
+        ]}
+    ];
 
+    // DATI INCASSI DEFAULT
+    const datiInizialiIncassi = [
+        { giorno: "1 Agosto", postazione: "CAPRI JET", cash: 265, pos: 545, festa: false },
+        { giorno: "2 Agosto", postazione: "TREMITI JET", cash: 285, pos: 551, festa: false },
+        { giorno: "3 Agosto", postazione: "SUPER JET", cash: 345, pos: 688.50, festa: false },
+        { giorno: "4 Agosto", postazione: "SUPER JET / CAPRI JET", cash: 145, pos: 156, festa: false },
+        { giorno: "5 Agosto", postazione: "NAPOLI JET", cash: 445, pos: 225.50, festa: false },
+        { giorno: "6 Agosto", postazione: "SALERNO JET", cash: 385, pos: 478, festa: false },
+        { giorno: "7 Agosto", postazione: "CAPRI JET", cash: 280, pos: 368.50, festa: false },
+        { giorno: "8 Agosto", postazione: "CAPRI JET", cash: 240, pos: 351, festa: false },
+        { giorno: "9 Agosto", postazione: "PICASSO", cash: 120, pos: 115.50, festa: false },
+        { giorno: "10 Agosto", postazione: "PICASSO", cash: 120, pos: 132.50, festa: false },
+        { giorno: "11 Agosto", postazione: "PICASSO", cash: 340, pos: 89.50, festa: false },
+        { giorno: "12 Agosto", postazione: "EUROPA JET", cash: 115, pos: 281.50, festa: false },
+        { giorno: "13 Agosto", postazione: "SUPER FLYTE", cash: 165, pos: 151, festa: false },
+        { giorno: "14 Agosto", postazione: "TREMITI JET", cash: 355, pos: 672.50, festa: false },
+        { giorno: "15 Agosto", postazione: "FRECCIA D ARGENTO", cash: 120, pos: 193.50, festa: false },
+        { giorno: "16 Agosto", postazione: "SUPER FLYTE", cash: 235, pos: 83.50, festa: false },
+        { giorno: "17 Agosto", postazione: "SUPER FLYTE", cash: 315, pos: 150, festa: false },
+        { giorno: "18 Agosto", postazione: "JUMBO JET", cash: 265, pos: 393.50, festa: false },
+        { giorno: "19 Agosto", postazione: "TREMITI JET", cash: 530, pos: 465.50, festa: false },
+        { giorno: "20 Agosto", postazione: "DELFINO", cash: 95, pos: 0, festa: false },
+        { giorno: "21 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true }
+    ];
+
+    // STATO GLOBALE DELL'APPLICAZIONE
+    let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
+    let bozzePerBarca = {}; // Memorizza le bozze correnti per ciascuna barca
+    let storicoGiornate = [];
+    let datiIncassi = [];
+    let timerSalvataggioToast = null;
+
+    // POPOLA SELECT BARCHE
+    function popolaSelectBarche() {
+        const selectCassa = document.getElementById("selectBarca");
+        const selectIncassi = document.getElementById("selectPostazioneIncassi");
+        const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
+        
+        selectCassa.innerHTML = "";
+        selectIncassi.innerHTML = "";
+        selectFiltroProdotti.innerHTML = `<option value="TUTTE">-- Tutte le Barche (Totale Complessivo) --</option>`;
+
+        listaBarche.forEach(barca => {
+            let opt1 = document.createElement("option");
+            opt1.value = barca;
+            opt1.textContent = barca;
+            selectCassa.appendChild(opt1);
+
+            let opt2 = document.createElement("option");
+            opt2.value = barca;
+            opt2.textContent = barca;
+            selectIncassi.appendChild(opt2);
+
+            let opt3 = document.createElement("option");
+            opt3.value = barca;
+            opt3.textContent = barca;
+            selectFiltroProdotti.appendChild(opt3);
+        });
+
+        // Recupera ultima barca usata o imposta Tremiti Jet
+        const ultimaBarca = localStorage.getItem("cassa_barca_selezionata");
+        if (ultimaBarca && listaBarche.includes(ultimaBarca)) {
+            selectCassa.value = ultimaBarca;
+            selectIncassi.value = ultimaBarca;
+        } else if (listaBarche.includes("TREMITI JET")) {
+            selectCassa.value = "TREMITI JET";
+            selectIncassi.value = "TREMITI JET";
+        }
+    }
+
+    function cambiaApp(idApp, bottoneCliccato) {
+        document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(idApp).classList.add('active');
+        bottoneCliccato.classList.add('active');
+        window.scrollTo(0, 0);
+
+        if (idApp === 'app-report-prodotti') {
+            aggiornaReportProdotti();
+        }
+    }
+
+    // ==========================================
+    // LOGICA AUTO-SAVE E BOZZE PER BARCA
+    // ==========================================
+    function mostraNotificaSalvataggio() {
+        const ind = document.getElementById("saveIndicator");
+        ind.style.display = "flex";
+        ind.style.opacity = "1";
+        clearTimeout(timerSalvataggioToast);
+        timerSalvataggioToast = setTimeout(() => {
+            ind.style.opacity = "0";
+            setTimeout(() => { ind.style.display = "none"; }, 300);
+        }, 1200);
+    }
+
+    function salvaBozzaCassaInTempoReale() {
+        const barcaCorrente = document.getElementById("selectBarca").value;
+        if (!barcaCorrente) return;
+
+        // Prepara l'oggetto con le quantità correnti per questa barca
+        let mappaQta = {};
+        prodotti.forEach(p => {
+            if (p.qtaPass > 0 || p.qtaPen > 0) {
+                mappaQta[p.id] = { pass: p.qtaPass, pen: p.qtaPen };
+            }
+        });
+
+        bozzePerBarca[barcaCorrente] = {
+            dataStr: document.getElementById("txtDataCassa").value,
+            fondoCassa: parseFloat(document.getElementById("fondoCassa").value) || 0,
+            quantita: mappaQta
+        };
+
+        localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
+        localStorage.setItem("cassa_barca_selezionata", barcaCorrente);
+
+        mostraNotificaSalvataggio();
+    }
+
+    function caricaBozzaBarcaCorrente() {
+        const barcaCorrente = document.getElementById("selectBarca").value;
+        
+        // Reset prodotti a zero
+        prodotti = JSON.parse(JSON.stringify(prodottiDefault));
+
+        if (bozzePerBarca[barcaCorrente]) {
+            let bozza = bozzediBarcaCorrente = bozzediBarcaCorrente = bozzePerBarca[barcaCorrente];
+            if (bozza.dataStr !== undefined) {
+                document.getElementById("txtDataCassa").value = bozza.dataStr;
+            }
+            if (bozza.fondoCassa !== undefined) {
+                document.getElementById("fondoCassa").value = bozza.fondoCassa;
+            }
+            if (bozza.quantita) {
+                prodotti.forEach(p => {
+                    if (bozza.quantita[p.id]) {
+                        p.qtaPass = bozza.quantita[p.id].pass || 0;
+                        p.qtaPen = bozza.quantita[p.id].pen || 0;
+                    }
+                });
+            }
+        }
+        renderizzaTabellaCassa();
+    }
+
+    function cambiaBarcaCorrente() {
+        salvaBozzaCassaInTempoReale();
+        caricaBozzaBarcaCorrente();
+    }
+
+    // ==========================================
+    // LOGICA APP 1: GESTIONE CASSA VELOCE
+    // ==========================================
     function renderizzaTabellaCassa() {
         const container = document.getElementById("listaProdotti");
         container.innerHTML = "";
@@ -927,6 +1168,7 @@
                 document.getElementById(`pen_${id}`).value = p.qtaPen;
             }
             calcolaTotaleCassa();
+            salvaBozzaCassaInTempoReale();
         }
     }
 
@@ -940,6 +1182,7 @@
                 p.qtaPen = val;
             }
             calcolaTotaleCassa();
+            salvaBozzaCassaInTempoReale();
         }
     }
 
@@ -1056,10 +1299,13 @@
             aggiornaTabellaIncassi();
         }
 
-        // Azzera la cassa corrente dopo il salvataggio
+        // Azzera la cassa corrente della barca salvata
         prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
+        delete bozzePerBarca[report.barca];
+        localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
+        
         renderizzaTabellaCassa();
-        alert("Vendite azzerate. Cassa pronta per il prossimo turno!");
+        alert("Giornata salvata e vendite azzerate per la barca corrente!");
     }
 
     function renderizzaStoricoCassa() {
@@ -1079,7 +1325,7 @@
                 let dettagli = [];
                 if (p.qtaPass > 0) dettagli.push(`Pass: ${p.qtaPass}`);
                 if (p.qtaPen > 0) dettagli.push(`Pen: ${p.qtaPen}`);
-                return `${p.i} ${p.n} (${dettagli.join(', ')})`;
+                return `${p.i || ''} ${p.n} (${dettagli.join(', ')})`;
             }).join(' • ');
 
             div.innerHTML = `
@@ -1102,7 +1348,8 @@
     function condividiStorico(id) {
         let item = storicoGiornate.find(g => g.id === id);
         if (item) {
-            let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(item.reportTesto)}`;
+            let testo = item.reportTesto || `🚢 *${item.barca}* - Data: ${item.dataStr}\nIncasso: €${item.incassoTotale.toFixed(2)}`;
+            let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(testo)}`;
             window.open(url, '_blank');
         }
     }
@@ -1124,19 +1371,24 @@
     }
 
     function salvaStoricoCassaLocal() {
-        localStorage.setItem("storico_cassa_barche_v2", JSON.stringify(storicoGiornate));
+        localStorage.setItem("storico_cassa_barche_v6", JSON.stringify(storicoGiornate));
     }
 
     function caricaStoricoCassaLocal() {
-        const salvati = localStorage.getItem("storico_cassa_barche_v2");
+        const salvati = localStorage.getItem("storico_cassa_barche_v6");
         if (salvati) {
-            try { storicoGiornate = JSON.parse(salvati); } catch(e) { storicoGiornate = []; }
+            try { storicoGiornate = JSON.parse(salvati); } catch(e) { storicoGiornate = [...storicoChiusureInizialiJSON]; }
+        } else {
+            // Pre-carica lo storico estratto dal vostro JSON
+            storicoGiornate = [...storicoChiusureInizialiJSON];
+            salvaStoricoCassaLocal();
         }
     }
 
     function azzeraQuantitaCassa() {
         if(confirm("Vuoi azzerare tutte le quantità vendute della giornata corrente?")) {
             prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
+            salvaBozzaCassaInTempoReale();
             renderizzaTabellaCassa();
         }
     }
@@ -1144,8 +1396,62 @@
     function ripristinaDefaultCassa() {
         if(confirm("Vuoi ripristinare le quantità iniziali?")) {
             prodotti = JSON.parse(JSON.stringify(prodottiDefault));
+            salvaBozzaCassaInTempoReale();
             renderizzaTabellaCassa();
         }
+    }
+
+    // ==========================================
+    // EXPORT & IMPORT BACKUP JSON
+    // ==========================================
+    function esportaDatiJSON() {
+        salvaBozzaCassaInTempoReale();
+        let backup = {
+            versione: "v14_global_backup_export",
+            timestamp: new Date().toISOString(),
+            bozzePerBarca: bozzePerBarca,
+            storicoGiornate: storicoGiornate,
+            datiIncassi: datiIncassi
+        };
+
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+        let downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `backup_gestionale_barche_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importaDatiJSON(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let parsed = JSON.parse(e.target.result);
+                if (parsed.storicoGiornate) {
+                    storicoGiornate = parsed.storicoGiornate;
+                    salvaStoricoCassaLocal();
+                }
+                if (parsed.datiIncassi) {
+                    datiIncassi = parsed.datiIncassi;
+                    salvaDatiIncassi();
+                }
+                if (parsed.bozzePerBarca) {
+                    bozzePerBarca = parsed.bozzePerBarca;
+                    localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
+                }
+                caricaBozzaBarcaCorrente();
+                renderizzaStoricoCassa();
+                aggiornaTabellaIncassi();
+                alert("Importazione completata con successo!");
+            } catch(err) {
+                alert("Errore nella lettura del file JSON: formato non valido.");
+            }
+        };
+        reader.readAsText(file);
     }
 
     // ==========================================
@@ -1166,26 +1472,35 @@
         let mappaProdotti = {};
 
         giornateFiltrate.forEach(giornata => {
-            giornata.prodotti.forEach(p => {
-                if (!mappaProdotti[p.id]) {
-                    mappaProdotti[p.id] = {
-                        nome: p.n,
-                        icona: p.i,
+            (giornata.prodotti || []).forEach(p => {
+                let pid = p.id;
+                if (!pid) return;
+
+                if (!mappaProdotti[pid]) {
+                    mappaProdotti[pid] = {
+                        nome: p.n || p.nome,
+                        icona: p.i || p.emoji || '📦',
                         qtaPass: 0,
                         qtaPen: 0,
                         incassoTotale: 0
                     };
                 }
-                mappaProdotti[p.id].qtaPass += p.qtaPass;
-                mappaProdotti[p.id].qtaPen += p.qtaPen;
-                mappaProdotti[p.id].incassoTotale += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+                let pass = p.qtaPass !== undefined ? p.qtaPass : (p.pas || 0);
+                let pen = p.qtaPen !== undefined ? p.qtaPen : (p.pen || 0);
+                let prezzoPas = p.p || 0;
+                let prezzoPen = p.penPrice || p.pen || 0;
+                let val = p.valore !== undefined ? p.valore : ((pass * prezzoPas) + (pen * prezzoPen));
+
+                mappaProdotti[pid].qtaPass += pass;
+                mappaProdotti[pid].qtaPen += pen;
+                mappaProdotti[pid].incassoTotale += val;
             });
         });
 
         let elencoOrdinato = Object.values(mappaProdotti).sort((a, b) => {
             let totA = a.qtaPass + a.qtaPen;
             let totB = b.qtaPass + b.qtaPen;
-            return totB - totA; // Ordina dal più venduto
+            return totB - totA;
         });
 
         let totalePezziComplessivi = 0;
@@ -1218,43 +1533,19 @@
     // ==========================================
     // LOGICA APP 2: CALCOLATORE INCASSI
     // ==========================================
-    const datiInizialiIncassi = [
-        { giorno: "1 Agosto", postazione: "CAPRI JET", cash: 265, pos: 545, festa: false },
-        { giorno: "2 Agosto", postazione: "TREMITI JET", cash: 285, pos: 551, festa: false },
-        { giorno: "3 Agosto", postazione: "SUPER JET", cash: 345, pos: 688.50, festa: false },
-        { giorno: "4 Agosto", postazione: "SUPER JET / CAPRI JET", cash: 145, pos: 156, festa: false },
-        { giorno: "5 Agosto", postazione: "NAPOLI JET", cash: 445, pos: 225.50, festa: false },
-        { giorno: "6 Agosto", postazione: "SALERNO JET", cash: 385, pos: 478, festa: false },
-        { giorno: "7 Agosto", postazione: "CAPRI JET", cash: 280, pos: 368.50, festa: false },
-        { giorno: "8 Agosto", postazione: "CAPRI JET", cash: 240, pos: 351, festa: false },
-        { giorno: "9 Agosto", postazione: "PICASSO", cash: 120, pos: 115.50, festa: false },
-        { giorno: "10 Agosto", postazione: "PICASSO", cash: 120, pos: 132.50, festa: false },
-        { giorno: "11 Agosto", postazione: "PICASSO", cash: 340, pos: 89.50, festa: false },
-        { giorno: "12 Agosto", postazione: "EUROPA JET", cash: 115, pos: 281.50, festa: false },
-        { giorno: "13 Agosto", postazione: "SUPER FLYTE", cash: 165, pos: 151, festa: false },
-        { giorno: "14 Agosto", postazione: "TREMITI JET", cash: 355, pos: 672.50, festa: false },
-        { giorno: "15 Agosto", postazione: "FRECCIA D ARGENTO", cash: 120, pos: 193.50, festa: false },
-        { giorno: "16 Agosto", postazione: "SUPER FLYTE", cash: 235, pos: 83.50, festa: false },
-        { giorno: "17 Agosto", postazione: "SUPER FLYTE", cash: 315, pos: 150, festa: false },
-        { giorno: "18 Agosto", postazione: "JUMBO JET", cash: 265, pos: 393.50, festa: false },
-        { giorno: "19 Agosto", postazione: "TREMITI JET", cash: 530, pos: 465.50, festa: false },
-        { giorno: "20 Agosto", postazione: "DELFINO", cash: 95, pos: 0, festa: false },
-        { giorno: "21 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true }
-    ];
-
-    let datiIncassi = [];
-
     function caricaDatiIncassi() {
-        const salvati = localStorage.getItem('calcolatore_incassi_dati_v5');
+        const salvati = localStorage.getItem('calcolatore_incassi_dati_v6');
         if (salvati) {
             try { datiIncassi = JSON.parse(salvati); } catch(e) { datiIncassi = [...datiInizialiIncassi]; }
         } else {
             datiIncassi = [...datiInizialiIncassi];
+            salvaDatiIncassi();
         }
     }
 
     function salvaDatiIncassi() {
-        localStorage.setItem('calcolatore_incassi_dati_v5', JSON.stringify(datiIncassi));
+        localStorage.setItem('calcolatore_incassi_dati_v6', JSON.stringify(datiIncassi));
+        mostraNotificaSalvataggio();
     }
 
     function formatValuta(val) {
@@ -1343,7 +1634,7 @@
     }
 
     function ripristinaDefaultIncassi() {
-        if (confirm('Sei sicuro di voler ripristinare i dati di Agosto?')) {
+        if (confirm('Sei sicuro di voler ripristinare i dati iniziali degli incassi?')) {
             datiIncassi = JSON.parse(JSON.stringify(datiInizialiIncassi));
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
@@ -1355,15 +1646,24 @@
     // ==========================================
     window.onload = function() {
         popolaSelectBarche();
-        renderizzaTabellaCassa();
+
+        // Carica bozze da localStorage
+        const bozzeSalvate = localStorage.getItem("cassa_bozze_per_barca_v6");
+        if (bozzeSalvate) {
+            try { bozzePerBarca = JSON.parse(bozzeSalvate); } catch(e) { bozzePerBarca = {}; }
+        }
+
+        // Imposta Data Odierna di Default se vuota
+        let oggi = new Date();
+        let opzioniData = { day: 'numeric', month: 'long' };
+        let dataOdierna = oggi.toLocaleDateString('it-IT', opzioniData);
+        document.getElementById("txtDataCassa").value = dataOdierna;
+
+        caricaBozzaBarcaCorrente();
         caricaStoricoCassaLocal();
         renderizzaStoricoCassa();
         caricaDatiIncassi();
         aggiornaTabellaIncassi();
-        
-        let oggi = new Date();
-        let opzioniData = { day: 'numeric', month: 'long' };
-        document.getElementById("txtDataCassa").value = oggi.toLocaleDateString('it-IT', opzioniData);
     };
 </script>
 
