@@ -2,47 +2,51 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Gestionale Cassa & Incassi Barche</title>
     <style>
         :root {
             --primary: #4f46e5;
             --primary-hover: #4338ca;
+            --primary-light: rgba(79, 70, 229, 0.15);
             --success: #10b981;
             --success-hover: #059669;
             --danger: #ef4444;
             --danger-hover: #dc2626;
             --warning: #f59e0b;
-            --bg: #1e222d;
-            --card-bg: #262b38;
-            --input-bg: #2b3245;
-            --subcard-bg: #1f2430;
-            --text: #f3f4f6;
+            --bg: #111827;
+            --card-bg: #1f2937;
+            --input-bg: #374151;
+            --subcard-bg: #182232;
+            --text: #f9fafb;
             --text-muted: #9ca3af;
             --border: #374151;
-            --nav-bg: #1a1d27;
+            --nav-bg: rgba(17, 24, 39, 0.92);
+            --pass-color: #38bdf8;
+            --pen-color: #fb923c;
         }
 
         * {
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             margin: 0;
             padding: 0;
-            padding-bottom: 75px;
+            padding-bottom: 80px;
             color: var(--text);
-            -webkit-tap-highlight-color: transparent;
-            line-height: 1.5;
+            line-height: 1.4;
+            overflow-x: hidden;
         }
 
-        /* NAVIGAZIONE SCHEDE */
+        /* VISTA APPLICAZIONE SCHEDE */
         .app-view {
             display: none;
-            padding: 16px;
-            animation: fadeIn 0.25s ease-in-out;
+            padding: 10px;
+            animation: fadeIn 0.2s ease-in-out;
         }
 
         .app-view.active {
@@ -50,23 +54,26 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* BARRA NAVIGAZIONE INFERIORE MOBILE */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             background: var(--nav-bg);
-            border-top: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-around;
-            padding: 8px 0;
-            padding-bottom: env(safe-area-inset-bottom, 8px);
+            padding: 6px 4px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom));
             z-index: 1000;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
         }
 
         .nav-item {
@@ -76,25 +83,26 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            font-size: 0.7rem;
+            gap: 2px;
+            font-size: 0.72rem;
             font-weight: 600;
             cursor: pointer;
-            padding: 6px 8px;
+            padding: 6px 4px;
             border-radius: 12px;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             width: 33.33%;
         }
 
         .nav-item.active {
             color: #818cf8;
+            background: rgba(129, 140, 248, 0.1);
         }
 
         .nav-icon {
-            font-size: 1.2rem;
-            filter: grayscale(80%);
-            opacity: 0.6;
-            transition: all 0.2s ease;
+            font-size: 1.25rem;
+            filter: grayscale(60%);
+            opacity: 0.7;
+            transition: all 0.15s ease;
         }
 
         .nav-item.active .nav-icon {
@@ -103,15 +111,15 @@
             transform: scale(1.1);
         }
 
-        /* STILI GENERALI */
+        /* CONTAINER E HEADERS */
         .container {
-            max-width: 900px;
+            max-width: 850px;
             margin: 0 auto;
             background: var(--card-bg);
-            padding: 20px;
+            padding: 14px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            margin-bottom: 16px;
         }
 
         h2, h1, h3 {
@@ -121,68 +129,71 @@
 
         h2, h1 {
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
+            margin-bottom: 14px;
+            font-size: 1.3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
 
         .title-centered {
             justify-content: center;
         }
 
+        /* PREVIENE ZOOM AUTOMATICO SU IOS/MOBILE CON FONT >= 16px */
         input, select {
             padding: 10px 12px;
             border: 1px solid var(--border);
             background: var(--input-bg);
             color: white;
-            border-radius: 8px;
-            font-size: 0.95rem;
+            border-radius: 10px;
+            font-size: 16px; /* Impostazione cruciale per mobile */
             width: 100%;
+            -webkit-appearance: none;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.4);
         }
 
+        /* BOTTONI CON TOUCH TARGET OTTIMIZZATO */
         .btn {
-            padding: 12px;
+            padding: 12px 14px;
             font-size: 0.95rem;
-            font-weight: 600;
+            font-weight: 700;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             text-align: center;
-            transition: background 0.15s;
+            transition: background 0.15s, transform 0.05s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 44px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .btn-danger {
-            background: #7f1d1d;
+            background: #991b1b;
             color: #fca5a5;
-        }
-        .btn-danger:active {
-            background: var(--danger-hover);
         }
 
         .btn-success {
             background: var(--success);
             color: white;
         }
-        .btn-success:active {
-            background: var(--success-hover);
-        }
 
         .btn-primary {
             background: var(--primary);
             color: white;
-        }
-        .btn-primary:active {
-            background: var(--primary-hover);
         }
 
         .btn-warning {
@@ -195,18 +206,18 @@
             color: #d1d5db;
         }
 
-        /* BARRA STATO SALVATAGGIO */
+        /* NOTIFICA SALVATAGGIO AUTOMATICO MOBILE */
         .save-indicator {
             position: fixed;
-            top: 12px;
-            right: 16px;
-            background: rgba(16, 185, 129, 0.9);
+            top: 10px;
+            right: 12px;
+            background: rgba(16, 185, 129, 0.95);
             color: white;
             font-size: 0.75rem;
-            font-weight: bold;
-            padding: 4px 10px;
+            font-weight: 700;
+            padding: 5px 12px;
             border-radius: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             z-index: 1001;
             display: none;
             align-items: center;
@@ -214,78 +225,82 @@
             transition: opacity 0.3s;
         }
 
-        /* CASSA VELOCE */
+        /* CARD TOTALE STICKY COMPATTA PER MOBILE */
         .card-totale {
             background: linear-gradient(135deg, #065f46 0%, #047857 100%);
-            border: 2px solid #34d399;
-            padding: 16px;
+            border: 1px solid #34d399;
+            padding: 10px 14px;
             border-radius: 12px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             position: sticky;
-            top: 10px;
-            z-index: 10;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            top: 8px;
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
         }
 
         .card-totale .label {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             color: #a7f3d0;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .card-totale .amount {
-            font-size: 2.2rem;
+            font-size: 1.75rem;
             font-weight: 800;
             color: #ffffff;
-            margin-top: 5px;
+            line-height: 1.1;
+            margin-top: 2px;
         }
 
         .card-totale .details {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #d1fae5;
-            margin-top: 6px;
-            opacity: 0.9;
+            margin-top: 2px;
+            opacity: 0.95;
         }
 
+        /* GRID IMPOSTAZIONI */
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
             background: var(--subcard-bg);
-            padding: 16px;
+            padding: 12px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             border: 1px solid var(--border);
         }
 
         .settings-field {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
 
         .settings-field label {
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
         }
 
+        /* LISTA PRODOTTI OTTIMIZZATA MOBILE */
         .prodotti-lista {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
         .prodotto-card {
-            background: var(--input-bg);
+            background: var(--subcard-bg);
             border: 1px solid var(--border);
-            padding: 14px 16px;
+            padding: 12px;
             border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             border-left: 4px solid #f59e0b;
         }
 
@@ -293,89 +308,102 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
         .prodotto-nome {
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .prezzi-info {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: #34d399;
-            margin-bottom: 10px;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 4px 8px;
+            background: rgba(16, 185, 129, 0.12);
+            padding: 3px 8px;
             border-radius: 6px;
-            display: inline-block;
+            font-weight: 600;
         }
 
+        /* CONTROLLI QUANTITÀ ADATTIVI MOBILE */
         .categorie-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            background: var(--subcard-bg);
-            padding: 10px;
-            border-radius: 8px;
+            gap: 8px;
+            margin-top: 8px;
         }
 
         .categoria-box {
+            background: var(--input-bg);
+            padding: 8px 6px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
             text-align: center;
         }
 
         .categoria-titolo {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: bold;
+            font-weight: 800;
             margin-bottom: 6px;
+            letter-spacing: 0.3px;
         }
+
+        .categoria-titolo.pass { color: var(--pass-color); }
+        .categoria-titolo.pen { color: var(--pen-color); }
 
         .controlli-qta {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
         }
 
+        /* BOTTONI TOUCH MODERNI PER QUANTITÀ */
         .btn-qta {
-            width: 38px;
-            height: 38px;
-            background: #374151;
+            width: 42px;
+            height: 42px;
+            background: #4b5563;
             border: none;
-            border-radius: 8px;
-            font-size: 1.2rem;
+            border-radius: 10px;
+            font-size: 1.3rem;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            transition: background 0.1s;
+            transition: background 0.1s, transform 0.05s;
             flex-shrink: 0;
             user-select: none;
         }
 
         .btn-qta:active {
-            background: #4b5563;
+            background: #6b7280;
+            transform: scale(0.95);
         }
 
-        /* CORREZIONE PER VISIBILITÀ NUMERO INTERO DIGITATO */
+        /* CAMPO VISIBILE E CAPACE DITESTO CORRETTO */
         .input-qta {
-            width: 58px;
-            padding: 6px 2px !important;
+            width: 50px;
+            height: 42px;
+            padding: 0 !important;
             text-align: center;
-            font-size: 1.15rem;
-            font-weight: bold;
+            font-size: 1.1rem !important;
+            font-weight: 800;
             border: 1px solid var(--border);
             background: var(--bg);
             color: #34d399;
-            border-radius: 8px;
+            border-radius: 10px;
             -moz-appearance: textfield;
             appearance: textfield;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .input-qta::-webkit-outer-spin-button,
@@ -388,7 +416,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 16px;
         }
 
         .btn-full {
@@ -397,9 +425,9 @@
 
         /* STORICO CASSA VELOCE */
         .storico-section {
-            margin-top: 30px;
+            margin-top: 24px;
             background: var(--subcard-bg);
-            padding: 16px;
+            padding: 14px;
             border-radius: 12px;
             border: 1px solid var(--border);
         }
@@ -407,9 +435,9 @@
         .storico-card {
             background: var(--input-bg);
             border: 1px solid var(--border);
-            padding: 12px 14px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
         }
 
         .storico-header {
@@ -417,75 +445,79 @@
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
+            font-size: 0.9rem;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 6px;
-            margin-bottom: 8px;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
             color: #818cf8;
         }
 
         .storico-dettaglio {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--text-muted);
             margin-bottom: 8px;
+            line-height: 1.3;
         }
 
         .storico-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             justify-content: flex-end;
         }
 
         /* CALCOLATORE INCASSI */
         .cards-incassi {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
         .card-incassi {
             background: var(--subcard-bg);
-            padding: 16px;
+            padding: 12px;
             border-radius: 10px;
             border: 1px solid var(--border);
         }
 
         .card-incassi h3 {
-            margin: 0 0 6px 0;
-            font-size: 0.75rem;
+            margin: 0 0 4px 0;
+            font-size: 0.7rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .card-incassi p {
             margin: 0;
-            font-size: 1.3rem;
-            font-weight: 700;
+            font-size: 1.15rem;
+            font-weight: 800;
             color: white;
         }
 
         .card-incassi.highlight {
+            grid-column: span 2;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
             border-color: #6366f1;
+            text-align: center;
         }
 
         .form-group-incassi {
             background: var(--subcard-bg);
-            padding: 20px;
+            padding: 14px;
             border-radius: 12px;
-            margin-bottom: 25px;
+            margin-bottom: 16px;
             border: 1px solid var(--border);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
         }
 
         .form-group-incassi h3 {
             grid-column: 1 / -1;
-            margin: 0 0 5px 0;
+            margin: 0 0 2px 0;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .field {
@@ -494,9 +526,9 @@
         }
 
         .field label {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             color: var(--text-muted);
         }
 
@@ -505,126 +537,128 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             user-select: none;
             color: var(--text);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
+            padding-top: 6px;
         }
 
         .checkbox-container input {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             margin: 0;
-            cursor: pointer;
         }
 
+        /* TABELLE SCORREVOLI PER MOBILE */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             border-radius: 10px;
             border: 1px solid var(--border);
+            background: var(--subcard-bg);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
-            min-width: 650px;
+            font-size: 0.85rem;
+            min-width: 580px;
         }
 
         th, td {
-            padding: 12px 10px;
+            padding: 10px 8px;
             border-bottom: 1px solid var(--border);
             text-align: left;
         }
 
         th {
-            background: var(--subcard-bg);
+            background: rgba(0,0,0,0.25);
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.3px;
         }
 
         tr:hover {
-            background-color: rgba(255, 255, 255, 0.03);
+            background-color: rgba(255, 255, 255, 0.02);
         }
 
         .del-btn {
             background: var(--danger);
             color: white;
-            padding: 6px 12px;
-            font-size: 0.8rem;
+            padding: 4px 8px;
+            font-size: 0.75rem;
             border-radius: 6px;
             border: none;
             cursor: pointer;
+            font-weight: bold;
         }
 
-        .del-btn:hover {
-            background: var(--danger-hover);
-        }
-
-        /* VENDITE PER PRODOTTO (SCHEDA 3) */
+        /* VENDITE PER PRODOTTO */
         .kpi-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
         }
 
         .kpi-box {
             background: var(--subcard-bg);
-            padding: 14px;
+            padding: 12px;
             border-radius: 10px;
             border: 1px solid var(--border);
             text-align: center;
         }
 
         .kpi-box span {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             text-transform: uppercase;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            font-weight: 700;
         }
 
         .kpi-box strong {
-            font-size: 1.3rem;
+            font-size: 1.15rem;
             color: white;
         }
 
-        /* SEZIONE IMPORT/EXPORT BACKUP */
+        /* SEZIONE BACKUP JSON */
         .backup-section {
             background: var(--subcard-bg);
-            padding: 16px;
+            padding: 12px;
             border-radius: 12px;
             border: 1px solid var(--border);
-            margin-top: 25px;
+            margin-top: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .backup-title {
-            font-size: 0.95rem;
-            font-weight: bold;
+            font-size: 0.85rem;
+            font-weight: 700;
             color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .backup-buttons {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
-        @media (max-width: 600px) {
-            body { padding: 8px; padding-bottom: 75px; }
-            .container { padding: 14px; }
+        /* MEDIA QUERIES PER SCHERMI MOLTO PICCOLI (< 400px) */
+        @media (max-width: 400px) {
+            body { padding: 4px; padding-bottom: 80px; }
+            .container { padding: 10px; }
+            .categorie-grid { grid-template-columns: 1fr; }
             .actions-box { grid-template-columns: 1fr; }
             .btn-full { grid-column: span 1; }
+            .card-totale .amount { font-size: 1.5rem; }
         }
     </style>
 </head>
@@ -668,16 +702,16 @@
 
             <div class="actions-box">
                 <button class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
-                <button class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia Report WhatsApp</button>
+                <button class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia WhatsApp</button>
                 <button class="btn btn-danger" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
                 <button class="btn btn-primary" onclick="ripristinaDefaultCassa()">Ripristina Default</button>
             </div>
 
             <!-- REGISTRO STORICO GIORNATE CASSA -->
             <div class="storico-section">
-                <h3 style="font-size: 1.1rem; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                     <span>📜 Storico Giornate Salvate</span>
-                    <button class="btn btn-secondary" onclick="svuotaStoricoCassa()" style="font-size: 0.75rem; padding: 4px 8px;">Cancella Storico</button>
+                    <button class="btn btn-secondary" onclick="svuotaStoricoCassa()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota Storico</button>
                 </h3>
                 <div id="listaStoricoCassa">
                     <!-- Dati dinamici dallo storico -->
@@ -688,8 +722,8 @@
             <div class="backup-section">
                 <div class="backup-title">📁 Gestione Dati e Backup JSON</div>
                 <div class="backup-buttons">
-                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px;" onclick="esportaDatiJSON()">📥 Scarica Backup JSON</button>
-                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px;" onclick="document.getElementById('inputImportJSON').click()">📤 Importa JSON</button>
+                    <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; min-height: 36px;" onclick="esportaDatiJSON()">📥 Export JSON</button>
+                    <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; min-height: 36px;" onclick="document.getElementById('inputImportJSON').click()">📤 Import JSON</button>
                     <input type="file" id="inputImportJSON" accept=".json" style="display: none;" onchange="importaDatiJSON(event)">
                 </div>
             </div>
@@ -701,7 +735,7 @@
         <div class="container">
             <h1>
                 <span>Gestione Incassi</span>
-                <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.8rem; padding: 6px 12px;">Ripristina Dati Iniziali</button>
+                <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset Agosto</button>
             </h1>
             
             <div class="cards-incassi">
@@ -747,23 +781,23 @@
                     <input type="number" id="txtPos" value="0" step="0.01" min="0">
                 </div>
 
-                <div class="field" style="justify-content: flex-end; padding-top: 5px;">
+                <div class="field" style="grid-column: 1 / -1;">
                     <label class="checkbox-container">
                         <input type="checkbox" id="chkFesta">
-                        <span>Giorno di Festa (Escludi €26)</span>
+                        <span>Giorno di Festa (Escludi Quota €26)</span>
                     </label>
                 </div>
                 
-                <div class="field" style="justify-content: flex-end;">
-                    <button class="btn btn-success" onclick="aggiungiRecordIncasso()">Aggiungi Incasso</button>
+                <div class="field" style="grid-column: 1 / -1;">
+                    <button class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Aggiungi Incasso</button>
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                <div style="flex: 1; max-width: 300px;">
-                    <input type="text" id="txtFiltro" placeholder="Filtra giorno o postazione..." oninput="aggiornaTabellaIncassi()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="flex: 1; min-width: 180px;">
+                    <input type="text" id="txtFiltro" placeholder="Cerca giorno o barca..." oninput="aggiornaTabellaIncassi()">
                 </div>
-                <div style="font-size: 0.85rem; color: var(--text-muted);" id="lblContatore">Mostrando 0 record</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);" id="lblContatore">0 record</div>
             </div>
 
             <div class="table-responsive">
@@ -794,7 +828,7 @@
         <div class="container">
             <h2 class="title-centered">📦 Saldo Vendite per Prodotto</h2>
 
-            <div class="settings-grid" style="margin-bottom: 20px;">
+            <div class="settings-grid" style="margin-bottom: 16px;">
                 <div class="settings-field">
                     <label for="filtroBarcaProdotti">Seleziona Barca / Postazione:</label>
                     <select id="filtroBarcaProdotti" onchange="aggiornaReportProdotti()">
@@ -806,7 +840,7 @@
 
             <div class="kpi-container">
                 <div class="kpi-box">
-                    <span>Totale Pezzi Venduti</span>
+                    <span>Tot. Pezzi Venduti</span>
                     <strong id="kpiPezziTotali">0 pz</strong>
                 </div>
                 <div class="kpi-box">
@@ -834,11 +868,11 @@
         </div>
     </div>
 
-    <!-- NAVBAR INFERIORE -->
+    <!-- NAVBAR INFERIORE MOBILE -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="cambiaApp('app-cassa', this)">
             <span class="nav-icon">💶</span>
-            <span>Cassa Veloce</span>
+            <span>Cassa</span>
         </button>
         <button class="nav-item" onclick="cambiaApp('app-incassi', this)">
             <span class="nav-icon">📊</span>
@@ -846,7 +880,7 @@
         </button>
         <button class="nav-item" onclick="cambiaApp('app-report-prodotti', this)">
             <span class="nav-icon">📦</span>
-            <span>Report Prodotti</span>
+            <span>Report</span>
         </button>
     </nav>
 
@@ -902,9 +936,8 @@
         {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0}
     ];
 
-    // DATI STORICI ESTATTI DAL VOSTRO DOCUMENT.JSON
+    // DATI STORICI DA DOCUMENT.JSON
     const storicoChiusureInizialiJSON = [
-        // NAPOLI JET
         { id: 1001, barca: "NAPOLI JET", dataStr: "10/06/2026, 09:19:35", incassoTotale: 800.50, fondoCassa: 50, prodotti: [
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:36, qtaPen:0}, {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:2, qtaPen:0},
             {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:25, qtaPen:0}, {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:5, qtaPen:0},
@@ -927,7 +960,6 @@
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:46, qtaPen:0}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:16, qtaPen:0},
             {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:30, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:23, qtaPen:0}
         ]},
-        // SALERNO JET
         { id: 2001, barca: "SALERNO JET", dataStr: "10/06/2026, 09:18:54", incassoTotale: 645.00, fondoCassa: 50, prodotti: [
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:44, qtaPen:3}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:19, qtaPen:0},
             {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:6, qtaPen:0}, {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:9, qtaPen:0}
@@ -940,12 +972,10 @@
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:35, qtaPen:7}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:18, qtaPen:0},
             {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:16, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:24, qtaPen:6}
         ]},
-        // AMALFI JET
         { id: 3001, barca: "AMALFI JET", dataStr: "10/07/2026, 12:36:38", incassoTotale: 849.00, fondoCassa: 50, prodotti: [
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:59, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:49, qtaPen:0},
             {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:22, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:8, qtaPen:0}
         ]},
-        // SUPER JET
         { id: 4001, barca: "SUPER JET", dataStr: "21/06/2026, 10:00:10", incassoTotale: 1142.50, fondoCassa: 50, prodotti: [
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:114, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:32, qtaPen:0},
             {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:27, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:12, qtaPen:0}
@@ -954,7 +984,6 @@
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:119, qtaPen:4}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:40, qtaPen:3},
             {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:19, qtaPen:6}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:11, qtaPen:0}
         ]},
-        // TREMITI JET
         { id: 5001, barca: "TREMITI JET", dataStr: "13/07/2026, 16:05:34", incassoTotale: 1457.50, fondoCassa: 50, prodotti: [
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:120, qtaPen:8}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:43, qtaPen:6},
             {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:49, qtaPen:6}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:13, qtaPen:0}
@@ -990,14 +1019,13 @@
         { giorno: "21 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true }
     ];
 
-    // STATO GLOBALE DELL'APPLICAZIONE
+    // STATO GLOBALE APPLICAZIONE
     let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
-    let bozzePerBarca = {}; // Memorizza le bozze correnti per ciascuna barca
+    let bozzePerBarca = {};
     let storicoGiornate = [];
     let datiIncassi = [];
     let timerSalvataggioToast = null;
 
-    // POPOLA SELECT BARCHE
     function popolaSelectBarche() {
         const selectCassa = document.getElementById("selectBarca");
         const selectIncassi = document.getElementById("selectPostazioneIncassi");
@@ -1005,7 +1033,7 @@
         
         selectCassa.innerHTML = "";
         selectIncassi.innerHTML = "";
-        selectFiltroProdotti.innerHTML = `<option value="TUTTE">-- Tutte le Barche (Totale Complessivo) --</option>`;
+        selectFiltroProdotti.innerHTML = `<option value="TUTTE">-- Tutte le Barche (Totale) --</option>`;
 
         listaBarche.forEach(barca => {
             let opt1 = document.createElement("option");
@@ -1024,7 +1052,6 @@
             selectFiltroProdotti.appendChild(opt3);
         });
 
-        // Recupera ultima barca usata o imposta Tremiti Jet
         const ultimaBarca = localStorage.getItem("cassa_barca_selezionata");
         if (ultimaBarca && listaBarche.includes(ultimaBarca)) {
             selectCassa.value = ultimaBarca;
@@ -1048,9 +1075,7 @@
         }
     }
 
-    // ==========================================
-    // LOGICA AUTO-SAVE E BOZZE PER BARCA
-    // ==========================================
+    // AUTO-SAVE E BOZZE PER BARCA
     function mostraNotificaSalvataggio() {
         const ind = document.getElementById("saveIndicator");
         ind.style.display = "flex";
@@ -1059,14 +1084,13 @@
         timerSalvataggioToast = setTimeout(() => {
             ind.style.opacity = "0";
             setTimeout(() => { ind.style.display = "none"; }, 300);
-        }, 1200);
+        }, 1000);
     }
 
     function salvaBozzaCassaInTempoReale() {
         const barcaCorrente = document.getElementById("selectBarca").value;
         if (!barcaCorrente) return;
 
-        // Prepara l'oggetto con le quantità correnti per questa barca
         let mappaQta = {};
         prodotti.forEach(p => {
             if (p.qtaPass > 0 || p.qtaPen > 0) {
@@ -1088,12 +1112,10 @@
 
     function caricaBozzaBarcaCorrente() {
         const barcaCorrente = document.getElementById("selectBarca").value;
-        
-        // Reset prodotti a zero
         prodotti = JSON.parse(JSON.stringify(prodottiDefault));
 
         if (bozzePerBarca[barcaCorrente]) {
-            let bozza = bozzediBarcaCorrente = bozzediBarcaCorrente = bozzePerBarca[barcaCorrente];
+            let bozza = bozzePerBarca[barcaCorrente];
             if (bozza.dataStr !== undefined) {
                 document.getElementById("txtDataCassa").value = bozza.dataStr;
             }
@@ -1117,9 +1139,7 @@
         caricaBozzaBarcaCorrente();
     }
 
-    // ==========================================
-    // LOGICA APP 1: GESTIONE CASSA VELOCE
-    // ==========================================
+    // CASSA VELOCE
     function renderizzaTabellaCassa() {
         const container = document.getElementById("listaProdotti");
         container.innerHTML = "";
@@ -1130,22 +1150,22 @@
             div.innerHTML = `
                 <div class="prodotto-header">
                     <div class="prodotto-nome">${p.i} ${p.n}</div>
+                    <div class="prezzi-info">Pas: €${p.p.toFixed(2)} / Pen: €${p.pen.toFixed(2)}</div>
                 </div>
-                <div class="prezzi-info">Pas: €${p.p.toFixed(2)} / Pen: €${p.pen.toFixed(2)}</div>
                 <div class="categorie-grid">
                     <div class="categoria-box">
-                        <div class="categoria-titolo">Passeggeri</div>
+                        <div class="categoria-titolo pass">Passeggeri</div>
                         <div class="controlli-qta">
                             <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', -1)">-</button>
-                            <input type="number" class="input-qta" value="${p.qtaPass}" id="pass_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pass', this.value)" min="0">
+                            <input type="number" class="input-qta" value="${p.qtaPass}" id="pass_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pass', this.value)" min="0" inputmode="numeric">
                             <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', 1)">+</button>
                         </div>
                     </div>
                     <div class="categoria-box">
-                        <div class="categoria-titolo">Pendolari</div>
+                        <div class="categoria-titolo pen">Pendolari</div>
                         <div class="controlli-qta">
                             <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', -1)">-</button>
-                            <input type="number" class="input-qta" value="${p.qtaPen}" id="pen_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pen', this.value)" min="0">
+                            <input type="number" class="input-qta" value="${p.qtaPen}" id="pen_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pen', this.value)" min="0" inputmode="numeric">
                             <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', 1)">+</button>
                         </div>
                     </div>
@@ -1196,7 +1216,7 @@
         let totaleComplessivo = fondoCassa + incassoTotale;
 
         document.getElementById("totaleCassa").innerText = totaleComplessivo.toFixed(2) + " €";
-        document.getElementById("dettaglioIncasso").innerText = `Incasso vendite: ${incassoTotale.toFixed(2)} € (Fondo: ${fondoCassa.toFixed(2)} €)`;
+        document.getElementById("dettaglioIncasso").innerText = `Incasso: ${incassoTotale.toFixed(2)} € (Fondo: ${fondoCassa.toFixed(2)} €)`;
     }
 
     function generaReportTesto() {
@@ -1299,13 +1319,12 @@
             aggiornaTabellaIncassi();
         }
 
-        // Azzera la cassa corrente della barca salvata
         prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
         delete bozzePerBarca[report.barca];
         localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
         
         renderizzaTabellaCassa();
-        alert("Giornata salvata e vendite azzerate per la barca corrente!");
+        alert("Giornata salvata con successo!");
     }
 
     function renderizzaStoricoCassa() {
@@ -1313,7 +1332,7 @@
         container.innerHTML = "";
 
         if (storicoGiornate.length === 0) {
-            container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Nessuna giornata salvata ancora.</div>`;
+            container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessuna giornata salvata.</div>`;
             return;
         }
 
@@ -1337,8 +1356,8 @@
                     <strong>Incasso:</strong> €${item.incassoTotale.toFixed(2)} | <strong>Articoli:</strong> ${elencoArticoli}
                 </div>
                 <div class="storico-actions">
-                    <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.8rem;" onclick="condividiStorico(${item.id})">📱 WhatsApp</button>
-                    <button class="btn btn-danger" style="padding: 6px 10px; font-size: 0.8rem;" onclick="eliminaStoricoItem(${item.id})">Elimina</button>
+                    <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiStorico(${item.id})">📱 WhatsApp</button>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaStoricoItem(${item.id})">Elimina</button>
                 </div>
             `;
             container.appendChild(div);
@@ -1363,7 +1382,7 @@
     }
 
     function svuotaStoricoCassa() {
-        if (confirm("Vuoi davvero cancellare tutto lo storico delle giornate salvate?")) {
+        if (confirm("Vuoi cancellare tutto lo storico delle giornate salvate?")) {
             storicoGiornate = [];
             salvaStoricoCassaLocal();
             renderizzaStoricoCassa();
@@ -1379,14 +1398,13 @@
         if (salvati) {
             try { storicoGiornate = JSON.parse(salvati); } catch(e) { storicoGiornate = [...storicoChiusureInizialiJSON]; }
         } else {
-            // Pre-carica lo storico estratto dal vostro JSON
             storicoGiornate = [...storicoChiusureInizialiJSON];
             salvaStoricoCassaLocal();
         }
     }
 
     function azzeraQuantitaCassa() {
-        if(confirm("Vuoi azzerare tutte le quantità vendute della giornata corrente?")) {
+        if(confirm("Vuoi azzerare le quantità del turno corrente?")) {
             prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
             salvaBozzaCassaInTempoReale();
             renderizzaTabellaCassa();
@@ -1401,9 +1419,7 @@
         }
     }
 
-    // ==========================================
     // EXPORT & IMPORT BACKUP JSON
-    // ==========================================
     function esportaDatiJSON() {
         salvaBozzaCassaInTempoReale();
         let backup = {
@@ -1454,21 +1470,17 @@
         reader.readAsText(file);
     }
 
-    // ==========================================
-    // LOGICA SCHEDA 3: SALDO VENDITE PER PRODOTTO
-    // ==========================================
+    // VENDITE PER PRODOTTO
     function aggiornaReportProdotti() {
         const barcaSelezionata = document.getElementById("filtroBarcaProdotti").value;
         const tbody = document.querySelector("#tabellaReportProdotti tbody");
         tbody.innerHTML = "";
 
-        // Filtra le giornate salvate in base alla barca
         let giornateFiltrate = storicoGiornate;
         if (barcaSelezionata !== "TUTTE") {
             giornateFiltrate = storicoGiornate.filter(g => g.barca === barcaSelezionata);
         }
 
-        // Mappa aggregata dei prodotti
         let mappaProdotti = {};
 
         giornateFiltrate.forEach(giornata => {
@@ -1507,7 +1519,7 @@
         let totaleIncassoComplessivo = 0;
 
         if (elencoOrdinato.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 15px;">Nessuna vendita registrata per la barca selezionata. Salva le giornate dalla tab "Cassa Veloce".</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 12px;">Nessun dato. Salva le giornate in "Cassa".</td></tr>`;
         } else {
             elencoOrdinato.forEach(item => {
                 let totPezzi = item.qtaPass + item.qtaPen;
@@ -1530,9 +1542,7 @@
         document.getElementById("kpiIncassoProdotti").innerText = `€ ${totaleIncassoComplessivo.toFixed(2)}`;
     }
 
-    // ==========================================
-    // LOGICA APP 2: CALCOLATORE INCASSI
-    // ==========================================
+    // CALCOLATORE INCASSI
     function caricaDatiIncassi() {
         const salvati = localStorage.getItem('calcolatore_incassi_dati_v6');
         if (salvati) {
@@ -1599,7 +1609,7 @@
         document.getElementById('lbl5p').innerText = formatValuta(tot5p);
         document.getElementById('lblFissa').innerText = formatValuta(totFissa);
         document.getElementById('lblTotale').innerText = formatValuta(tot5p + totFissa);
-        document.getElementById('lblContatore').innerText = `Mostrando ${recordVisibili} di ${datiIncassi.length} record`;
+        document.getElementById('lblContatore').innerText = `${recordVisibili} record`;
     }
 
     function aggiungiRecordIncasso() {
@@ -1626,7 +1636,7 @@
     }
 
     function eliminaRecordIncasso(index) {
-        if (confirm('Vuoi davvero eliminare questo record?')) {
+        if (confirm('Vuoi eliminare questo record?')) {
             datiIncassi.splice(index, 1);
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
@@ -1634,26 +1644,22 @@
     }
 
     function ripristinaDefaultIncassi() {
-        if (confirm('Sei sicuro di voler ripristinare i dati iniziali degli incassi?')) {
+        if (confirm('Ripristinare i dati iniziali di Agosto?')) {
             datiIncassi = JSON.parse(JSON.stringify(datiInizialiIncassi));
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
         }
     }
 
-    // ==========================================
     // INIZIALIZZAZIONE ALL'AVVIO
-    // ==========================================
     window.onload = function() {
         popolaSelectBarche();
 
-        // Carica bozze da localStorage
         const bozzeSalvate = localStorage.getItem("cassa_bozze_per_barca_v6");
         if (bozzeSalvate) {
             try { bozzePerBarca = JSON.parse(bozzeSalvate); } catch(e) { bozzePerBarca = {}; }
         }
 
-        // Imposta Data Odierna di Default se vuota
         let oggi = new Date();
         let opzioniData = { day: 'numeric', month: 'long' };
         let dataOdierna = oggi.toLocaleDateString('it-IT', opzioniData);
