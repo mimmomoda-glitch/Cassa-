@@ -528,6 +528,36 @@
             margin: 0;
         }
 
+        /* SELEZIONE MESE IN INCASSI */
+        .month-selector-bar {
+            background: var(--subcard-bg);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .month-selector-bar label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #818cf8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .month-selector-bar select {
+            max-width: 220px;
+            font-weight: bold;
+            background: var(--input-bg);
+            color: #34d399;
+        }
+
         /* TABELLE SCORREVOLI PER MOBILE */
         .table-responsive {
             width: 100%;
@@ -707,13 +737,29 @@
         </div>
     </div>
 
-    <!-- SCHEDA 2: CALCOLATORE INCASSI & POSTAZIONI -->
+    <!-- SCHEDA 2: CALCOLATORE INCASSI & POSTAZIONI PER MESE -->
     <div id="app-incassi" class="app-view">
         <div class="container">
             <h1>
                 <span>Gestione Incassi</span>
-                <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset Agosto</button>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-secondary" onclick="aggiungiNuovoMeseCustom()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">+ Nuovo Mese</button>
+                    <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset Agosto</button>
+                </div>
             </h1>
+
+            <!-- BARRA SELEZIONE MESE -->
+            <div class="month-selector-bar">
+                <label for="selectMeseIncassi">📅 Seleziona Mese:</label>
+                <select id="selectMeseIncassi" onchange="cambiaMeseCorrente()">
+                    <option value="Agosto 2026">Agosto 2026</option>
+                    <option value="Settembre 2026">Settembre 2026</option>
+                    <option value="Ottobre 2026">Ottobre 2026</option>
+                    <option value="Luglio 2026">Luglio 2026</option>
+                    <option value="Giugno 2026">Giugno 2026</option>
+                    <option value="Maggio 2026">Maggio 2026</option>
+                </select>
+            </div>
             
             <div class="cards-incassi">
                 <div class="card-incassi">
@@ -729,7 +775,7 @@
                     <p id="lblFissa">€ 0,00</p>
                 </div>
                 <div class="card-incassi highlight">
-                    <h3>Totale Complessivo</h3>
+                    <h3>Totale Complessivo Mese</h3>
                     <p id="lblTotale">€ 0,00</p>
                 </div>
             </div>
@@ -796,6 +842,21 @@
                         <!-- Dati dinamici -->
                     </tbody>
                 </table>
+            </div>
+
+            <!-- PULSANTE CHIUSURA E ARCHIVIAZIONE MESE -->
+            <div style="margin-top: 16px;">
+                <button class="btn btn-warning btn-full" onclick="chiudiEArchiviaMeseCorrente()">🔒 Chiudi & Archivia Mese Corrente</button>
+            </div>
+
+            <!-- STORICO MESI ARCHIVIATI -->
+            <div class="storico-section" style="margin-top: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📂 Mesi Archivati & Salvati</span>
+                </h3>
+                <div id="listaMesiArchivati">
+                    <!-- Popolato dinamicamente -->
+                </div>
             </div>
         </div>
     </div>
@@ -913,9 +974,8 @@
         {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0}
     ];
 
-    // TUTTI I DATI STORICI ESTATTI DIRETTAMENTE DAL VOSTRO DOCUMENT.JSON PER TUTTE LE BARCHE
+    // DATI STORICI CASSA
     const storicoChiusureInizialiJSON = [
-        // NAPOLI JET
         { id: 1001, barca: "NAPOLI JET", dataStr: "10/06/2026, 09:19:35", incassoTotale: 826.50, fondoCassa: 50, prodotti: [
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:36, qtaPen:0}, {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:2, qtaPen:0},
             {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:25, qtaPen:0}, {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:5, qtaPen:0},
@@ -925,193 +985,42 @@
         { id: 1002, barca: "NAPOLI JET", dataStr: "22/07/2026, 12:22:15", incassoTotale: 379.50, fondoCassa: 50, prodotti: [
             {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:15, qtaPen:4}, {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:21, qtaPen:0},
             {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:14, qtaPen:4}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:6, qtaPen:0}
-        ]},
-        { id: 1003, barca: "NAPOLI JET", dataStr: "04/08/2026, 17:03:51", incassoTotale: 622.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:50, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:35, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:18, qtaPen:0}
-        ]},
-        { id: 1004, barca: "NAPOLI JET", dataStr: "05/08/2026, 21:10:48", incassoTotale: 670.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:58, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:43, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:18, qtaPen:0}
-        ]},
-        { id: 1005, barca: "NAPOLI JET", dataStr: "24/08/2026, 09:21:27", incassoTotale: 744.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:46, qtaPen:0}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:16, qtaPen:0},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:30, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:23, qtaPen:0}
-        ]},
-
-        // SALERNO JET
-        { id: 2001, barca: "SALERNO JET", dataStr: "10/06/2026, 09:18:54", incassoTotale: 645.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:44, qtaPen:3}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:19, qtaPen:0},
-            {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:6, qtaPen:0}, {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:9, qtaPen:0}
-        ]},
-        { id: 2002, barca: "SALERNO JET", dataStr: "11/06/2026, 09:46:33", incassoTotale: 611.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:30, qtaPen:6}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:14, qtaPen:0},
-            {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:8, qtaPen:0}, {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:12, qtaPen:0}
-        ]},
-        { id: 2003, barca: "SALERNO JET", dataStr: "06/08/2026, 17:13:09", incassoTotale: 526.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:44, qtaPen:5}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:37, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:17, qtaPen:4}
-        ]},
-        { id: 2004, barca: "SALERNO JET", dataStr: "24/08/2026, 09:21:35", incassoTotale: 863.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:35, qtaPen:7}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:18, qtaPen:0},
-            {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:16, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:24, qtaPen:6}
-        ]},
-
-        // AMALFI JET
-        { id: 3001, barca: "AMALFI JET", dataStr: "10/06/2026, 09:19:21", incassoTotale: 845.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:59, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:49, qtaPen:0},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:22, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:8, qtaPen:0}
-        ]},
-        { id: 3002, barca: "AMALFI JET", dataStr: "28/07/2026, 12:24:47", incassoTotale: 410.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:21, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:29, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:25, qtaPen:0}
-        ]},
-        { id: 3003, barca: "AMALFI JET", dataStr: "24/08/2026, 09:21:53", incassoTotale: 460.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:47, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:38, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:13, qtaPen:0}
-        ]},
-
-        // SUPER JET
-        { id: 4001, barca: "SUPER JET", dataStr: "04/06/2026, 19:38:23", incassoTotale: 887.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:44, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:32, qtaPen:0},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:30, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:10, qtaPen:0}
-        ]},
-        { id: 4002, barca: "SUPER JET", dataStr: "21/06/2026, 10:00:10", incassoTotale: 1174.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:114, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:32, qtaPen:0},
-            {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:27, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:12, qtaPen:0}
-        ]},
-        { id: 4003, barca: "SUPER JET", dataStr: "26/06/2026, 19:00:08", incassoTotale: 1178.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:88, qtaPen:3}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:51, qtaPen:3},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:22, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:15, qtaPen:0}
-        ]},
-        { id: 4004, barca: "SUPER JET", dataStr: "27/06/2026, 19:02:41", incassoTotale: 1041.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:79, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:50, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:32, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:17, qtaPen:0}
-        ]},
-        { id: 4005, barca: "SUPER JET", dataStr: "28/06/2026, 16:02:15", incassoTotale: 1085.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:109, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:60, qtaPen:0},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:44, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:10, qtaPen:0}
-        ]},
-        { id: 4006, barca: "SUPER JET", dataStr: "08/07/2026, 15:49:30", incassoTotale: 812.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:82, qtaPen:3}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:52, qtaPen:1},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:16, qtaPen:3}
-        ]},
-        { id: 4007, barca: "SUPER JET", dataStr: "21/07/2026, 12:20:58", incassoTotale: 817.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:54, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:27, qtaPen:0},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:28, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:12, qtaPen:0}
-        ]},
-        { id: 4008, barca: "SUPER JET", dataStr: "26/07/2026, 12:59:51", incassoTotale: 983.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:106, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:71, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:30, qtaPen:0}
-        ]},
-        { id: 4009, barca: "SUPER JET", dataStr: "27/07/2026, 15:50:51", incassoTotale: 708.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:54, qtaPen:4}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:18, qtaPen:0},
-            {id:'bue', n:"Bueno/B-Ready/Biscuits", i:"🍫", p:3, pen:1, qtaPass:18, qtaPen:0}
-        ]},
-        { id: 4010, barca: "SUPER JET", dataStr: "27/07/2026, 22:45:00", incassoTotale: 550.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:64, qtaPen:0}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:14, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:18, qtaPen:0}
-        ]},
-        { id: 4011, barca: "SUPER JET", dataStr: "05/08/2026, 11:31:39", incassoTotale: 1033.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:119, qtaPen:4}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:40, qtaPen:3},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:19, qtaPen:6}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:11, qtaPen:0}
-        ]},
-        { id: 4012, barca: "SUPER JET", dataStr: "24/08/2026, 09:22:14", incassoTotale: 50.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:4, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:4, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:3, qtaPen:0}
-        ]},
-
-        // CAPRI JET
-        { id: 5001, barca: "CAPRI JET", dataStr: "10/07/2026, 12:36:38", incassoTotale: 152.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:8, qtaPen:4}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:5, qtaPen:4},
-            {id:'fon', n:"Fonzies / Patatine", i:"🍟", p:2.5, pen:1, qtaPass:6, qtaPen:0}
-        ]},
-        { id: 5002, barca: "CAPRI JET", dataStr: "24/07/2026, 10:51:59", incassoTotale: 725.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:81, qtaPen:8}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:23, qtaPen:5},
-            {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:9, qtaPen:0}, {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:8, qtaPen:0}
-        ]},
-        { id: 5003, barca: "CAPRI JET", dataStr: "25/07/2026, 16:06:09", incassoTotale: 566.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:69, qtaPen:8}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:19, qtaPen:7},
-            {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:7, qtaPen:0}
-        ]},
-        { id: 5004, barca: "CAPRI JET", dataStr: "31/07/2026, 18:29:15", incassoTotale: 642.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:58, qtaPen:7}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:22, qtaPen:10},
-            {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:14, qtaPen:0}
-        ]},
-        { id: 5005, barca: "CAPRI JET", dataStr: "01/08/2026, 16:07:32", incassoTotale: 375.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:74, qtaPen:5}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:12, qtaPen:4}
-        ]},
-        { id: 5006, barca: "CAPRI JET", dataStr: "04/08/2026, 17:02:29", incassoTotale: 810.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:69, qtaPen:7}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:34, qtaPen:6},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:21, qtaPen:7}
-        ]},
-        { id: 5007, barca: "CAPRI JET", dataStr: "07/08/2026, 11:48:13", incassoTotale: 301.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:45, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:22, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:8, qtaPen:0}
-        ]},
-        { id: 5008, barca: "CAPRI JET", dataStr: "08/08/2026, 13:19:19", incassoTotale: 649.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:75, qtaPen:4}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:29, qtaPen:5},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:32, qtaPen:4}
-        ]},
-        { id: 5009, barca: "CAPRI JET", dataStr: "24/08/2026, 09:22:25", incassoTotale: 630.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:42, qtaPen:5}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:17, qtaPen:0},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:22, qtaPen:4}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:14, qtaPen:11}
-        ]},
-
-        // TREMITI JET
-        { id: 6001, barca: "TREMITI JET", dataStr: "05/06/2026, 20:18:51", incassoTotale: 1005.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:77, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:25, qtaPen:0},
-            {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:20, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:29, qtaPen:0}
-        ]},
-        { id: 6002, barca: "TREMITI JET", dataStr: "01/07/2026, 08:02:52", incassoTotale: 579.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:47, qtaPen:3}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:12, qtaPen:0},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:18, qtaPen:2}
-        ]},
-        { id: 6003, barca: "TREMITI JET", dataStr: "13/07/2026, 16:05:34", incassoTotale: 1401.50, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:120, qtaPen:8}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:43, qtaPen:6},
-            {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:49, qtaPen:6}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:13, qtaPen:0}
-        ]},
-        { id: 6004, barca: "TREMITI JET", dataStr: "02/08/2026, 10:48:52", incassoTotale: 1651.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:149, qtaPen:5}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:67, qtaPen:4},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:35, qtaPen:7}, {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:11, qtaPen:0}
-        ]},
-        { id: 6005, barca: "TREMITI JET", dataStr: "14/08/2026, 14:47:52", incassoTotale: 836.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:51, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:40, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:25, qtaPen:0}, {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:15, qtaPen:0}
-        ]},
-        { id: 6006, barca: "TREMITI JET", dataStr: "19/08/2026, 15:24:10", incassoTotale: 1030.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:94, qtaPen:3}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:75, qtaPen:0},
-            {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:15, qtaPen:0}, {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:25, qtaPen:1}
-        ]},
-        { id: 6007, barca: "TREMITI JET", dataStr: "24/08/2026, 09:22:41", incassoTotale: 993.00, fondoCassa: 50, prodotti: [
-            {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:88, qtaPen:0}, {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:25, qtaPen:0},
-            {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:41, qtaPen:0}, {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:51, qtaPen:0}
         ]}
     ];
 
-    // DATI INCASSI DEFAULT CON GESTIONE FESTA CORRETTA
+    // DATI INCASSI INIZIALI (CON MESE D'APPARTENENZA)
     const datiInizialiIncassi = [
-        { giorno: "1 Agosto", postazione: "CAPRI JET", cash: 265, pos: 545, festa: false },
-        { giorno: "2 Agosto", postazione: "TREMITI JET", cash: 285, pos: 551, festa: false },
-        { giorno: "3 Agosto", postazione: "SUPER JET", cash: 345, pos: 688.50, festa: false },
-        { giorno: "4 Agosto", postazione: "SUPER JET / CAPRI JET", cash: 145, pos: 156, festa: false },
-        { giorno: "5 Agosto", postazione: "NAPOLI JET", cash: 445, pos: 225.50, festa: false },
-        { giorno: "6 Agosto", postazione: "SALERNO JET", cash: 385, pos: 478, festa: false },
-        { giorno: "7 Agosto", postazione: "CAPRI JET", cash: 280, pos: 368.50, festa: false },
-        { giorno: "8 Agosto", postazione: "CAPRI JET", cash: 240, pos: 351, festa: false },
-        { giorno: "9 Agosto", postazione: "PICASSO", cash: 120, pos: 115.50, festa: false },
-        { giorno: "10 Agosto", postazione: "PICASSO", cash: 120, pos: 132.50, festa: false },
-        { giorno: "11 Agosto", postazione: "PICASSO", cash: 340, pos: 89.50, festa: false },
-        { giorno: "12 Agosto", postazione: "EUROPA JET", cash: 115, pos: 281.50, festa: false },
-        { giorno: "13 Agosto", postazione: "SUPER FLYTE", cash: 165, pos: 151, festa: false },
-        { giorno: "14 Agosto", postazione: "TREMITI JET", cash: 355, pos: 672.50, festa: false },
-        { giorno: "15 Agosto", postazione: "FRECCIA D ARGENTO", cash: 120, pos: 193.50, festa: true },
-        { giorno: "16 Agosto", postazione: "SUPER FLYTE", cash: 235, pos: 83.50, festa: false },
-        { giorno: "17 Agosto", postazione: "SUPER FLYTE", cash: 315, pos: 150, festa: false },
-        { giorno: "18 Agosto", postazione: "JUMBO JET", cash: 265, pos: 393.50, festa: false },
-        { giorno: "19 Agosto", postazione: "TREMITI JET", cash: 530, pos: 465.50, festa: false },
-        { giorno: "20 Agosto", postazione: "DELFINO", cash: 95, pos: 0, festa: false },
-        { giorno: "21 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true }
+        { mese: "Agosto 2026", giorno: "1 Agosto", postazione: "CAPRI JET", cash: 265, pos: 545, festa: false },
+        { mese: "Agosto 2026", giorno: "2 Agosto", postazione: "TREMITI JET", cash: 285, pos: 551, festa: false },
+        { mese: "Agosto 2026", giorno: "3 Agosto", postazione: "SUPER JET", cash: 345, pos: 688.50, festa: false },
+        { mese: "Agosto 2026", giorno: "4 Agosto", postazione: "SUPER JET / CAPRI JET", cash: 145, pos: 156, festa: false },
+        { mese: "Agosto 2026", giorno: "5 Agosto", postazione: "NAPOLI JET", cash: 445, pos: 225.50, festa: false },
+        { mese: "Agosto 2026", giorno: "6 Agosto", postazione: "SALERNO JET", cash: 385, pos: 478, festa: false },
+        { mese: "Agosto 2026", giorno: "7 Agosto", postazione: "CAPRI JET", cash: 280, pos: 368.50, festa: false },
+        { mese: "Agosto 2026", giorno: "8 Agosto", postazione: "CAPRI JET", cash: 240, pos: 351, festa: false },
+        { mese: "Agosto 2026", giorno: "9 Agosto", postazione: "PICASSO", cash: 120, pos: 115.50, festa: false },
+        { mese: "Agosto 2026", giorno: "10 Agosto", postazione: "PICASSO", cash: 120, pos: 132.50, festa: false },
+        { mese: "Agosto 2026", giorno: "11 Agosto", postazione: "PICASSO", cash: 340, pos: 89.50, festa: false },
+        { mese: "Agosto 2026", giorno: "12 Agosto", postazione: "EUROPA JET", cash: 115, pos: 281.50, festa: false },
+        { mese: "Agosto 2026", giorno: "13 Agosto", postazione: "SUPER FLYTE", cash: 165, pos: 151, festa: false },
+        { mese: "Agosto 2026", giorno: "14 Agosto", postazione: "TREMITI JET", cash: 355, pos: 672.50, festa: false },
+        { mese: "Agosto 2026", giorno: "15 Agosto", postazione: "FRECCIA D ARGENTO", cash: 120, pos: 193.50, festa: true },
+        { mese: "Agosto 2026", giorno: "16 Agosto", postazione: "SUPER FLYTE", cash: 235, pos: 83.50, festa: false },
+        { mese: "Agosto 2026", giorno: "17 Agosto", postazione: "SUPER FLYTE", cash: 315, pos: 150, festa: false },
+        { mese: "Agosto 2026", giorno: "18 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true },
+        { mese: "Agosto 2026", giorno: "19 Agosto", postazione: "TREMITI JET", cash: 530, pos: 465.50, festa: false },
+        { mese: "Agosto 2026", giorno: "20 Agosto", postazione: "Festa", cash: 0, pos: 0, festa: true },
+        { mese: "Agosto 2026", giorno: "21 Agosto", postazione: "DELFINO", cash: 95, pos: 0, festa: false },
+        { mese: "Agosto 2026", giorno: "22 Agosto", postazione: "NAPOLI JET", cash: 430, pos: 323.50, festa: false },
+        { mese: "Agosto 2026", giorno: "23 Agosto", postazione: "BLIZ", cash: 255, pos: 43, festa: false },
+        { mese: "Agosto 2026", giorno: "24 Agosto", postazione: "TREMITI JET", cash: 290, pos: 492, festa: false },
+        { mese: "Agosto 2026", giorno: "25 Agosto", postazione: "SUPER FLYTE", cash: 85, pos: 68.50, festa: false },
+        { mese: "Agosto 2026", giorno: "26 Agosto", postazione: "NAPOLI JET", cash: 180, pos: 263, festa: false },
+        { mese: "Agosto 2026", giorno: "27 Agosto", postazione: "EUROPA JET", cash: 210, pos: 342, festa: false },
+        { mese: "Agosto 2026", giorno: "28 Agosto", postazione: "SUPER FLYTE", cash: 170, pos: 131, festa: false },
+        { mese: "Agosto 2026", giorno: "29 Agosto", postazione: "EUROPA JET", cash: 365, pos: 108, festa: false },
+        { mese: "Agosto 2026", giorno: "30 Agosto", postazione: "EUROPA JET", cash: 230, pos: 107.50, festa: false },
+        { mese: "Agosto 2026", giorno: "31 Agosto", postazione: "CAPRI JET", cash: 205, pos: 285.50, festa: false }
     ];
 
     // STATO GLOBALE
@@ -1119,6 +1028,7 @@
     let bozzePerBarca = {};
     let storicoGiornate = [];
     let datiIncassi = [];
+    let mesiArchivati = [];
     let timerSalvataggioToast = null;
 
     function popolaSelectBarche() {
@@ -1170,7 +1080,6 @@
         }
     }
 
-    // AUTO-SAVE E BOZZE PER BARCA
     function mostraNotificaSalvataggio() {
         const ind = document.getElementById("saveIndicator");
         ind.style.display = "flex";
@@ -1404,7 +1313,9 @@
 
         if (confirm(`Giornata salvata per ${report.barca}!\n\nVuoi registrare l'incasso (€${report.incassoTotale.toFixed(2)}) anche nel "Calcolatore Incassi"?`)) {
             let isFesta = report.barca.toLowerCase().includes("festa");
+            let meseCorrente = document.getElementById("selectMeseIncassi").value;
             datiIncassi.push({
+                mese: meseCorrente,
                 giorno: report.dataStr,
                 postazione: report.barca,
                 cash: report.incassoTotale,
@@ -1521,11 +1432,12 @@
     function esportaDatiJSON() {
         salvaBozzaCassaInTempoReale();
         let backup = {
-            versione: "v14_global_backup_export",
+            versione: "v15_mensile_backup_export",
             timestamp: new Date().toISOString(),
             bozzePerBarca: bozzePerBarca,
             storicoGiornate: storicoGiornate,
-            datiIncassi: datiIncassi
+            datiIncassi: datiIncassi,
+            mesiArchivati: mesiArchivati
         };
 
         let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
@@ -1545,58 +1457,25 @@
         reader.onload = function(e) {
             try {
                 let parsed = JSON.parse(e.target.result);
-                
-                if (parsed.boatsData) {
-                    let importedStorico = [];
-                    Object.keys(parsed.boatsData).forEach(bKey => {
-                        let boatName = bKey.replace(/_/g, " ");
-                        let boatData = parsed.boatsData[bKey];
-                        if (boatData && boatData.storicoChiusure) {
-                            boatData.storicoChiusure.forEach((c) => {
-                                importedStorico.push({
-                                    id: Date.now() + Math.random(),
-                                    barca: boatName,
-                                    dataStr: c.data || "Data sconosciuta",
-                                    incassoTotale: parseFloat(c.reale) || parseFloat(c.teorico) || 0,
-                                    fondoCassa: 50,
-                                    prodotti: (c.dettaglioVendite || []).map(v => ({
-                                        id: v.id,
-                                        n: v.n,
-                                        i: v.emoji || '📦',
-                                        p: v.pas > 0 ? (v.valore / v.pas) : 2,
-                                        pen: v.pen > 0 ? (v.valore / v.pen) : 1,
-                                        qtaPass: v.pas || 0,
-                                        qtaPen: v.pen || 0
-                                    }))
-                                });
-                            });
-                        }
-                    });
-                    if (importedStorico.length > 0) {
-                        storicoGiornate = importedStorico;
-                        salvaStoricoCassaLocal();
-                    }
-                } else {
-                    if (parsed.storicoGiornate) {
-                        storicoGiornate = parsed.storicoGiornate;
-                        salvaStoricoCassaLocal();
-                    }
-                    if (parsed.datiIncassi) {
-                        datiIncassi = parsed.datiIncassi;
-                        salvaDatiIncassi();
-                    }
-                    if (parsed.bozzePerBarca) {
-                        bozzePerBarca = parsed.bozzePerBarca;
-                        localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
-                    }
+                if (parsed.datiIncassi) {
+                    datiIncassi = parsed.datiIncassi;
+                    salvaDatiIncassi();
                 }
-                
+                if (parsed.storicoGiornate) {
+                    storicoGiornate = parsed.storicoGiornate;
+                    salvaStoricoCassaLocal();
+                }
+                if (parsed.mesiArchivati) {
+                    mesiArchivati = parsed.mesiArchivati;
+                    localStorage.setItem("mesi_archivati_v1", JSON.stringify(mesiArchivati));
+                }
                 caricaBozzaBarcaCorrente();
                 renderizzaStoricoCassa();
                 aggiornaTabellaIncassi();
+                renderizzaMesiArchivati();
                 alert("Importazione completata con successo!");
             } catch(err) {
-                alert("Errore nella lettura del file JSON: formato non valido.");
+                alert("Errore nella lettura del file JSON.");
             }
         };
         reader.readAsText(file);
@@ -1674,19 +1553,24 @@
         document.getElementById("kpiIncassoProdotti").innerText = `€ ${totaleIncassoComplessivo.toFixed(2)}`;
     }
 
-    // CALCOLATORE INCASSI CON ESCLUSIONE QUOTA FESTA
+    // GESTIONE MENSILE INCASSI
     function caricaDatiIncassi() {
-        const salvati = localStorage.getItem('calcolatore_incassi_dati_v6');
+        const salvati = localStorage.getItem('calcolatore_incassi_dati_v7');
         if (salvati) {
             try { datiIncassi = JSON.parse(salvati); } catch(e) { datiIncassi = [...datiInizialiIncassi]; }
         } else {
             datiIncassi = [...datiInizialiIncassi];
             salvaDatiIncassi();
         }
+
+        const salvatiMesi = localStorage.getItem('mesi_archivati_v1');
+        if (salvatiMesi) {
+            try { mesiArchivati = JSON.parse(salvatiMesi); } catch(e) { mesiArchivati = []; }
+        }
     }
 
     function salvaDatiIncassi() {
-        localStorage.setItem('calcolatore_incassi_dati_v6', JSON.stringify(datiIncassi));
+        localStorage.setItem('calcolatore_incassi_dati_v7', JSON.stringify(datiIncassi));
         mostraNotificaSalvataggio();
     }
 
@@ -1701,10 +1585,28 @@
         }
     }
 
+    function cambiaMeseCorrente() {
+        aggiornaTabellaIncassi();
+    }
+
+    function aggiungiNuovoMeseCustom() {
+        let nomeMese = prompt("Inserisci il nome del nuovo mese (es. Settembre 2026):");
+        if (nomeMese && nomeMese.trim() !== "") {
+            let select = document.getElementById("selectMeseIncassi");
+            let opt = document.createElement("option");
+            opt.value = nomeMese.trim();
+            opt.textContent = nomeMese.trim();
+            select.insertBefore(opt, select.firstChild);
+            select.value = nomeMese.trim();
+            aggiornaTabellaIncassi();
+        }
+    }
+
     function aggiornaTabellaIncassi() {
         const tbody = document.querySelector('#tabellaIncassi tbody');
         tbody.innerHTML = '';
         
+        let meseSelezionato = document.getElementById('selectMeseIncassi').value;
         let filtro = document.getElementById('txtFiltro').value.toLowerCase();
         
         let totIncasso = 0;
@@ -1713,10 +1615,13 @@
         let recordVisibili = 0;
 
         datiIncassi.forEach((item, index) => {
+            // Se l'item non ha la proprietà mese, viene associato ad Agosto 2026 per retrocompatibilità
+            let itemMese = item.mese || "Agosto 2026";
+            if (itemMese !== meseSelezionato) return;
+
             let incassoGiorno = (item.cash || 0) + (item.pos || 0);
             let p5 = incassoGiorno * 0.05;
             
-            // ESCLUSIONE QUOTA FISSA (€26) SE FESTA
             let isFesta = item.festa || (item.postazione && item.postazione.toLowerCase().includes("festa"));
             let fissa = isFesta ? 0 : 26;
             let totGiorno = p5 + fissa;
@@ -1751,10 +1656,11 @@
         document.getElementById('lbl5p').innerText = formatValuta(tot5p);
         document.getElementById('lblFissa').innerText = formatValuta(totFissa);
         document.getElementById('lblTotale').innerText = formatValuta(tot5p + totFissa);
-        document.getElementById('lblContatore').innerText = `${recordVisibili} record`;
+        document.getElementById('lblContatore').innerText = `${recordVisibili} record (${meseSelezionato})`;
     }
 
     function aggiungiRecordIncasso() {
+        let meseSel = document.getElementById('selectMeseIncassi').value;
         let g = document.getElementById('txtGiorno').value.trim();
         let p = document.getElementById('selectPostazioneIncassi').value;
         let c = parseFloat(document.getElementById('txtCash').value) || 0;
@@ -1766,7 +1672,7 @@
             return;
         }
 
-        datiIncassi.push({ giorno: g, postazione: p, cash: c, pos: pos, festa: festa });
+        datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: c, pos: pos, festa: festa });
         salvaDatiIncassi();
         
         document.getElementById('txtGiorno').value = '';
@@ -1783,6 +1689,73 @@
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
         }
+    }
+
+    function chiudiEArchiviaMeseCorrente() {
+        let meseSel = document.getElementById('selectMeseIncassi').value;
+        
+        let datiMese = datiIncassi.filter(item => (item.mese || "Agosto 2026") === meseSel);
+        if (datiMese.length === 0) {
+            alert(`Nessun dato registrato per ${meseSel}!`);
+            return;
+        }
+
+        let totIncasso = 0, tot5p = 0, totFissa = 0;
+        datiMese.forEach(item => {
+            let incasso = (item.cash || 0) + (item.pos || 0);
+            let p5 = incasso * 0.05;
+            let isFesta = item.festa || (item.postazione && item.postazione.toLowerCase().includes("festa"));
+            let fissa = isFesta ? 0 : 26;
+            totIncasso += incasso;
+            tot5p += p5;
+            totFissa += fissa;
+        });
+
+        let archiviazione = {
+            id: Date.now(),
+            mese: meseSel,
+            dataArchiviazione: new Date().toLocaleDateString('it-IT'),
+            totaleIncassato: totIncasso,
+            totale5percento: tot5p,
+            totaleFissa: totFissa,
+            totaleComplessivo: tot5p + totFissa,
+            numeroGiornate: datiMese.length
+        };
+
+        mesiArchivati = mesiArchivati.filter(m => m.mese !== meseSel);
+        mesiArchivati.unshift(archiviazione);
+        localStorage.setItem("mesi_archivati_v1", JSON.stringify(mesiArchivati));
+        
+        renderizzaMesiArchivati();
+        alert(`Mese di ${meseSel} chiuso e archiviato con successo!\nTotale spetto: €${(tot5p + totFissa).toFixed(2)}`);
+    }
+
+    function renderizzaMesiArchivati() {
+        const container = document.getElementById("listaMesiArchivati");
+        container.innerHTML = "";
+
+        if (mesiArchivati.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun mese ancora chiuso o archiviato.</div>`;
+            return;
+        }
+
+        mesiArchivati.forEach(m => {
+            let div = document.createElement("div");
+            div.className = "storico-card";
+            div.innerHTML = `
+                <div class="storico-header">
+                    <span>📅 ${m.mese}</span>
+                    <span>Archiviato il ${m.dataArchiviazione}</span>
+                </div>
+                <div class="storico-dettaglio">
+                    <strong>Incasso Totale:</strong> €${m.totaleIncassato.toFixed(2)} | 
+                    <strong>5%:</strong> €${m.totale5percento.toFixed(2)} | 
+                    <strong>Quota Fissa:</strong> €${m.totaleFissa.toFixed(2)}<br>
+                    <span style="color: #34d399; font-size: 0.9rem; font-weight: bold;">Totale Spettante: €${m.totaleComplessivo.toFixed(2)}</span> (${m.numeroGiornate} giornate)
+                </div>
+            `;
+            container.appendChild(div);
+        });
     }
 
     function ripristinaDefaultIncassi() {
@@ -1812,6 +1785,7 @@
         renderizzaStoricoCassa();
         caricaDatiIncassi();
         aggiornaTabellaIncassi();
+        renderizzaMesiArchivati();
     };
 </script>
 
