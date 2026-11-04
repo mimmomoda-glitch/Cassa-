@@ -689,7 +689,7 @@
                 </div>
                 <div class="settings-field">
                     <label for="txtDataCassa">Giorno / Data:</label>
-                    <input type="text" id="txtDataCassa" placeholder="es. 4 Novembre" oninput="salvaBozzaCassaInTempoReale()">
+                    <input type="text" id="txtDataCassa" placeholder="es. 4 Novembre 2026" oninput="salvaBozzaCassaInTempoReale()">
                 </div>
                 <div class="settings-field">
                     <label for="fondoCassa">Fondo cassa iniziale (€):</label>
@@ -783,7 +783,7 @@
                 <h3>Aggiungi Nuova Giornata</h3>
                 <div class="field">
                     <label>Giorno / Data:</label>
-                    <input type="text" id="txtGiorno" placeholder="es. 4 Novembre">
+                    <input type="text" id="txtGiorno" placeholder="es. 4 Novembre 2026">
                 </div>
                 
                 <div class="field">
@@ -978,6 +978,7 @@
     let datiIncassi = [];
     let mesiArchivati = [];
     let timerSalvataggioToast = null;
+    let dataTracciata = new Date(); // Data interna per la sequenza automatica
 
     // 2. FUNZIONI DI UTILITÀ E NAVIGAZIONE
     function popolaSelectBarche() {
@@ -1035,6 +1036,32 @@
             ind.style.opacity = "0";
             setTimeout(() => { ind.style.display = "none"; }, 300);
         }, 1000);
+    }
+
+    function impostaDataInInput(d) {
+        let optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+        let strData = d.toLocaleDateString('it-IT', optionsDate);
+        document.getElementById("txtDataCassa").value = strData;
+        document.getElementById("txtGiorno").value = strData;
+
+        // Aggiorna anche la selezione del mese negli incassi se cambia il mese
+        let optionMonth = { month: 'long', year: 'numeric' };
+        let meseStr = d.toLocaleDateString('it-IT', optionMonth);
+        meseStr = meseStr.charAt(0).toUpperCase() + meseStr.slice(1);
+        
+        let selectMese = document.getElementById("selectMeseIncassi");
+        let esiste = Array.from(selectMese.options).some(opt => opt.value === meseStr);
+        if (!esiste) {
+            let opt = document.createElement("option");
+            opt.value = meseStr; opt.textContent = meseStr;
+            selectMese.insertBefore(opt, selectMese.firstChild);
+        }
+        selectMese.value = meseStr;
+    }
+
+    function avanzaAlGiornoSuccessivo() {
+        dataTracciata.setDate(dataTracciata.getDate() + 1);
+        impostaDataInInput(dataTracciata);
     }
 
     // 3. LOGICA CASSA VELOCE E BOZZE
@@ -1251,13 +1278,17 @@
             aggiornaTabellaIncassi();
         }
 
+        // Reset quantità e avanzamento automatico al giorno successivo
         prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
         document.getElementById("incassoContato").value = "";
         delete bozzePerBarca[report.barca];
         localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
         
+        avanzaAlGiornoSuccessivo();
+        salvaBozzaCassaInTempoReale();
         renderizzaTabellaCassa();
-        alert("Giornata salvata con successo!");
+        
+        alert("Giornata salvata! L'applicazione è ora impostata automaticamente sul giorno successivo.");
     }
 
     function renderizzaStoricoCassa() {
@@ -1334,7 +1365,7 @@
     // 4. GESTIONE BACKUP JSON
     function esportaDatiJSON() {
         salvaBozzaCassaInTempoReale();
-        let backup = { versione: "v16_automatic", timestamp: new Date().toISOString(), bozzePerBarca, storicoGiornate, datiIncassi, mesiArchivati };
+        let backup = { versione: "v17_automatic_nextday", timestamp: new Date().toISOString(), bozzePerBarca, storicoGiornate, datiIncassi, mesiArchivati };
         let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
         let anchor = document.createElement('a');
         anchor.setAttribute("href", dataStr);
@@ -1403,7 +1434,7 @@
         kpiDiff.innerHTML = diffQuadraturaTotale !== 0 ? `<span style="color:${diffQuadraturaTotale > 0 ? '#34d399' : '#f87171'}">€ ${diffQuadraturaTotale.toFixed(2)}</span>` : `<span style="color:#9ca3af">€ 0,00</span>`;
     }
 
-    // 6. GESTIONE INCASSI MENSILI E ARCHIVIAZIONE
+    // 6. GESTIONE INCASSI MENSILI, ORDINAMENTO AUTOMATICO E ARCHIVIAZIONE
     function caricaDatiIncassi() {
         const salvati = localStorage.getItem('calcolatore_incassi_dati_v7');
         datiIncassi = salvati ? JSON.parse(salvati) : [];
@@ -1439,6 +1470,12 @@
         }
     }
 
+    function estraiNumeroGiorno(giornoStr) {
+        if (!giornoStr) return 0;
+        let match = giornoStr.match(/\d+/);
+        return match ? parseInt(match[0], 10) : 0;
+    }
+
     function aggiornaTabellaIncassi() {
         const tbody = document.querySelector('#tabellaIncassi tbody');
         tbody.innerHTML = '';
@@ -1446,6 +1483,8 @@
         let filtro = document.getElementById('txtFiltro').value.toLowerCase();
         
         let totIncasso = 0, tot5p = 0, totFissa = 0, recordVisibili = 0;
+
+        datiIncassi.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
 
         datiIncassi.forEach((item, index) => {
             if ((item.mese || "Novembre 2026") !== meseSelezionato) return;
@@ -1582,27 +1621,8 @@
             try { bozzePerBarca = JSON.parse(bozzeSalvate); } catch(e) { bozzePerBarca = {}; }
         }
 
-        // Rilevamento automatico data corrente (giorno, mese, anno)
-        let oggi = new Date();
-        let optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
-        let dataOdierna = oggi.toLocaleDateString('it-IT', optionsDate);
-        document.getElementById("txtDataCassa").value = dataOdierna;
-        document.getElementById("txtGiorno").value = dataOdierna;
-
-        // Impostazione automatica del mese corrente nel selettore incassi
-        let optionMonth = { month: 'long', year: 'numeric' };
-        let meseCorrenteAnno = oggi.toLocaleDateString('it-IT', optionMonth);
-        // Capitalizza la prima lettera del mese
-        meseCorrenteAnno = meseCorrenteAnno.charAt(0).toUpperCase() + meseCorrenteAnno.slice(1);
-        
-        let selectMese = document.getElementById("selectMeseIncassi");
-        let esiste = Array.from(selectMese.options).some(opt => opt.value === meseCorrenteAnno);
-        if (!esiste) {
-            let opt = document.createElement("option");
-            opt.value = meseCorrenteAnno; opt.textContent = meseCorrenteAnno;
-            selectMese.insertBefore(opt, selectMese.firstChild);
-        }
-        selectMese.value = meseCorrenteAnno;
+        dataTracciata = new Date();
+        impostaDataInInput(dataTracciata);
 
         caricaBozzaBarcaCorrente();
         caricaStoricoCassaLocal();
