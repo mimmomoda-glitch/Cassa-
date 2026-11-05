@@ -1,7 +1,3 @@
-<!-- Chosen Palette: Dark Mode with Indigo & Emerald accents -->
-<!-- Application Structure Plan: Single-page responsive web app for boat cash register, inventory, income calculator, sales reports, and statistics. Optimized mobile UX with clean layout and seamless state management per boat. -->
-<!-- Visualization & Content Choices: Responsive Chart.js canvas charts, custom CSS flex/grid badges, interactive inputs, local storage syncing. NO SVG graphics used. NO Mermaid JS used. -->
-<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -350,7 +346,7 @@ display: inline-flex;
 align-items: center;
 justify-content: center;
 white-space: nowrap;
-line-height: 1;
+line-height: 1.2;
 font-size: 0.78rem;
 }
 .stock-ok { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
@@ -1881,7 +1877,7 @@ let testoSpostamento = `🔄 *TRASFERIMENTO MERCI (€0)* 🔄\n📅 *Data:* ${d
 
 let recTrasferimento = {
 id: Date.now(), dataStr: dataStr, barcaDa: barcaDa, barcaA: barcaA,
-prodottoNome: pOrigin.n, prodottoIcona: pOrigin.i, qta: qta, testo: testoSpostamento
+prodottoId: prodId, prodottoNome: pOrigin.n, prodottoIcona: pOrigin.i, qta: qta, testo: testoSpostamento
 };
 
 storicoTrasferimenti.unshift(recTrasferimento);
@@ -1925,10 +1921,36 @@ if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(i
 }
 
 function eliminaTrasferimento(id) {
-if (confirm("Vuoi cancellare questo trasferimento dallo storico?")) {
+if (confirm("Vuoi cancellare questo trasferimento e ripristinare le quantità originarie tra le barche?")) {
+let item = storicoTrasferimenti.find(t => t.id === id);
+
+if (item && item.prodottoId) {
+let qta = item.qta;
+let pId = item.prodottoId;
+
+// 1. Rimettere i pezzi alla barca di ORIGINE (barcaDa)
+if (bozzePerBarca[item.barcaDa] && bozzePerBarca[item.barcaDa].quantita && bozzePerBarca[item.barcaDa].quantita[pId]) {
+bozzePerBarca[item.barcaDa].quantita[pId].stock = (bozzePerBarca[item.barcaDa].quantita[pId].stock || 0) + qta;
+}
+
+// 2. Togliere i pezzi dalla barca di DESTINAZIONE (barcaA)
+if (bozzePerBarca[item.barcaA] && bozzePerBarca[item.barcaA].quantita && bozzePerBarca[item.barcaA].quantita[pId]) {
+bozzePerBarca[item.barcaA].quantita[pId].stock = Math.max(0, (bozzePerBarca[item.barcaA].quantita[pId].stock || 0) - qta);
+}
+
+let barcaCorrente = document.getElementById("selectBarca").value;
+if (barcaCorrente === item.barcaDa || barcaCorrente === item.barcaA) {
+caricaBozzaBarcaCorrente();
+}
+
+localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
+}
+
 storicoTrasferimenti = storicoTrasferimenti.filter(t => t.id !== id);
 salvaStoricoTrasferimentiLocal();
 renderizzaStoricoTrasferimenti();
+
+alert("Trasferimento eliminato e quantità ripristinate con successo!");
 }
 }
 
