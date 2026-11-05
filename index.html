@@ -1,9 +1,29 @@
+<!-- Chosen Palette: Slate Midnight & Vivid Indigo / Emerald -->
+<!-- Application Structure Plan:
+    1. Single-page web application using HTML5, CSS3, custom JS, and Chart.js via CDN.
+    2. Interactive multi-view dashboard layout with bottom navigation bar:
+       - Cassa & Inventario: Fast cash control, item entry, stock tracking, auto-incrementing date sequence.
+       - Incassi & Spese: Daily earnings calculator, expense entries, monthly aggregation & archiving.
+       - Report Vendite: Detailed product breakdown and sales totals across boats/positions.
+       - Grafici & Analisi: Chart.js dynamic visual representations for daily trends and top-selling items.
+    3. Integrated LocalStorage persistence and JSON Export/Import for complete data safety.
+    4. Print/PDF ready stylesheet rules.
+-->
+<!-- Visualization & Content Choices:
+    - Interactive Tables for cash records, product sales, and archived months.
+    - Chart.js Line Chart for daily earnings timeline.
+    - Chart.js Bar Chart for top 5 sold items analysis.
+    - SVG-free HTML/CSS custom components with Unicode icons.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Gestionale Cassa & Incassi Barche</title>
+    <title>Hub Gestionale Cassa, Incassi & Inventario Barche</title>
+    <!-- Libreria Chart.js per i grafici -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #4f46e5;
@@ -83,13 +103,13 @@
             flex-direction: column;
             align-items: center;
             gap: 2px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
-            padding: 6px 4px;
+            padding: 6px 2px;
             border-radius: 12px;
             transition: all 0.15s ease;
-            width: 33.33%;
+            width: 25%;
         }
 
         .nav-item.active {
@@ -316,6 +336,25 @@
             font-weight: 600;
         }
 
+        .magazzino-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.04);
+            padding: 6px 10px;
+            border-radius: 8px;
+            margin-top: 6px;
+            font-size: 0.78rem;
+        }
+
+        .stock-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .stock-ok { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .stock-low { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
         .categorie-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -387,12 +426,6 @@
             -moz-appearance: textfield;
             appearance: textfield;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-        }
-
-        .input-qta::-webkit-outer-spin-button,
-        .input-qta::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
         }
 
         .actions-box {
@@ -635,6 +668,18 @@
             color: white;
         }
 
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 260px;
+            width: 100%;
+            margin-bottom: 20px;
+            background: var(--subcard-bg);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
         .backup-section {
             background: var(--subcard-bg);
             padding: 12px;
@@ -656,6 +701,15 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+        }
+
+        /* MEDIA QUERIES PER STAMPA RICEVUTA PDF */
+        @media print {
+            body { background: white; color: black; padding-bottom: 0; }
+            .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn { display: none !important; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+            .prodotto-card, .storico-card { border: 1px solid #ccc; color: black; background: #fff; }
+            .prodotto-nome { color: black; }
         }
 
         @media (max-width: 500px) {
@@ -680,7 +734,7 @@
     <!-- SCHEDA 1: GESTIONE CASSA VELOCE -->
     <div id="app-cassa" class="app-view active">
         <div class="container">
-            <h2 class="title-centered">Controllo Cassa Barche</h2>
+            <h2 class="title-centered">Controllo Cassa & Inventario</h2>
             
             <div class="settings-grid">
                 <div class="settings-field">
@@ -713,8 +767,10 @@
             <div class="actions-box">
                 <button class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
                 <button class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia WhatsApp</button>
+                <button class="btn btn-primary" onclick="apriModalTrasferimento()">🔄 Spostamento Barca X ➔ Y (Costo 0)</button>
+                <button class="btn btn-warning" onclick="apriModalBuonoConsegna()">📄 Buono di Consegna Personalizzato</button>
+                <button class="btn btn-secondary" onclick="window.print()">🖨️ Stampa Report PDF</button>
                 <button class="btn btn-danger" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
-                <button class="btn btn-primary" onclick="ripristinaDefaultCassa()">Ripristina Default</button>
             </div>
 
             <div class="storico-section">
@@ -736,14 +792,14 @@
         </div>
     </div>
 
-    <!-- SCHEDA 2: CALCOLATORE INCASSI & POSTAZIONI PER MESE -->
+    <!-- SCHEDA 2: CALCOLATORE INCASSI, SPESE & ARCHIVIO -->
     <div id="app-incassi" class="app-view">
         <div class="container">
             <h1>
-                <span>Gestione Incassi</span>
+                <span>Gestione Incassi & Spese</span>
                 <div style="display: flex; gap: 6px;">
                     <button class="btn btn-secondary" onclick="aggiungiNuovoMeseCustom()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">+ Nuovo Mese</button>
-                    <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset Default</button>
+                    <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset</button>
                 </div>
             </h1>
 
@@ -754,9 +810,6 @@
                     <option value="Ottobre 2026">Ottobre 2026</option>
                     <option value="Settembre 2026">Settembre 2026</option>
                     <option value="Agosto 2026">Agosto 2026</option>
-                    <option value="Luglio 2026">Luglio 2026</option>
-                    <option value="Giugno 2026">Giugno 2026</option>
-                    <option value="Maggio 2026">Maggio 2026</option>
                 </select>
             </div>
             
@@ -773,14 +826,18 @@
                     <h3>Quota Fissa (€26)</h3>
                     <p id="lblFissa">€ 0,00</p>
                 </div>
+                <div class="card-incassi">
+                    <h3>Totale Spese Uscite</h3>
+                    <p id="lblTotSpese" style="color: #f87171;">€ 0,00</p>
+                </div>
                 <div class="card-incassi highlight">
-                    <h3>Totale Complessivo Mese</h3>
+                    <h3>Netto Spettante Mese</h3>
                     <p id="lblTotale">€ 0,00</p>
                 </div>
             </div>
 
             <div class="form-group-incassi">
-                <h3>Aggiungi Nuova Giornata</h3>
+                <h3>Aggiungi Incasso / Giornata</h3>
                 <div class="field">
                     <label>Giorno / Data:</label>
                     <input type="text" id="txtGiorno" placeholder="es. 4 Novembre 2026">
@@ -806,6 +863,11 @@
                     <input type="number" id="txtDiff" value="0" step="0.01" placeholder="es. -3.00 o +5.00">
                 </div>
 
+                <div class="field">
+                    <label>Spesa / Uscita Extra (€):</label>
+                    <input type="number" id="txtSpesa" value="0" step="0.01" min="0" placeholder="es. 15.00">
+                </div>
+
                 <div class="field" style="grid-column: 1 / -1;">
                     <label class="checkbox-container">
                         <input type="checkbox" id="chkFesta">
@@ -814,7 +876,7 @@
                 </div>
                 
                 <div class="field" style="grid-column: 1 / -1;">
-                    <button class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Aggiungi Incasso</button>
+                    <button class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Registra Giornata</button>
                 </div>
             </div>
 
@@ -834,10 +896,11 @@
                             <th>Cash</th>
                             <th>POS</th>
                             <th>Tot. Incasso</th>
+                            <th>Spesa</th>
                             <th>Diff. (Plus/Amm)</th>
                             <th>5%</th>
                             <th>Fissa</th>
-                            <th>Tot. Giorno</th>
+                            <th>Netto Giorno</th>
                             <th>Azioni</th>
                         </tr>
                     </thead>
@@ -858,10 +921,10 @@
         </div>
     </div>
 
-    <!-- SCHEDA 3: RECAP E SALDO VENDITE PER PRODOTTO & BARCA -->
+    <!-- SCHEDA 3: RECAP E SALDO VENDITE PRODOTTO -->
     <div id="app-report-prodotti" class="app-view">
         <div class="container">
-            <h2 class="title-centered">📦 Saldo Vendite & Bilancio Quadratura</h2>
+            <h2 class="title-centered">📦 Saldo Vendite & Inventario</h2>
 
             <div class="settings-grid" style="margin-bottom: 16px;">
                 <div class="settings-field">
@@ -904,6 +967,98 @@
         </div>
     </div>
 
+    <!-- SCHEDA 4: GRAFICI & ANALISI STATISTICHE -->
+    <div id="app-grafici" class="app-view">
+        <div class="container">
+            <h2 class="title-centered">📊 Grafici & Analisi Performance</h2>
+            
+            <div class="chart-container">
+                <canvas id="chartAndamentoIncassi"></canvas>
+            </div>
+
+            <div class="chart-container" style="height: 280px;">
+                <canvas id="chartTopProdotti"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE SPOSTAMENTO MERCI TRA BARCHE (COSTO 0) -->
+    <div id="modalTrasferimento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
+        <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
+            <h3>🔄 Spostamento Merci (Costo 0)</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Sposta prodotti dalla barca selezionata a un'altra. Le quantità verranno sottratte dalle tue rimanenze senza variare gli incassi (€0,00).</p>
+            <div class="settings-grid">
+                <div class="settings-field">
+                    <label>Barca di Origine (Da dove togli):</label>
+                    <select id="transfDaBarca" disabled></select>
+                </div>
+                <div class="settings-field">
+                    <label>Barca Destinazione (A chi dai):</label>
+                    <select id="transfABarca"></select>
+                </div>
+                <div class="settings-field">
+                    <label>Prodotto da Trasferire:</label>
+                    <select id="transfProdotto"></select>
+                </div>
+                <div class="settings-field">
+                    <label>Quantità da spostare:</label>
+                    <input type="number" id="transfQta" value="1" min="1">
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button class="btn btn-success" style="flex:1;" onclick="confermaTrasferimentoMerci()">Conferma Spostamento</button>
+                <button class="btn btn-secondary" onclick="chiudiModalTrasferimento()">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE BUONO DI CONSEGNA CON PREZZI MODIFICABILI -->
+    <div id="modalBuonoConsegna" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
+        <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
+            <h3>📄 Genera Buono di Consegna</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Crea una bolla di consegna modificando il prezzo degli articoli. Gli articoli verranno scaricati dalle rimanenze cassa.</p>
+            <div class="settings-grid">
+                <div class="settings-field">
+                    <label>Destinatario / Cliente:</label>
+                    <input type="text" id="buonoCliente" placeholder="es. Barca X, Bar Centrale, ecc.">
+                </div>
+                <div class="settings-field">
+                    <label>Seleziona Prodotto:</label>
+                    <select id="buonoProdotto" onchange="aggiornaPrezzoStandardBuono()"></select>
+                </div>
+                <div class="settings-field">
+                    <label>Quantità:</label>
+                    <input type="number" id="buonoQta" value="1" min="1">
+                </div>
+                <div class="settings-field">
+                    <label>Prezzo Unitario Modificabile (€):</label>
+                    <input type="number" id="buonoPrezzoUnitario" step="0.10" value="0.00">
+                </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="aggiungiVoceBuono()">+ Aggiungi al Buono</button>
+            
+            <div class="table-responsive" style="margin-bottom:10px;">
+                <table id="tabellaBuonoItems">
+                    <thead>
+                        <tr>
+                            <th>Prodotto</th>
+                            <th>Qta</th>
+                            <th>Prezzo Unit.</th>
+                            <th>Totale</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-success" style="flex:1;" onclick="confermaEStampaBuono()">📄 Completa & Scarica Rimanenze</button>
+                <button class="btn btn-secondary" onclick="chiudiModalBuonoConsegna()">Annulla</button>
+            </div>
+        </div>
+    </div>
+
     <!-- NAVBAR INFERIORE MOBILE -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="cambiaApp('app-cassa', this)">
@@ -918,6 +1073,10 @@
             <span class="nav-icon">📦</span>
             <span>Report</span>
         </button>
+        <button class="nav-item" onclick="cambiaApp('app-grafici', this)">
+            <span class="nav-icon">📈</span>
+            <span>Grafici</span>
+        </button>
     </nav>
 
 <script>
@@ -930,45 +1089,45 @@
     ];
 
     const prodottiDefault = [
-        {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0},
-        {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0},
-        {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:0, qtaPen:0},
-        {id:'bue', n:"Bueno/B-Ready/Biscuits", i:"🍫", p:3, pen:1, qtaPass:0, qtaPen:0},
-        {id:'cap', n:"Cappelli", i:"🧢", p:5, pen:5, qtaPass:0, qtaPen:0},
-        {id:'car', n:"Caramelle / Gomme", i:"🍬", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'cia', n:"Cialde", i:"☕", p:2, pen:1, qtaPass:0, qtaPen:0},
-        {id:'die', n:"Dietor", i:"🍬", p:0, pen:0, qtaPass:0, qtaPen:0},
-        {id:'fit', n:"Fitness / Cereal Yo", i:"🌾", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'fon', n:"Fonzies / Patatine", i:"🍟", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:0, qtaPen:0},
-        {id:'kin', n:"Kinder Cards", i:"🃏", p:2.5, pen:1.5, qtaPass:0, qtaPen:0},
-        {id:'lat', n:"Latte", i:"🥛", p:0.5, pen:0.5, qtaPass:0, qtaPen:0},
-        {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:0, qtaPen:0},
-        {id:'mag', n:"Maglie", i:"👕", p:5, pen:5, qtaPass:0, qtaPen:0},
-        {id:'mik', n:"Mikado", i:"🥖", p:3, pen:1.5, qtaPass:0, qtaPen:0},
-        {id:'muf', n:"Muffin", i:"🧁", p:3, pen:1, qtaPass:0, qtaPen:0},
-        {id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'pav', n:"Pavesini", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:0, qtaPen:0},
-        {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:0, qtaPen:0},
-        {id:'pri', n:"Pringles", i:"🥔", p:3.5, pen:2, qtaPass:0, qtaPen:0},
-        {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:0, qtaPen:0},
-        {id:'red', n:"Red Bull / Gatorade", i:"⚡", p:4.5, pen:2.5, qtaPass:0, qtaPen:0},
-        {id:'rin', n:"Ringo / Oreo / Baiocchi", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'rit', n:"Ritz / Cipster", i:"🍪", p:4.5, pen:2.5, qtaPass:0, qtaPen:0},
-        {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:0, qtaPen:0},
-        {id:'suc', n:"Succo", i:"🧃", p:3.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'the', n:"The Camomilla", i:"🍵", p:2.5, pen:1.5, qtaPass:0, qtaPen:0},
-        {id:'tuc', n:"Tuc", i:"🍪", p:4, pen:2, qtaPass:0, qtaPen:0},
-        {id:'twi', n:"Twix/KitKat/M&M...", i:"🍫", p:2.5, pen:1, qtaPass:0, qtaPen:0},
-        {id:'clm', n:"Calamite", i:"🧲", p:3.0, pen:3.0, qtaPass:0, qtaPen:0},
-        {id:'ptc', n:"Portachiavi", i:"🔑", p:3.0, pen:3.0, qtaPass:0, qtaPen:0},
-        {id:'cuc', n:"Cucchiaio", i:"🥄", p:3.0, pen:3.0, qtaPass:0, qtaPen:0},
-        {id:'cos', n:"Costumi", i:"🩳", p:5.0, pen:5.0, qtaPass:0, qtaPen:0},
-        {id:'dec', n:"Decaffeinato", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0},
-        {id:'gin', n:"Ginseng", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0},
-        {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0}
+        {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0, stock: 50},
+        {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 30},
+        {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0, stock: 15},
+        {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:0, qtaPen:0, stock: 10},
+        {id:'bue', n:"Bueno/B-Ready/Biscuits", i:"🍫", p:3, pen:1, qtaPass:0, qtaPen:0, stock: 24},
+        {id:'cap', n:"Cappelli", i:"🧢", p:5, pen:5, qtaPass:0, qtaPen:0, stock: 20},
+        {id:'car', n:"Caramelle / Gomme", i:"🍬", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 40},
+        {id:'cia', n:"Cialde", i:"☕", p:2, pen:1, qtaPass:0, qtaPen:0, stock: 100},
+        {id:'die', n:"Dietor", i:"🍬", p:0, pen:0, qtaPass:0, qtaPen:0, stock: 100},
+        {id:'fit', n:"Fitness / Cereal Yo", i:"🌾", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 20},
+        {id:'fon', n:"Fonzies / Patatine", i:"🍟", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 30},
+        {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:0, qtaPen:0, stock: 50},
+        {id:'kin', n:"Kinder Cards", i:"🃏", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, stock: 20},
+        {id:'lat', n:"Latte", i:"🥛", p:0.5, pen:0.5, qtaPass:0, qtaPen:0, stock: 10},
+        {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:0, qtaPen:0, stock: 48},
+        {id:'mag', n:"Maglie", i:"👕", p:5, pen:5, qtaPass:0, qtaPen:0, stock: 15},
+        {id:'mik', n:"Mikado", i:"🥖", p:3, pen:1.5, qtaPass:0, qtaPen:0, stock: 20},
+        {id:'muf', n:"Muffin", i:"🧁", p:3, pen:1, qtaPass:0, qtaPen:0, stock: 15},
+        {id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 25},
+        {id:'pav', n:"Pavesini", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 20},
+        {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:0, qtaPen:0, stock: 36},
+        {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:0, qtaPen:0, stock: 24},
+        {id:'pri', n:"Pringles", i:"🥔", p:3.5, pen:2, qtaPass:0, qtaPen:0, stock: 24},
+        {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:0, qtaPen:0, stock: 12},
+        {id:'red', n:"Red Bull / Gatorade", i:"⚡", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 24},
+        {id:'rin', n:"Ringo / Oreo / Baiocchi", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 24},
+        {id:'rit', n:"Ritz / Cipster", i:"🍪", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 20},
+        {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:0, qtaPen:0, stock: 24},
+        {id:'suc', n:"Succo", i:"🧃", p:3.5, pen:1, qtaPass:0, qtaPen:0, stock: 24},
+        {id:'the', n:"The Camomilla", i:"🍵", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, stock: 30},
+        {id:'tuc', n:"Tuc", i:"🍪", p:4, pen:2, qtaPass:0, qtaPen:0, stock: 20},
+        {id:'twi', n:"Twix/KitKat/M&M...", i:"🍫", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 30},
+        {id:'clm', n:"Calamite", i:"🧲", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, stock: 50},
+        {id:'ptc', n:"Portachiavi", i:"🔑", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, stock: 50},
+        {id:'cuc', n:"Cucchiaio", i:"🥄", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, stock: 50},
+        {id:'cos', n:"Costumi", i:"🩳", p:5.0, pen:5.0, qtaPass:0, qtaPen:0, stock: 10},
+        {id:'dec', n:"Decaffeinato", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 30},
+        {id:'gin', n:"Ginseng", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 30},
+        {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 30}
     ];
 
     // STATO GLOBALE
@@ -978,7 +1137,10 @@
     let datiIncassi = [];
     let mesiArchivati = [];
     let timerSalvataggioToast = null;
-    let dataTracciata = new Date(); // Data interna per la sequenza automatica
+    let dataTracciata = new Date();
+    let chartAndamentoInstance = null;
+    let chartTopProdottiInstance = null;
+    let itemsBuonoConsegna = [];
 
     // 2. FUNZIONI DI UTILITÀ E NAVIGAZIONE
     function popolaSelectBarche() {
@@ -1024,6 +1186,8 @@
 
         if (idApp === 'app-report-prodotti') {
             aggiornaReportProdotti();
+        } else if (idApp === 'app-grafici') {
+            renderizzaGrafici();
         }
     }
 
@@ -1044,7 +1208,6 @@
         document.getElementById("txtDataCassa").value = strData;
         document.getElementById("txtGiorno").value = strData;
 
-        // Aggiorna anche la selezione del mese negli incassi se cambia il mese
         let optionMonth = { month: 'long', year: 'numeric' };
         let meseStr = d.toLocaleDateString('it-IT', optionMonth);
         meseStr = meseStr.charAt(0).toUpperCase() + meseStr.slice(1);
@@ -1064,15 +1227,15 @@
         impostaDataInInput(dataTracciata);
     }
 
-    // 3. LOGICA CASSA VELOCE E BOZZE
+    // 3. LOGICA CASSA, BOZZE E INVENTARIO
     function salvaBozzaCassaInTempoReale() {
         const barcaCorrente = document.getElementById("selectBarca").value;
         if (!barcaCorrente) return;
 
         let mappaQta = {};
         prodotti.forEach(p => {
-            if (p.qtaPass > 0 || p.qtaPen > 0) {
-                mappaQta[p.id] = { pass: p.qtaPass, pen: p.qtaPen };
+            if (p.qtaPass > 0 || p.qtaPen > 0 || p.stock !== undefined) {
+                mappaQta[p.id] = { pass: p.qtaPass, pen: p.qtaPen, stock: p.stock };
             }
         });
 
@@ -1102,6 +1265,7 @@
                     if (bozza.quantita[p.id]) {
                         p.qtaPass = bozza.quantita[p.id].pass || 0;
                         p.qtaPen = bozza.quantita[p.id].pen || 0;
+                        if (bozza.quantita[p.id].stock !== undefined) p.stock = bozza.quantita[p.id].stock;
                     }
                 });
             }
@@ -1119,12 +1283,19 @@
         container.innerHTML = "";
         
         prodotti.forEach(p => {
+            let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
+            let badgeStockClass = rimasti < 5 ? "stock-low" : "stock-ok";
+
             let div = document.createElement("div");
             div.className = "prodotto-card";
             div.innerHTML = `
                 <div class="prodotto-header">
                     <div class="prodotto-nome">${p.i} ${p.n}</div>
                     <div class="prezzi-info">Pas: €${p.p.toFixed(2)} / Pen: €${p.pen.toFixed(2)}</div>
+                </div>
+                <div class="magazzino-bar">
+                    <span>📦 Carico: <input type="number" value="${p.stock || 0}" onchange="aggiornaStockIniziale('${p.id}', this.value)" style="width: 50px; padding: 2px 4px; text-align: center; font-size: 0.8rem; display: inline-block;"></span>
+                    <span>Rimanenza: <strong class="stock-badge ${badgeStockClass}">${rimasti} pz</strong></span>
                 </div>
                 <div class="categorie-grid">
                     <div class="categoria-box">
@@ -1151,17 +1322,24 @@
         calcolaTotaleCassa();
     }
 
+    function aggiornaStockIniziale(id, val) {
+        let p = prodotti.find(item => item.id === id);
+        if (p) {
+            p.stock = Math.max(0, parseInt(val) || 0);
+            renderizzaTabellaCassa();
+            salvaBozzaCassaInTempoReale();
+        }
+    }
+
     function modificaQtaCassa(id, tipo, variazione) {
         let p = prodotti.find(item => item.id === id);
         if (p) {
             if (tipo === 'Pass') {
                 p.qtaPass = Math.max(0, p.qtaPass + variazione);
-                document.getElementById(`pass_${id}`).value = p.qtaPass;
             } else {
                 p.qtaPen = Math.max(0, p.qtaPen + variazione);
-                document.getElementById(`pen_${id}`).value = p.qtaPen;
             }
-            calcolaTotaleCassa();
+            renderizzaTabellaCassa();
             salvaBozzaCassaInTempoReale();
         }
     }
@@ -1172,7 +1350,7 @@
             let val = Math.max(0, parseInt(valore) || 0);
             if (tipo === 'Pass') p.qtaPass = val;
             else p.qtaPen = val;
-            calcolaTotaleCassa();
+            renderizzaTabellaCassa();
             salvaBozzaCassaInTempoReale();
         }
     }
@@ -1223,7 +1401,8 @@
         prodotti.forEach(p => {
             if (p.qtaPass > 0 || p.qtaPen > 0) {
                 venditeEffettuate = true;
-                testo += `${p.i} *${p.n}*\n`;
+                let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
+                testo += `${p.i} *${p.n}* (Rimanenti: ${rimasti})\n`;
                 if (p.qtaPass > 0) testo += `   • Passeggeri: ${p.qtaPass} pz (€${(p.qtaPass * p.p).toFixed(2)})\n`;
                 if (p.qtaPen > 0) testo += `   • Pendolari: ${p.qtaPen} pz (€${(p.qtaPen * p.pen).toFixed(2)})\n`;
             }
@@ -1272,14 +1451,18 @@
             let meseCorrente = document.getElementById("selectMeseIncassi").value;
             datiIncassi.push({
                 mese: meseCorrente, giorno: report.dataStr, postazione: report.barca,
-                cash: report.incassoTotale, pos: 0, diff: report.diffQuadratura, festa: isFesta
+                cash: report.incassoTotale, pos: 0, diff: report.diffQuadratura, spesa: 0, festa: isFesta
             });
             salvaDatiIncassi();
             aggiornaTabellaIncassi();
         }
 
-        // Reset quantità e avanzamento automatico al giorno successivo
-        prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
+        // Aggiorna lo stock scalando il venduto per la sessione successiva
+        prodotti.forEach(p => { 
+            p.stock = Math.max(0, (p.stock || 0) - (p.qtaPass + p.qtaPen));
+            p.qtaPass = 0; 
+            p.qtaPen = 0; 
+        });
         document.getElementById("incassoContato").value = "";
         delete bozzePerBarca[report.barca];
         localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
@@ -1288,7 +1471,7 @@
         salvaBozzaCassaInTempoReale();
         renderizzaTabellaCassa();
         
-        alert("Giornata salvata! L'applicazione è ora impostata automaticamente sul giorno successivo.");
+        alert("Giornata salvata! L'inventario è stato aggiornato e la data impostata al giorno successivo.");
     }
 
     function renderizzaStoricoCassa() {
@@ -1353,19 +1536,180 @@
         }
     }
 
-    function ripristinaDefaultCassa() {
-        if(confirm("Vuoi ripristinare le quantità iniziali?")) {
-            prodotti = JSON.parse(JSON.stringify(prodottiDefault));
-            document.getElementById("incassoContato").value = "";
-            salvaBozzaCassaInTempoReale();
-            renderizzaTabellaCassa();
+    // 3.1 NUOVE FUNZIONALITÀ: SPOSTAMENTO MERCI BARCA X ➔ BARCA Y (COSTO 0)
+    function apriModalTrasferimento() {
+        const modal = document.getElementById("modalTrasferimento");
+        const selectDa = document.getElementById("transfDaBarca");
+        const selectA = document.getElementById("transfABarca");
+        const selectProd = document.getElementById("transfProdotto");
+
+        const barcaAttuale = document.getElementById("selectBarca").value;
+        selectDa.innerHTML = `<option value="${barcaAttuale}">${barcaAttuale}</option>`;
+        selectA.innerHTML = "";
+        listaBarche.filter(b => b !== barcaAttuale).forEach(b => {
+            selectA.innerHTML += `<option value="${b}">${b}</option>`;
+        });
+
+        selectProd.innerHTML = "";
+        prodotti.forEach(p => {
+            let rim = (p.stock || 0) - (p.qtaPass + p.qtaPen);
+            selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n} (Disponibile: ${rim} pz)</option>`;
+        });
+
+        modal.style.display = "flex";
+    }
+
+    function chiudiModalTrasferimento() {
+        document.getElementById("modalTrasferimento").style.display = "none";
+    }
+
+    function confermaTrasferimentoMerci() {
+        const barcaDa = document.getElementById("transfDaBarca").value;
+        const barcaA = document.getElementById("transfABarca").value;
+        const prodId = document.getElementById("transfProdotto").value;
+        const qta = parseInt(document.getElementById("transfQta").value) || 0;
+
+        if (qta <= 0) { alert("Inserisci una quantità valida."); return; }
+
+        let pOrigin = prodotti.find(item => item.id === prodId);
+        let disponi = (pOrigin.stock || 0) - (pOrigin.qtaPass + pOrigin.qtaPen);
+
+        if (qta > disponi) {
+            alert(`Quantità non disponibile! Hai solo ${disponi} pz rimasti di ${pOrigin.n}.`);
+            return;
+        }
+
+        // 1. Sottrai le rimanenze dalla barca corrente
+        pOrigin.stock = (pOrigin.stock || 0) - qta;
+
+        // 2. Aggiungi lo stock alla bozza della barca di destinazione
+        if (!bozzePerBarca[barcaA]) {
+            bozzePerBarca[barcaA] = { quantita: {} };
+        }
+        if (!bozzePerBarca[barcaA].quantita) bozzePerBarca[barcaA].quantita = {};
+        if (!bozzePerBarca[barcaA].quantita[prodId]) {
+            bozzePerBarca[barcaA].quantita[prodId] = { pass: 0, pen: 0, stock: 0 };
+        }
+        bozzePerBarca[barcaA].quantita[prodId].stock = (bozzePerBarca[barcaA].quantita[prodId].stock || 0) + qta;
+
+        // Salvataggio
+        localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
+        salvaBozzaCassaInTempoReale();
+        renderizzaTabellaCassa();
+        chiudiModalTrasferimento();
+
+        alert(`Spostamento a COSTO 0 completato con successo!\n\nSpostati ${qta} pz di ${pOrigin.n} da ${barcaDa} ➔ ${barcaA}. Le rimanenze della barca corrente sono state scaricate.`);
+    }
+
+    // 3.2 NUOVE FUNZIONALITÀ: BUONO DI CONSEGNA CON PREZZI MODIFICABILI
+    function apriModalBuonoConsegna() {
+        itemsBuonoConsegna = [];
+        const modal = document.getElementById("modalBuonoConsegna");
+        const selectProd = document.getElementById("buonoProdotto");
+
+        selectProd.innerHTML = "";
+        prodotti.forEach(p => {
+            selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n} (Pas €${p.p.toFixed(2)})</option>`;
+        });
+
+        aggiornaPrezzoStandardBuono();
+        renderizzaTabellaBuono();
+        modal.style.display = "flex";
+    }
+
+    function chiudiModalBuonoConsegna() {
+        document.getElementById("modalBuonoConsegna").style.display = "none";
+    }
+
+    function aggiornaPrezzoStandardBuono() {
+        const prodId = document.getElementById("buonoProdotto").value;
+        let p = prodotti.find(item => item.id === prodId);
+        if (p) {
+            document.getElementById("buonoPrezzoUnitario").value = p.p.toFixed(2);
         }
     }
 
-    // 4. GESTIONE BACKUP JSON
+    function aggiungiVoceBuono() {
+        const prodId = document.getElementById("buonoProdotto").value;
+        const qta = parseInt(document.getElementById("buonoQta").value) || 0;
+        const prezzo = parseFloat(document.getElementById("buonoPrezzoUnitario").value) || 0;
+
+        if (qta <= 0) { alert("Quantità non valida."); return; }
+        let p = prodotti.find(item => item.id === prodId);
+
+        itemsBuonoConsegna.push({
+            id: prodId, nome: p.n, icona: p.i, qta: qta, prezzoUnitario: prezzo, totale: qta * prezzo
+        });
+
+        renderizzaTabellaBuono();
+    }
+
+    function rimuoviVoceBuono(idx) {
+        itemsBuonoConsegna.splice(idx, 1);
+        renderizzaTabellaBuono();
+    }
+
+    function renderizzaTabellaBuono() {
+        const tbody = document.querySelector("#tabellaBuonoItems tbody");
+        tbody.innerHTML = "";
+        let totBuono = 0;
+
+        itemsBuonoConsegna.forEach((item, index) => {
+            totBuono += item.totale;
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${item.icona} ${item.nome}</td>
+                <td>${item.qta} pz</td>
+                <td>€ ${item.prezzoUnitario.toFixed(2)}</td>
+                <td><b>€ ${item.totale.toFixed(2)}</b></td>
+                <td><button class="del-btn" onclick="rimuoviVoceBuono(${index})">X</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function confermaEStampaBuono() {
+        if (itemsBuonoConsegna.length === 0) {
+            alert("Aggiungi almeno un articolo al buono di consegna!");
+            return;
+        }
+
+        const cliente = document.getElementById("buonoCliente").value.trim() || "Destinazione Generica";
+        const barcaAttuale = document.getElementById("selectBarca").value;
+        let testoReport = `📄 *BUONO DI CONSEGNA / BOLLA* 📄\n`;
+        testoReport += `🚢 *Origine:* ${barcaAttuale}\n`;
+        testoReport += `👤 *Destinatario:* ${cliente}\n`;
+        testoReport += `📅 *Data:* ${new Date().toLocaleDateString('it-IT')}\n`;
+        testoReport += `----------------------------\n`;
+
+        let totGenerale = 0;
+
+        // Scarica ogni articolo dalle rimanenze attuali
+        itemsBuonoConsegna.forEach(item => {
+            let p = prodotti.find(prod => prod.id === item.id);
+            if (p) {
+                p.stock = Math.max(0, (p.stock || 0) - item.qta);
+            }
+            totGenerale += item.totale;
+            testoReport += `${item.icona} *${item.nome}*: ${item.qta} pz x €${item.prezzoUnitario.toFixed(2)} = €${item.totale.toFixed(2)}\n`;
+        });
+
+        testoReport += `----------------------------\n`;
+        testoReport += `💰 *TOTALE BUONO:* €${totGenerale.toFixed(2)}`;
+
+        salvaBozzaCassaInTempoReale();
+        renderizzaTabellaCassa();
+        chiudiModalBuonoConsegna();
+
+        if (confirm("Buono completato! Le rimanenze di magazzino sono state scaricate.\n\nVuoi inviare la bolla su WhatsApp?")) {
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(testoReport)}`, '_blank');
+        }
+    }
+
+    // 4. BACKUP JSON
     function esportaDatiJSON() {
         salvaBozzaCassaInTempoReale();
-        let backup = { versione: "v17_automatic_nextday", timestamp: new Date().toISOString(), bozzePerBarca, storicoGiornate, datiIncassi, mesiArchivati };
+        let backup = { versione: "v18_complete_suite", timestamp: new Date().toISOString(), bozzePerBarca, storicoGiornate, datiIncassi, mesiArchivati };
         let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
         let anchor = document.createElement('a');
         anchor.setAttribute("href", dataStr);
@@ -1390,7 +1734,7 @@
         reader.readAsText(file);
     }
 
-    // 5. REPORT VENDITE PRODOTTO
+    // 5. REPORT VENDITE & GIACENZE
     function aggiornaReportProdotti() {
         const barcaSelezionata = document.getElementById("filtroBarcaProdotti").value;
         const tbody = document.querySelector("#tabellaReportProdotti tbody");
@@ -1434,7 +1778,7 @@
         kpiDiff.innerHTML = diffQuadraturaTotale !== 0 ? `<span style="color:${diffQuadraturaTotale > 0 ? '#34d399' : '#f87171'}">€ ${diffQuadraturaTotale.toFixed(2)}</span>` : `<span style="color:#9ca3af">€ 0,00</span>`;
     }
 
-    // 6. GESTIONE INCASSI MENSILI, ORDINAMENTO AUTOMATICO E ARCHIVIAZIONE
+    // 6. GESTIONE INCASSI & SPESE
     function caricaDatiIncassi() {
         const salvati = localStorage.getItem('calcolatore_incassi_dati_v7');
         datiIncassi = salvati ? JSON.parse(salvati) : [];
@@ -1482,7 +1826,7 @@
         let meseSelezionato = document.getElementById('selectMeseIncassi').value;
         let filtro = document.getElementById('txtFiltro').value.toLowerCase();
         
-        let totIncasso = 0, tot5p = 0, totFissa = 0, recordVisibili = 0;
+        let totIncasso = 0, tot5p = 0, totFissa = 0, totSpese = 0, recordVisibili = 0;
 
         datiIncassi.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
 
@@ -1492,9 +1836,10 @@
             let p5 = incassoGiorno * 0.05;
             let isFesta = item.festa || (item.postazione && item.postazione.toLowerCase().includes("festa"));
             let fissa = isFesta ? 0 : 26;
-            let totGiorno = p5 + fissa;
+            let spesaGiorno = item.spesa || 0;
+            let totGiorno = p5 + fissa - spesaGiorno;
 
-            totIncasso += incassoGiorno; tot5p += p5; totFissa += fissa;
+            totIncasso += incassoGiorno; tot5p += p5; totFissa += fissa; totSpese += spesaGiorno;
 
             if (filtro && !item.giorno.toLowerCase().includes(filtro) && !item.postazione.toLowerCase().includes(filtro)) return;
             recordVisibili++;
@@ -1509,6 +1854,7 @@
                 <td>${formatValuta(item.cash || 0)}</td>
                 <td>${formatValuta(item.pos || 0)}</td>
                 <td><b>${formatValuta(incassoGiorno)}</b></td>
+                <td style="color:#f87171;">${spesaGiorno > 0 ? '-' + formatValuta(spesaGiorno) : '€ 0,00'}</td>
                 <td>${diffFormatted}</td>
                 <td>${formatValuta(p5)}</td>
                 <td>${isFesta ? '<span style="color:#f59e0b; font-weight:bold;">€ 0,00 (Festa)</span>' : formatValuta(fissa)}</td>
@@ -1521,7 +1867,8 @@
         document.getElementById('lblIncasso').innerText = formatValuta(totIncasso);
         document.getElementById('lbl5p').innerText = formatValuta(tot5p);
         document.getElementById('lblFissa').innerText = formatValuta(totFissa);
-        document.getElementById('lblTotale').innerText = formatValuta(tot5p + totFissa);
+        document.getElementById('lblTotSpese').innerText = formatValuta(totSpese);
+        document.getElementById('lblTotale').innerText = formatValuta((tot5p + totFissa) - totSpese);
         document.getElementById('lblContatore').innerText = `${recordVisibili} record (${meseSelezionato})`;
     }
 
@@ -1532,17 +1879,19 @@
         let c = parseFloat(document.getElementById('txtCash').value) || 0;
         let pos = parseFloat(document.getElementById('txtPos').value) || 0;
         let diff = parseFloat(document.getElementById('txtDiff').value) || 0;
+        let spesa = parseFloat(document.getElementById('txtSpesa').value) || 0;
         let festa = document.getElementById('chkFesta').checked || p.toLowerCase().includes("festa");
 
         if (!g) { alert('Inserisci un giorno o una data.'); return; }
 
-        datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: c, pos: pos, diff: diff, festa: festa });
+        datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: c, pos: pos, diff: diff, spesa: spesa, festa: festa });
         salvaDatiIncassi();
         
         document.getElementById('txtGiorno').value = '';
         document.getElementById('txtCash').value = '0';
         document.getElementById('txtPos').value = '0';
         document.getElementById('txtDiff').value = '0';
+        document.getElementById('txtSpesa').value = '0';
         document.getElementById('chkFesta').checked = false;
         aggiornaTabellaIncassi();
     }
@@ -1560,26 +1909,28 @@
         let datiMese = datiIncassi.filter(item => (item.mese || "Novembre 2026") === meseSel);
         if (datiMese.length === 0) { alert(`Nessun dato registrato per ${meseSel}!`); return; }
 
-        let totIncasso = 0, tot5p = 0, totFissa = 0, totDiff = 0;
+        let totIncasso = 0, tot5p = 0, totFissa = 0, totDiff = 0, totSpese = 0;
         datiMese.forEach(item => {
             let incasso = (item.cash || 0) + (item.pos || 0);
             totIncasso += incasso;
             tot5p += incasso * 0.05;
             totFissa += (item.festa || item.postazione.toLowerCase().includes("festa")) ? 0 : 26;
             totDiff += (item.diff || 0);
+            totSpese += (item.spesa || 0);
         });
 
+        let nettoTotale = (tot5p + totFissa) - totSpese;
         let archiviazione = {
             id: Date.now(), mese: meseSel, dataArchiviazione: new Date().toLocaleDateString('it-IT'),
             totaleIncassato: totIncasso, totale5percento: tot5p, totaleFissa: totFissa,
-            totaleDiff: totDiff, totaleComplessivo: tot5p + totFissa, numeroGiornate: datiMese.length
+            totaleDiff: totDiff, totaleSpese: totSpese, totaleComplessivo: nettoTotale, numeroGiornate: datiMese.length
         };
 
         mesiArchivati = mesiArchivati.filter(m => m.mese !== meseSel);
         mesiArchivati.unshift(archiviazione);
         localStorage.setItem("mesi_archivati_v1", JSON.stringify(mesiArchivati));
         renderizzaMesiArchivati();
-        alert(`Mese di ${meseSel} chiuso e archiviato con successo!\nTotale spettante: €${(tot5p + totFissa).toFixed(2)}`);
+        alert(`Mese di ${meseSel} chiuso e archiviato!\nNetto Spettante: €${nettoTotale.toFixed(2)}`);
     }
 
     function renderizzaMesiArchivati() {
@@ -1597,10 +1948,87 @@
                 <div class="storico-header"><span>📅 ${m.mese}</span><span>Archiviato il ${m.dataArchiviazione}</span></div>
                 <div class="storico-dettaglio">
                     <strong>Incasso Totale:</strong> €${m.totaleIncassato.toFixed(2)} | <strong>5%:</strong> €${m.totale5percento.toFixed(2)} | <strong>Quota Fissa:</strong> €${m.totaleFissa.toFixed(2)}<br>
-                    <span style="color: #34d399; font-size: 0.9rem; font-weight: bold;">Totale Spettante: €${m.totaleComplessivo.toFixed(2)}</span> (${m.numeroGiornate} giornate)
+                    <strong>Spese Uscite:</strong> €${(m.totaleSpese || 0).toFixed(2)}<br>
+                    <span style="color: #34d399; font-size: 0.9rem; font-weight: bold;">Netto Spettante: €${m.totaleComplessivo.toFixed(2)}</span> (${m.numeroGiornate} giornate)
                 </div>
             `;
             container.appendChild(div);
+        });
+    }
+
+    // 7. GRAFICI CHART.JS
+    function renderizzaGrafici() {
+        let meseSel = document.getElementById('selectMeseIncassi').value;
+        let datiMese = datiIncassi.filter(item => (item.mese || "Novembre 2026") === meseSel);
+        
+        // Ordina per giorno
+        datiMese.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
+
+        let etichetteGiorni = datiMese.map(d => d.giorno);
+        let valoriIncasso = datiMese.map(d => (d.cash || 0) + (d.pos || 0));
+
+        // Grafico Linea Incassi
+        const ctx1 = document.getElementById('chartAndamentoIncassi').getContext('2d');
+        if (chartAndamentoInstance) chartAndamentoInstance.destroy();
+        chartAndamentoInstance = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: etichetteGiorni,
+                datasets: [{
+                    label: `Incassi Giornalieri (€) - ${meseSel}`,
+                    data: valoriIncasso,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#ffffff' } } },
+                scales: {
+                    x: { ticks: { color: '#9ca3af' } },
+                    y: { ticks: { color: '#9ca3af' } }
+                }
+            }
+        });
+
+        // Aggregazione Top Prodotti Venduti
+        let mappaProdotti = {};
+        storicoGiornate.forEach(giornata => {
+            (giornata.prodotti || []).forEach(p => {
+                if (!mappaProdotti[p.n]) mappaProdotti[p.n] = 0;
+                mappaProdotti[p.n] += (p.qtaPass + p.qtaPen);
+            });
+        });
+
+        let prodottiOrdinati = Object.entries(mappaProdotti).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        let etichetteProdotti = prodottiOrdinati.map(p => p[0]);
+        let quantitaProdotti = prodottiOrdinati.map(p => p[1]);
+
+        // Grafico Barre Top 5 Prodotti
+        const ctx2 = document.getElementById('chartTopProdotti').getContext('2d');
+        if (chartTopProdottiInstance) chartTopProdottiInstance.destroy();
+        chartTopProdottiInstance = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: etichetteProdotti,
+                datasets: [{
+                    label: 'Top 5 Articoli più venduti (pz)',
+                    data: quantitaProdotti,
+                    backgroundColor: '#10b981'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#ffffff' } } },
+                scales: {
+                    x: { ticks: { color: '#9ca3af' } },
+                    y: { ticks: { color: '#9ca3af' } }
+                }
+            }
         });
     }
 
@@ -1612,7 +2040,7 @@
         }
     }
 
-    // 7. INIZIALIZZAZIONE AUTOMATICA ALL'AVVIO
+    // 8. INIZIALIZZAZIONE AUTOMATICA
     window.onload = function() {
         popolaSelectBarche();
 
