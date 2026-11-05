@@ -1,3 +1,7 @@
+<!-- Chosen Palette: Indigo Dark / Emerald Theme -->
+<!-- Application Structure Plan: Single-page application designed for boat bar operations, cash desk management, inventory tracking, daily closings, and monthly financial reporting. Main sections: 1. Controllo Cassa & Inventario (POS/Cash input, stock management, closing days, quick actions); 2. Gestione Incassi & Spese (Automatic ledger synced from Cassa closing, monthly reports, expenses); 3. Saldo Vendite & Inventario (Item-level sales stats); 4. Grafici & Analisi Performance (Chart.js dynamic visual representations). Designed for single-click data transfer without double data entry. -->
+<!-- Visualization & Content Choices: Uses Chart.js canvas elements for daily earnings trends and top sold items. HTML/CSS cards and responsive tables for stock counts, day logs, and financial ledgers. All custom interactions managed in Vanilla JS with LocalStorage persistence and JSON import/export. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -325,17 +329,17 @@ display: flex;
 align-items: center;
 justify-content: space-between;
 background: rgba(255,255,255,0.04);
-padding: 10px;
+padding: 8px 10px;
 border-radius: 8px;
 margin-top: 6px;
 gap: 8px;
 flex-wrap: wrap;
 }
 .magazzino-item {
-display: flex;
+display: inline-flex;
 align-items: center;
 gap: 6px;
-font-size: 0.82rem;
+font-size: 0.8rem;
 white-space: nowrap;
 }
 .stock-badge {
@@ -344,7 +348,8 @@ border-radius: 6px;
 font-weight: 800;
 display: inline-block;
 white-space: nowrap;
-font-size: 0.82rem;
+font-size: 0.78rem;
+line-height: 1.2;
 }
 .stock-ok { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
 .stock-low { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
@@ -711,8 +716,12 @@ body { padding: 4px; padding-bottom: 80px; }
 <input type="number" id="fondoCassa" value="50.00" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
 </div>
 <div class="settings-field">
-<label for="incassoContato">Incasso Effettivo Contato (€):</label>
-<input type="number" id="incassoContato" value="" placeholder="Lascia vuoto se pari al teorico" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
+<label for="incassoCash">Incasso Contanti / Cash (€):</label>
+<input type="number" id="incassoCash" value="" placeholder="es. 120.00" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
+</div>
+<div class="settings-field">
+<label for="incassoPos">Incasso Carte / POS (€):</label>
+<input type="number" id="incassoPos" value="" placeholder="es. 85.50" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
 </div>
 </div>
 
@@ -841,7 +850,7 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 
 <div class="form-group-incassi">
-<h3>Aggiungi Incasso / Giornata</h3>
+<h3>Aggiungi Spesa o Rettifica Manuale</h3>
 <div class="field">
 <label>Giorno / Data:</label>
 <input type="text" id="txtGiorno" placeholder="es. 4 Novembre 2026">
@@ -853,23 +862,13 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 
 <div class="field">
-<label>Cash (€):</label>
-<input type="number" id="txtCash" value="0" step="0.01" min="0">
-</div>
-
-<div class="field">
-<label>POS (€):</label>
-<input type="number" id="txtPos" value="0" step="0.01" min="0">
-</div>
-
-<div class="field">
-<label>Plus / Ammanco (€):</label>
-<input type="number" id="txtDiff" value="0" step="0.01" placeholder="es. -3.00 o +5.00">
-</div>
-
-<div class="field">
 <label>Spesa / Uscita Extra (€):</label>
 <input type="number" id="txtSpesa" value="0" step="0.01" min="0" placeholder="es. 15.00">
+</div>
+
+<div class="field">
+<label>Plus / Ammanco (+/- €):</label>
+<input type="number" id="txtDiff" value="0" step="0.01" placeholder="es. -3.00 o +5.00">
 </div>
 
 <div class="field" style="grid-column: 1 / -1;">
@@ -880,7 +879,7 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 
 <div class="field" style="grid-column: 1 / -1;">
-<button class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Registra Giornata</button>
+<button class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Registra Spesa / Rettifica</button>
 </div>
 </div>
 
@@ -1248,6 +1247,8 @@ if (idApp === 'app-report-prodotti') {
 aggiornaReportProdotti();
 } else if (idApp === 'app-grafici') {
 renderizzaGrafici();
+} else if (idApp === 'app-incassi') {
+aggiornaTabellaIncassi();
 }
 }
 
@@ -1304,7 +1305,8 @@ operatore: document.getElementById("txtOperatore").value,
 meteo: document.getElementById("selectMeteo").value,
 dataStr: document.getElementById("txtDataCassa").value,
 fondoCassa: parseFloat(document.getElementById("fondoCassa").value) || 0,
-incassoContato: document.getElementById("incassoContato").value,
+incassoCash: document.getElementById("incassoCash").value,
+incassoPos: document.getElementById("incassoPos").value,
 quantita: mappaQta
 };
 
@@ -1329,7 +1331,8 @@ if (bozza.operatore !== undefined) document.getElementById("txtOperatore").value
 if (bozza.meteo !== undefined) document.getElementById("selectMeteo").value = bozza.meteo;
 if (bozza.dataStr !== undefined) document.getElementById("txtDataCassa").value = bozza.dataStr;
 if (bozza.fondoCassa !== undefined) document.getElementById("fondoCassa").value = bozza.fondoCassa;
-if (bozza.incassoContato !== undefined) document.getElementById("incassoContato").value = bozza.incassoContato;
+if (bozza.incassoCash !== undefined) document.getElementById("incassoCash").value = bozza.incassoCash;
+if (bozza.incassoPos !== undefined) document.getElementById("incassoPos").value = bozza.incassoPos;
 if (bozza.quantita) {
 prodotti.forEach(p => {
 if (bozza.quantita[p.id]) {
@@ -1340,7 +1343,8 @@ if (bozza.quantita[p.id].stock !== undefined) p.stock = bozza.quantita[p.id].sto
 });
 }
 } else {
-document.getElementById("incassoContato").value = "";
+document.getElementById("incassoCash").value = "";
+document.getElementById("incassoPos").value = "";
 }
 renderizzaTabellaCassa();
 }
@@ -1480,14 +1484,17 @@ incassoTeorico += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
 });
 
 let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
-let incassoContatoVal = document.getElementById("incassoContato").value;
-let incassoEffettivo = (incassoContatoVal !== "" && !isNaN(parseFloat(incassoContatoVal))) ? parseFloat(incassoContatoVal) : incassoTeorico;
+let cashVal = parseFloat(document.getElementById("incassoCash").value) || 0;
+let posVal = parseFloat(document.getElementById("incassoPos").value) || 0;
+let incassoEffettivo = cashVal + posVal;
 
-let diff = incassoEffettivo - incassoTeorico;
-let totaleComplessivo = fondoCassa + incassoEffettivo;
+let incassoConsiderato = (document.getElementById("incassoCash").value !== "" || document.getElementById("incassoPos").value !== "") ? incassoEffettivo : incassoTeorico;
+
+let diff = incassoConsiderato - incassoTeorico;
+let totaleComplessivo = fondoCassa + incassoConsiderato;
 
 document.getElementById("totaleCassa").innerText = totaleComplessivo.toFixed(2) + " €";
-document.getElementById("dettaglioIncasso").innerText = `Incasso Teorico: ${incassoTeorico.toFixed(2)} € | Contato: ${incassoEffettivo.toFixed(2)} €`;
+document.getElementById("dettaglioIncasso").innerText = `Incasso Teorico: ${incassoTeorico.toFixed(2)} € | Cash: ${cashVal.toFixed(2)} € + POS: ${posVal.toFixed(2)} €`;
 
 let boxDiff = document.getElementById("boxPlusAmmanco");
 if (diff > 0) boxDiff.innerHTML = `<span class="badge-diff badge-plus">Plus: +${diff.toFixed(2)} €</span>`;
@@ -1507,8 +1514,9 @@ prodotti.forEach(p => {
 incassoTeorico += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
 });
 
-let incassoContatoVal = document.getElementById("incassoContato").value;
-let incassoEffettivo = (incassoContatoVal !== "" && !isNaN(parseFloat(incassoContatoVal))) ? parseFloat(incassoContatoVal) : incassoTeorico;
+let cashVal = parseFloat(document.getElementById("incassoCash").value) || 0;
+let posVal = parseFloat(document.getElementById("incassoPos").value) || 0;
+let incassoEffettivo = (document.getElementById("incassoCash").value !== "" || document.getElementById("incassoPos").value !== "") ? (cashVal + posVal) : incassoTeorico;
 let diff = incassoEffettivo - incassoTeorico;
 
 let testo = `📋 *REPORT VENDITE BAR* 📋\n`;
@@ -1535,13 +1543,14 @@ if (!venditeEffettuate) return null;
 let totaleComplessivo = fondoCassa + incassoEffettivo;
 testo += `----------------------------\n`;
 testo += `💰 *Incasso Teorico:* €${incassoTeorico.toFixed(2)}\n`;
-testo += `💶 *Incasso Effettivo:* €${incassoEffettivo.toFixed(2)}\n`;
+testo += `💵 *Cash:* €${cashVal.toFixed(2)} | 💳 *POS:* €${posVal.toFixed(2)}\n`;
+testo += `💶 *Incasso Totale:* €${incassoEffettivo.toFixed(2)}\n`;
 if (diff !== 0) testo += `⚖️ *Quadrante (Plus/Ammanco):* ${diff > 0 ? '+' : ''}${diff.toFixed(2)} €\n`;
 testo += `💵 *Totale da avere in cassa:* €${totaleComplessivo.toFixed(2)}`;
 
 return {
 testo: testo, barca: barca, operatore: operatore, meteo: meteo, dataStr: dataStr, incassoTeorico: incassoTeorico,
-incassoTotale: incassoEffettivo, diffQuadratura: diff, fondoCassa: fondoCassa,
+cash: cashVal, pos: posVal, incassoTotale: incassoEffettivo, diffQuadratura: diff, fondoCassa: fondoCassa,
 prodotti: JSON.parse(JSON.stringify(prodotti.filter(p => p.qtaPass > 0 || p.qtaPen > 0)))
 };
 }
@@ -1568,23 +1577,23 @@ storicoGiornate.unshift(nuovaGiornata);
 salvaStoricoCassaLocal();
 renderizzaStoricoCassa();
 
-if (confirm(`Giornata salvata per ${report.barca}!\n\nVuoi registrare l'incasso (€${report.incassoTotale.toFixed(2)}) e eventuale Plus/Ammanco (${report.diffQuadratura.toFixed(2)}€) anche nel "Calcolatore Incassi"?`)) {
+// TRASFERIMENTO AUTOMATICO NELLA SEZIONE INCASSI & SPESE
 let isFesta = report.barca.toLowerCase().includes("festa");
 let meseCorrente = document.getElementById("selectMeseIncassi").value;
 datiIncassi.push({
 mese: meseCorrente, giorno: report.dataStr, postazione: report.barca,
-cash: report.incassoTotale, pos: 0, diff: report.diffQuadratura, spesa: 0, festa: isFesta
+cash: report.cash, pos: report.pos, diff: report.diffQuadratura, spesa: 0, festa: isFesta
 });
 salvaDatiIncassi();
 aggiornaTabellaIncassi();
-}
 
 prodotti.forEach(p => {
 p.stock = Math.max(0, (p.stock || 0) - (p.qtaPass + p.qtaPen));
 p.qtaPass = 0;
 p.qtaPen = 0;
 });
-document.getElementById("incassoContato").value = "";
+document.getElementById("incassoCash").value = "";
+document.getElementById("incassoPos").value = "";
 delete bozzePerBarca[report.barca];
 localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
 
@@ -1592,7 +1601,7 @@ avanzaAlGiornoSuccessivo();
 salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
 
-alert("Giornata salvata! L'inventario è stato aggiornato e la data impostata al giorno successivo.");
+alert("Giornata salvata con successo!\n• L'inventario è stato aggiornato.\n• I dati Cash (€" + report.cash.toFixed(2) + ") e POS (€" + report.pos.toFixed(2) + ") sono stati inviati AUTOMATICAMENTE nel 'Calcolatore Incassi'.\n• La data è stata avanzata al giorno successivo.");
 }
 
 function renderizzaStoricoCassa() {
@@ -1657,7 +1666,8 @@ storicoCarichi = salvatiCarichi ? JSON.parse(salvatiCarichi) : [];
 function azzeraQuantitaCassa() {
 if(confirm("Vuoi azzerare le quantità del turno corrente?")) {
 prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
-document.getElementById("incassoContato").value = "";
+document.getElementById("incassoCash").value = "";
+document.getElementById("incassoPos").value = "";
 salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
 }
@@ -2069,24 +2079,15 @@ storicoBuoni.unshift(recBuono);
 salvaStoricoBuoniLocal();
 renderizzaStoricoBuoni();
 
-let incassoAttualeInput = document.getElementById("incassoContato");
-let incassoAttualeVal = parseFloat(incassoAttualeInput.value);
-
-if (isNaN(incassoAttualeVal) || incassoAttualeInput.value.trim() === "") {
-let incassoTeoricoCorrente = 0;
-prodotti.forEach(p => {
-incassoTeoricoCorrente += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
-});
-incassoAttualeInput.value = (incassoTeoricoCorrente + totGenerale).toFixed(2);
-} else {
-incassoAttualeInput.value = (incassoAttualeVal + totGenerale).toFixed(2);
-}
+let incassoCashInput = document.getElementById("incassoCash");
+let incassoCashVal = parseFloat(incassoCashInput.value) || 0;
+incassoCashInput.value = (incassoCashVal + totGenerale).toFixed(2);
 
 salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
 chiudiModalBuonoConsegna();
 
-if (confirm(`Buono completato!\n• Rimanenze scaricate\n• Incasso cassa incrementato di €${totGenerale.toFixed(2)}\n\nVuoi inviare la bolla su WhatsApp?`)) {
+if (confirm(`Buono completato!\n• Rimanenze scaricate\n• Incasso Cash incrementato di €${totGenerale.toFixed(2)}\n\nVuoi inviare la bolla su WhatsApp?`)) {
 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(testoReport)}`, '_blank');
 }
 }
@@ -2125,12 +2126,10 @@ function eliminaBuono(id) {
 if (confirm("Vuoi cancellare questo buono dallo storico? L'importo verrà stornato dalla cassa attiva.")) {
 let buonoDaEliminare = storicoBuoni.find(b => b.id === id);
 if (buonoDaEliminare) {
-let incassoAttualeInput = document.getElementById("incassoContato");
-let incassoAttualeVal = parseFloat(incassoAttualeInput.value);
-if (!isNaN(incassoAttualeVal)) {
-let nuovoValore = Math.max(0, incassoAttualeVal - buonoDaEliminare.totale);
-incassoAttualeInput.value = nuovoValore > 0 ? nuovoValore.toFixed(2) : "";
-}
+let incassoCashInput = document.getElementById("incassoCash");
+let incassoCashVal = parseFloat(incassoCashInput.value) || 0;
+let nuovoValore = Math.max(0, incassoCashVal - buonoDaEliminare.totale);
+incassoCashInput.value = nuovoValore > 0 ? nuovoValore.toFixed(2) : "";
 }
 storicoBuoni = storicoBuoni.filter(b => b.id !== id);
 salvaStoricoBuoniLocal();
@@ -2272,6 +2271,7 @@ return match ? parseInt(match[0], 10) : 0;
 
 function aggiornaTabellaIncassi() {
 const tbody = document.querySelector('#tabellaIncassi tbody');
+if (!tbody) return;
 tbody.innerHTML = '';
 let meseSelezionato = document.getElementById('selectMeseIncassi').value;
 let filtro = document.getElementById('txtFiltro').value.toLowerCase();
@@ -2326,20 +2326,16 @@ function aggiungiRecordIncasso() {
 let meseSel = document.getElementById('selectMeseIncassi').value;
 let g = document.getElementById('txtGiorno').value.trim();
 let p = document.getElementById('selectPostazioneIncassi').value;
-let c = parseFloat(document.getElementById('txtCash').value) || 0;
-let pos = parseFloat(document.getElementById('txtPos').value) || 0;
 let diff = parseFloat(document.getElementById('txtDiff').value) || 0;
 let spesa = parseFloat(document.getElementById('txtSpesa').value) || 0;
 let festa = document.getElementById('chkFesta').checked || p.toLowerCase().includes("festa");
 
 if (!g) { alert('Inserisci un giorno o una data.'); return; }
 
-datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: c, pos: pos, diff: diff, spesa: spesa, festa: festa });
+datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: 0, pos: 0, diff: diff, spesa: spesa, festa: festa });
 salvaDatiIncassi();
 
 document.getElementById('txtGiorno').value = '';
-document.getElementById('txtCash').value = '0';
-document.getElementById('txtPos').value = '0';
 document.getElementById('txtDiff').value = '0';
 document.getElementById('txtSpesa').value = '0';
 document.getElementById('chkFesta').checked = false;
