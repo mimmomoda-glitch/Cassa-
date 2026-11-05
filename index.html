@@ -1187,6 +1187,7 @@ let chartAndamentoInstance = null;
 let chartTopProdottiInstance = null;
 let itemsBuonoConsegna = [];
 let itemsCaricoMerce = [];
+let ultimaBarcaSelezionata = "TREMITI JET"; // Memorizzazione attiva della barca di provenienza
 
 // 2. FUNZIONI DI UTILITÀ E NAVIGAZIONE
 function popolaSelectBarche() {
@@ -1216,9 +1217,11 @@ const ultimaBarca = localStorage.getItem("cassa_barca_selezionata");
 if (ultimaBarca && listaBarche.includes(ultimaBarca)) {
 selectCassa.value = ultimaBarca;
 selectIncassi.value = ultimaBarca;
+ultimaBarcaSelezionata = ultimaBarca;
 } else if (listaBarche.includes("TREMITI JET")) {
 selectCassa.value = "TREMITI JET";
 selectIncassi.value = "TREMITI JET";
+ultimaBarcaSelezionata = "TREMITI JET";
 }
 }
 
@@ -1273,10 +1276,11 @@ dataTracciata.setDate(dataTracciata.getDate() + 1);
 impostaDataInInput(dataTracciata);
 }
 
-// 3. LOGICA CASSA, BOZZE E INVENTARIO
-function salvaBozzaCassaInTempoReale() {
-const barcaCorrente = document.getElementById("selectBarca").value;
-if (!barcaCorrente) return;
+// 3. LOGICA CASSA, BOZZE E INVENTARIO (GESTIONE AUTOMATICA BARCHE)
+
+// Salvataggio mirato basato sulla barca specifica di provenienza
+function salvaBozzaPerBarcaSpecifica(nomeBarca) {
+if (!nomeBarca) return;
 
 let mappaQta = {};
 prodotti.forEach(p => {
@@ -1285,7 +1289,7 @@ mappaQta[p.id] = { pass: p.qtaPass, pen: p.qtaPen, stock: p.stock };
 }
 });
 
-bozzePerBarca[barcaCorrente] = {
+bozzePerBarca[nomeBarca] = {
 operatore: document.getElementById("txtOperatore").value,
 meteo: document.getElementById("selectMeteo").value,
 dataStr: document.getElementById("txtDataCassa").value,
@@ -1295,8 +1299,15 @@ quantita: mappaQta
 };
 
 localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
-localStorage.setItem("cassa_barca_selezionata", barcaCorrente);
 mostraNotificaSalvataggio();
+}
+
+// Salva in tempo reale la barca che lo schermo sta attualmente mostrando
+function salvaBozzaCassaInTempoReale() {
+const barcaCorrente = document.getElementById("selectBarca").value;
+ultimaBarcaSelezionata = barcaCorrente;
+salvaBozzaPerBarcaSpecifica(barcaCorrente);
+localStorage.setItem("cassa_barca_selezionata", barcaCorrente);
 }
 
 function caricaBozzaBarcaCorrente() {
@@ -1319,12 +1330,26 @@ if (bozza.quantita[p.id].stock !== undefined) p.stock = bozza.quantita[p.id].sto
 }
 });
 }
+} else {
+// Se è la prima volta che accediamo alla barca, resetta i campi
+document.getElementById("incassoContato").value = "";
 }
 renderizzaTabellaCassa();
 }
 
+// Gestore automatico del cambio barca immediato e trasparente
 function cambiaBarcaCorrente() {
-salvaBozzaCassaInTempoReale();
+const selectCassa = document.getElementById("selectBarca");
+const nuovaBarca = selectCassa.value;
+
+// 1. Salva la schermata corrente associandola alla VECCHIA barca prima di cambiare
+salvaBozzaPerBarcaSpecifica(ultimaBarcaSelezionata);
+
+// 2. Imposta il nuovo valore di tracciamento
+ultimaBarcaSelezionata = nuovaBarca;
+localStorage.setItem("cassa_barca_selezionata", nuovaBarca);
+
+// 3. Carica subito la bozza della nuova barca
 caricaBozzaBarcaCorrente();
 }
 
@@ -2110,6 +2135,7 @@ if (parsed.storicoTrasferimenti) { storicoTrasferimenti = parsed.storicoTrasferi
 if (parsed.storicoBuoni) { storicoBuoni = parsed.storicoBuoni; salvaStoricoBuoniLocal(); }
 if (parsed.storicoCarichi) { storicoCarichi = parsed.storicoCarichi; salvaStoricoCarichiLocal(); }
 if (parsed.mesiArchivati) { mesiArchivati = parsed.mesiArchivati; localStorage.setItem("mesi_archivati_v1", JSON.stringify(mesiArchivati)); }
+if (parsed.bozzePerBarca) { bozzePerBarca = parsed.bozzePerBarca; localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca)); }
 caricaBozzaBarcaCorrente(); renderizzaStoricoCassa(); renderizzaStoricoTrasferimenti(); renderizzaStoricoBuoni(); renderizzaStoricoCarichi(); aggiornaTabellaIncassi(); renderizzaMesiArchivati();
 alert("Importazione completata con successo!");
 } catch(err) { alert("Errore nella lettura del file JSON."); }
@@ -2425,12 +2451,12 @@ y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
 
 // 8. INIZIALIZZAZIONE AUTOMATICA ALL'AVVIO
 window.onload = function() {
-popolaSelectBarche();
-
 const bozzeSalvate = localStorage.getItem("cassa_bozze_per_barca_v6");
 if (bozzeSalvate) {
 try { bozzePerBarca = JSON.parse(bozzeSalvate); } catch(e) { bozzePerBarca = {}; }
 }
+
+popolaSelectBarche();
 
 dataTracciata = new Date();
 impostaDataInInput(dataTracciata);
