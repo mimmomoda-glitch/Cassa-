@@ -28,7 +28,7 @@
 --pass-color: #38bdf8;
 --pen-color: #fb923c;
 }
-​{
+* {
 box-sizing: border-box;
 -webkit-tap-highlight-color: transparent;
 }
@@ -42,7 +42,7 @@ color: var(--text);
 line-height: 1.4;
 overflow-x: hidden;
 }
-/* VISTA SCHEDE APPLICAZIONE /
+/* VISTA SCHEDE APPLICAZIONE */
 .app-view {
 display: none;
 padding: 10px;
@@ -55,7 +55,7 @@ display: block;
 from { opacity: 0; transform: translateY(4px); }
 to { opacity: 1; transform: translateY(0); }
 }
-/ BARRA NAVIGAZIONE INFERIORE MOBILE /
+/* BARRA NAVIGAZIONE INFERIORE MOBILE */
 .bottom-nav {
 position: fixed;
 bottom: 0;
@@ -103,7 +103,7 @@ filter: grayscale(0%);
 opacity: 1;
 transform: scale(1.1);
 }
-/ LAYOUT PRINCIPALE /
+/* LAYOUT PRINCIPALE */
 .container {
 max-width: 850px;
 margin: 0 auto;
@@ -328,8 +328,8 @@ background: rgba(255,255,255,0.04);
 padding: 10px;
 border-radius: 8px;
 margin-top: 6px;
-gap: 10px;
-flex-wrap: nowrap;
+gap: 8px;
+flex-wrap: wrap;
 }
 .magazzino-item {
 display: flex;
@@ -339,12 +339,12 @@ font-size: 0.82rem;
 white-space: nowrap;
 }
 .stock-badge {
-padding: 4px 10px;
+padding: 3px 8px;
 border-radius: 6px;
 font-weight: 800;
 display: inline-block;
 white-space: nowrap;
-font-size: 0.85rem;
+font-size: 0.82rem;
 }
 .stock-ok { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
 .stock-low { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
@@ -653,7 +653,7 @@ display: flex;
 gap: 8px;
 flex-wrap: wrap;
 }
-/ MEDIA QUERIES PER STAMPA RICEVUTA PDF */
+/* MEDIA QUERIES PER STAMPA RICEVUTA PDF */
 @media print {
 body { background: white; color: black; padding-bottom: 0; }
 .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar { display: none !important; }
@@ -675,13 +675,16 @@ body { padding: 4px; padding-bottom: 80px; }
 </style>
 </head>
 <body>
-​<!-- INDICATORE SALVATAGGIO AUTOMATICO -->
+
+<!-- INDICATORE SALVATAGGIO AUTOMATICO -->
 <div id="saveIndicator" class="save-indicator">✓ Salvato</div>
-​<!-- SCHEDA 1: GESTIONE CASSA VELOCE -->
+
+<!-- SCHEDA 1: GESTIONE CASSA VELOCE -->
 <div id="app-cassa" class="app-view active">
 <div class="container">
 <h2 class="title-centered">Controllo Cassa & Inventario</h2>
-​<div class="settings-grid">
+
+<div class="settings-grid">
 <div class="settings-field">
 <label for="selectBarca">Postazione / Barca:</label>
 <select id="selectBarca" onchange="cambiaBarcaCorrente()"></select>
@@ -712,15 +715,18 @@ body { padding: 4px; padding-bottom: 80px; }
 <input type="number" id="incassoContato" value="" placeholder="Lascia vuoto se pari al teorico" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
 </div>
 </div>
-​<div class="card-totale">
+
+<div class="card-totale">
 <div class="label">Totale da avere in cassa</div>
 <div class="amount" id="totaleCassa">50.00 €</div>
 <div class="details" id="dettaglioIncasso">Incasso Teorico: 0.00 €</div>
 <div style="margin-top: 6px;" id="boxPlusAmmanco"></div>
 </div>
-​<!-- ALERT PER SCORTE IN ESAURIMENTO -->
+
+<!-- ALERT PER SCORTE IN ESAURIMENTO -->
 <div id="alertBoxScorte" class="alert-box-scorte"></div>
-​<!-- TASTI RAPIDI PER VENDITE FREQUENTI -->
+
+<!-- TASTI RAPIDI PER VENDITE FREQUENTI -->
 <div class="quick-actions-bar">
 <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); display: flex; align-items: center;">⚡ Veloci:</span>
 <button class="btn-quick" onclick="venditaRapida('cia', 'Pass')">☕ +1 Cialda</button>
@@ -729,11 +735,14 @@ body { padding: 4px; padding-bottom: 80px; }
 <button class="btn-quick" onclick="venditaRapida('ltn', 'Pass')">🥤 +1 Lattina</button>
 <button class="btn-quick" onclick="venditaRapida('per', 'Pass')">🍺 +1 Birra</button>
 </div>
-​<div style="margin-bottom: 12px;">
+
+<div style="margin-bottom: 12px;">
 <input type="text" id="cercaProdottoCassa" placeholder="🔍 Cerca prodotto per nome..." oninput="filtraProdottiCassa()">
 </div>
-​<div class="prodotti-lista" id="listaProdotti"></div>
-​<div class="actions-box">
+
+<div class="prodotti-lista" id="listaProdotti"></div>
+
+<div class="actions-box">
 <button class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
 <button class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia WhatsApp</button>
 <button class="btn btn-success" onclick="apriModalCaricoMerce()">📦 Carico Merce con Bolla</button>
@@ -742,7 +751,8 @@ body { padding: 4px; padding-bottom: 80px; }
 <button class="btn btn-secondary" onclick="window.print()">🖨️ Stampa Report PDF</button>
 <button class="btn btn-danger" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
 </div>
-​<!-- REGISTRI STORICI -->
+
+<!-- REGISTRI STORICI -->
 <div class="storico-section">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>📦 Registro Carichi Merci & Bolle Fornitori</span>
@@ -750,28 +760,32 @@ body { padding: 4px; padding-bottom: 80px; }
 </h3>
 <div id="listaStoricoCarichi"></div>
 </div>
-​<div class="storico-section" style="margin-top: 14px;">
+
+<div class="storico-section" style="margin-top: 14px;">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>🔄 Registro Spostamenti Merci (Costo €0)</span>
 <button class="btn btn-secondary" onclick="svuotaStoricoTrasferimenti()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
 </h3>
 <div id="listaStoricoTrasferimenti"></div>
 </div>
-​<div class="storico-section" style="margin-top: 14px;">
+
+<div class="storico-section" style="margin-top: 14px;">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>📄 Registro Buoni di Consegna Emessi</span>
 <button class="btn btn-secondary" onclick="svuotaStoricoBuoni()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
 </h3>
 <div id="listaStoricoBuoni"></div>
 </div>
-​<div class="storico-section" style="margin-top: 14px;">
+
+<div class="storico-section" style="margin-top: 14px;">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>📜 Storico Giornate Salvate</span>
 <button class="btn btn-secondary" onclick="svuotaStoricoCassa()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota Storico</button>
 </h3>
 <div id="listaStoricoCassa"></div>
 </div>
-​<div class="backup-section">
+
+<div class="backup-section">
 <div class="backup-title">📁 Gestione Dati e Backup JSON</div>
 <div class="backup-buttons">
 <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; min-height: 36px;" onclick="esportaDatiJSON()">📥 Export JSON</button>
@@ -781,7 +795,8 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 </div>
 </div>
-​<!-- SCHEDA 2: CALCOLATORE INCASSI, SPESE & ARCHIVIO -->
+
+<!-- SCHEDA 2: CALCOLATORE INCASSI, SPESE & ARCHIVIO -->
 <div id="app-incassi" class="app-view">
 <div class="container">
 <h1>
@@ -791,7 +806,8 @@ body { padding: 4px; padding-bottom: 80px; }
 <button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset</button>
 </div>
 </h1>
-​<div class="month-selector-bar">
+
+<div class="month-selector-bar">
 <label for="selectMeseIncassi">📅 Seleziona Mese:</label>
 <select id="selectMeseIncassi" onchange="cambiaMeseCorrente()">
 <option value="Novembre 2026">Novembre 2026</option>
@@ -800,7 +816,8 @@ body { padding: 4px; padding-bottom: 80px; }
 <option value="Agosto 2026">Agosto 2026</option>
 </select>
 </div>
-​<div class="cards-incassi">
+
+<div class="cards-incassi">
 <div class="card-incassi">
 <h3>Totale Incassato</h3>
 <p id="lblIncasso">€ 0,00</p>
@@ -822,49 +839,59 @@ body { padding: 4px; padding-bottom: 80px; }
 <p id="lblTotale">€ 0,00</p>
 </div>
 </div>
-​<div class="form-group-incassi">
+
+<div class="form-group-incassi">
 <h3>Aggiungi Incasso / Giornata</h3>
 <div class="field">
 <label>Giorno / Data:</label>
 <input type="text" id="txtGiorno" placeholder="es. 4 Novembre 2026">
 </div>
-​<div class="field">
+
+<div class="field">
 <label>Postazione / Barca:</label>
 <select id="selectPostazioneIncassi" onchange="gestisciCambioPostazioneIncassi()"></select>
 </div>
-​<div class="field">
+
+<div class="field">
 <label>Cash (€):</label>
 <input type="number" id="txtCash" value="0" step="0.01" min="0">
 </div>
-​<div class="field">
+
+<div class="field">
 <label>POS (€):</label>
 <input type="number" id="txtPos" value="0" step="0.01" min="0">
 </div>
-​<div class="field">
+
+<div class="field">
 <label>Plus / Ammanco (€):</label>
 <input type="number" id="txtDiff" value="0" step="0.01" placeholder="es. -3.00 o +5.00">
 </div>
-​<div class="field">
+
+<div class="field">
 <label>Spesa / Uscita Extra (€):</label>
 <input type="number" id="txtSpesa" value="0" step="0.01" min="0" placeholder="es. 15.00">
 </div>
-​<div class="field" style="grid-column: 1 / -1;">
+
+<div class="field" style="grid-column: 1 / -1;">
 <label class="checkbox-container">
 <input type="checkbox" id="chkFesta">
 <span>Giorno di Festa (Escludi Quota €26)</span>
 </label>
 </div>
-​<div class="field" style="grid-column: 1 / -1;">
+
+<div class="field" style="grid-column: 1 / -1;">
 <button class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Registra Giornata</button>
 </div>
 </div>
-​<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
 <div style="flex: 1; min-width: 180px;">
 <input type="text" id="txtFiltro" placeholder="Cerca giorno o barca..." oninput="aggiornaTabellaIncassi()">
 </div>
 <div style="font-size: 0.8rem; color: var(--text-muted);" id="lblContatore">0 record</div>
 </div>
-​<div class="table-responsive">
+
+<div class="table-responsive">
 <table id="tabellaIncassi">
 <thead>
 <tr>
@@ -884,10 +911,12 @@ body { padding: 4px; padding-bottom: 80px; }
 <tbody></tbody>
 </table>
 </div>
-​<div style="margin-top: 16px;">
+
+<div style="margin-top: 16px;">
 <button class="btn btn-warning btn-full" onclick="chiudiEArchiviaMeseCorrente()">🔒 Chiudi & Archivia Mese Corrente</button>
 </div>
-​<div class="storico-section" style="margin-top: 16px;">
+
+<div class="storico-section" style="margin-top: 16px;">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>📂 Mesi Archivati & Salvati</span>
 </h3>
@@ -895,11 +924,13 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 </div>
 </div>
-​<!-- SCHEDA 3: RECAP E SALDO VENDITE PRODOTTO -->
+
+<!-- SCHEDA 3: RECAP E SALDO VENDITE PRODOTTO -->
 <div id="app-report-prodotti" class="app-view">
 <div class="container">
 <h2 class="title-centered">📦 Saldo Vendite & Inventario</h2>
-​<div class="settings-grid" style="margin-bottom: 16px;">
+
+<div class="settings-grid" style="margin-bottom: 16px;">
 <div class="settings-field">
 <label for="filtroBarcaProdotti">Seleziona Barca / Postazione:</label>
 <select id="filtroBarcaProdotti" onchange="aggiornaReportProdotti()">
@@ -907,7 +938,8 @@ body { padding: 4px; padding-bottom: 80px; }
 </select>
 </div>
 </div>
-​<div class="kpi-container">
+
+<div class="kpi-container">
 <div class="kpi-box">
 <span>Tot. Pezzi Venduti</span>
 <strong id="kpiPezziTotali">0 pz</strong>
@@ -921,7 +953,8 @@ body { padding: 4px; padding-bottom: 80px; }
 <strong id="kpiDiffQuadratura">€ 0,00</strong>
 </div>
 </div>
-​<div class="table-responsive">
+
+<div class="table-responsive">
 <table id="tabellaReportProdotti">
 <thead>
 <tr>
@@ -937,19 +970,23 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 </div>
 </div>
-​<!-- SCHEDA 4: GRAFICI & ANALISI STATISTICHE -->
+
+<!-- SCHEDA 4: GRAFICI & ANALISI STATISTICHE -->
 <div id="app-grafici" class="app-view">
 <div class="container">
 <h2 class="title-centered">📊 Grafici & Analisi Performance</h2>
-​<div class="chart-container">
+
+<div class="chart-container">
 <canvas id="chartAndamentoIncassi"></canvas>
 </div>
-​<div class="chart-container" style="height: 280px;">
+
+<div class="chart-container" style="height: 280px;">
 <canvas id="chartTopProdotti"></canvas>
 </div>
 </div>
 </div>
-​<!-- MODALE CARICO MERCE CON NUMERO DI BOLLA -->
+
+<!-- MODALE CARICO MERCE CON NUMERO DI BOLLA -->
 <div id="modalCaricoMerce" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>📦 Carico Merce con Bolla di Consegna</h3>
@@ -977,7 +1014,8 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 </div>
 <button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="aggiungiVoceCarico()">+ Aggiungi alla Bolla di Carico</button>
-​<div class="table-responsive" style="margin-bottom:10px;">
+
+<div class="table-responsive" style="margin-bottom:10px;">
 <table id="tabellaCaricoItems">
 <thead>
 <tr>
@@ -989,13 +1027,15 @@ body { padding: 4px; padding-bottom: 80px; }
 <tbody></tbody>
 </table>
 </div>
-​<div style="display:flex; gap:8px;">
+
+<div style="display:flex; gap:8px;">
 <button class="btn btn-success" style="flex:1;" onclick="confermaEStampaCarico()">📦 Conferma & Incrementa Rimanenze</button>
 <button class="btn btn-secondary" onclick="chiudiModalCaricoMerce()">Annulla</button>
 </div>
 </div>
 </div>
-​<!-- MODALE SPOSTAMENTO MERCI TRA BARCHE (COSTO 0) -->
+
+<!-- MODALE SPOSTAMENTO MERCI TRA BARCHE (COSTO 0) -->
 <div id="modalTrasferimento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>🔄 Spostamento Merci (Costo 0)</h3>
@@ -1024,7 +1064,8 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 </div>
 </div>
-​<!-- MODALE BUONO DI CONSEGNA CON PREZZI MODIFICABILI -->
+
+<!-- MODALE BUONO DI CONSEGNA CON PREZZI MODIFICABILI -->
 <div id="modalBuonoConsegna" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>📄 Genera Buono di Consegna</h3>
@@ -1048,7 +1089,8 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 </div>
 <button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="aggiungiVoceBuono()">+ Aggiungi al Buono</button>
-​<div class="table-responsive" style="margin-bottom:10px;">
+
+<div class="table-responsive" style="margin-bottom:10px;">
 <table id="tabellaBuonoItems">
 <thead>
 <tr>
@@ -1062,13 +1104,15 @@ body { padding: 4px; padding-bottom: 80px; }
 <tbody></tbody>
 </table>
 </div>
-​<div style="display:flex; gap:8px;">
+
+<div style="display:flex; gap:8px;">
 <button class="btn btn-success" style="flex:1;" onclick="confermaEStampaBuono()">📄 Completa & Scarica Rimanenze</button>
 <button class="btn btn-secondary" onclick="chiudiModalBuonoConsegna()">Annulla</button>
 </div>
 </div>
 </div>
-​<!-- NAVBAR INFERIORE MOBILE -->
+
+<!-- NAVBAR INFERIORE MOBILE -->
 <nav class="bottom-nav">
 <button class="nav-item active" onclick="cambiaApp('app-cassa', this)">
 <span class="nav-icon">💶</span>
@@ -1087,7 +1131,8 @@ body { padding: 4px; padding-bottom: 80px; }
 <span>Grafici</span>
 </button>
 </nav>
-​<script>
+
+<script>
 // 1. CONFIGURAZIONE E LISTE BASE
 const listaBarche = [
 "NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET",
@@ -1095,7 +1140,8 @@ const listaBarche = [
 "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "PICASSO", "FRECCIA D ARGENTO",
 "BLIZ", "DELFINO", "URAGANO", "ACQUARIUS", "RAID", "Standard", "Festa"
 ];
-​const prodottiDefault = [
+
+const prodottiDefault = [
 {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0, stock: 50},
 {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 30},
 {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0, stock: 15},
@@ -1136,7 +1182,8 @@ const listaBarche = [
 {id:'gin', n:"Ginseng", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 30},
 {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 30}
 ];
-​// STATO GLOBALE
+
+// STATO GLOBALE
 let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
 let bozzePerBarca = {};
 let storicoGiornate = [];
@@ -1152,26 +1199,32 @@ let chartTopProdottiInstance = null;
 let itemsBuonoConsegna = [];
 let itemsCaricoMerce = [];
 let ultimaBarcaSelezionata = "TREMITI JET";
-​// 2. FUNZIONI DI UTILITÀ E NAVIGAZIONE
+
+// 2. FUNZIONI DI UTILITÀ E NAVIGAZIONE
 function popolaSelectBarche() {
 const selectCassa = document.getElementById("selectBarca");
 const selectIncassi = document.getElementById("selectPostazioneIncassi");
 const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
-​selectCassa.innerHTML = "";
+
+selectCassa.innerHTML = "";
 selectIncassi.innerHTML = "";
 selectFiltroProdotti.innerHTML = '<option value="TUTTE">-- Tutte le Barche (Totale) --</option>';
-​listaBarche.forEach(barca => {
+
+listaBarche.forEach(barca => {
 let opt1 = document.createElement("option");
 opt1.value = barca; opt1.textContent = barca;
 selectCassa.appendChild(opt1);
-​let opt2 = document.createElement("option");
+
+let opt2 = document.createElement("option");
 opt2.value = barca; opt2.textContent = barca;
 selectIncassi.appendChild(opt2);
-​let opt3 = document.createElement("option");
+
+let opt3 = document.createElement("option");
 opt3.value = barca; opt3.textContent = barca;
 selectFiltroProdotti.appendChild(opt3);
 });
-​const ultimaBarca = localStorage.getItem("cassa_barca_selezionata");
+
+const ultimaBarca = localStorage.getItem("cassa_barca_selezionata");
 if (ultimaBarca && listaBarche.includes(ultimaBarca)) {
 selectCassa.value = ultimaBarca;
 selectIncassi.value = ultimaBarca;
@@ -1182,19 +1235,23 @@ selectIncassi.value = "TREMITI JET";
 ultimaBarcaSelezionata = "TREMITI JET";
 }
 }
-​function cambiaApp(idApp, bottoneCliccato) {
+
+function cambiaApp(idApp, bottoneCliccato) {
 document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
 document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-​document.getElementById(idApp).classList.add('active');
+
+document.getElementById(idApp).classList.add('active');
 bottoneCliccato.classList.add('active');
 window.scrollTo(0, 0);
-​if (idApp === 'app-report-prodotti') {
+
+if (idApp === 'app-report-prodotti') {
 aggiornaReportProdotti();
 } else if (idApp === 'app-grafici') {
 renderizzaGrafici();
 }
 }
-​function mostraNotificaSalvataggio() {
+
+function mostraNotificaSalvataggio() {
 const ind = document.getElementById("saveIndicator");
 ind.style.display = "flex";
 ind.style.opacity = "1";
@@ -1204,15 +1261,18 @@ ind.style.opacity = "0";
 setTimeout(() => { ind.style.display = "none"; }, 300);
 }, 1000);
 }
-​function impostaDataInInput(d) {
+
+function impostaDataInInput(d) {
 let optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
 let strData = d.toLocaleDateString('it-IT', optionsDate);
 document.getElementById("txtDataCassa").value = strData;
 document.getElementById("txtGiorno").value = strData;
-​let optionMonth = { month: 'long', year: 'numeric' };
+
+let optionMonth = { month: 'long', year: 'numeric' };
 let meseStr = d.toLocaleDateString('it-IT', optionMonth);
 meseStr = meseStr.charAt(0).toUpperCase() + meseStr.slice(1);
-​let selectMese = document.getElementById("selectMeseIncassi");
+
+let selectMese = document.getElementById("selectMeseIncassi");
 let esiste = Array.from(selectMese.options).some(opt => opt.value === meseStr);
 if (!esiste) {
 let opt = document.createElement("option");
@@ -1221,20 +1281,25 @@ selectMese.insertBefore(opt, selectMese.firstChild);
 }
 selectMese.value = meseStr;
 }
-​function avanzaAlGiornoSuccessivo() {
+
+function avanzaAlGiornoSuccessivo() {
 dataTracciata.setDate(dataTracciata.getDate() + 1);
 impostaDataInInput(dataTracciata);
 }
-​// 3. LOGICA CASSA, BOZZE E INVENTARIO
-​function salvaBozzaPerBarcaSpecifica(nomeBarca) {
+
+// 3. LOGICA CASSA, BOZZE E INVENTARIO
+
+function salvaBozzaPerBarcaSpecifica(nomeBarca) {
 if (!nomeBarca) return;
-​let mappaQta = {};
+
+let mappaQta = {};
 prodotti.forEach(p => {
 if (p.qtaPass > 0 || p.qtaPen > 0 || p.stock !== undefined) {
 mappaQta[p.id] = { pass: p.qtaPass, pen: p.qtaPen, stock: p.stock };
 }
 });
-​bozzePerBarca[nomeBarca] = {
+
+bozzePerBarca[nomeBarca] = {
 operatore: document.getElementById("txtOperatore").value,
 meteo: document.getElementById("selectMeteo").value,
 dataStr: document.getElementById("txtDataCassa").value,
@@ -1242,19 +1307,23 @@ fondoCassa: parseFloat(document.getElementById("fondoCassa").value) || 0,
 incassoContato: document.getElementById("incassoContato").value,
 quantita: mappaQta
 };
-​localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
+
+localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
 mostraNotificaSalvataggio();
 }
-​function salvaBozzaCassaInTempoReale() {
+
+function salvaBozzaCassaInTempoReale() {
 const barcaCorrente = document.getElementById("selectBarca").value;
 ultimaBarcaSelezionata = barcaCorrente;
 salvaBozzaPerBarcaSpecifica(barcaCorrente);
 localStorage.setItem("cassa_barca_selezionata", barcaCorrente);
 }
-​function caricaBozzaBarcaCorrente() {
+
+function caricaBozzaBarcaCorrente() {
 const barcaCorrente = document.getElementById("selectBarca").value;
 prodotti = JSON.parse(JSON.stringify(prodottiDefault));
-​if (bozzePerBarca && bozzePerBarca[barcaCorrente]) {
+
+if (bozzePerBarca && bozzePerBarca[barcaCorrente]) {
 let bozza = bozzePerBarca[barcaCorrente];
 if (bozza.operatore !== undefined) document.getElementById("txtOperatore").value = bozza.operatore;
 if (bozza.meteo !== undefined) document.getElementById("selectMeteo").value = bozza.meteo;
@@ -1275,18 +1344,22 @@ document.getElementById("incassoContato").value = "";
 }
 renderizzaTabellaCassa();
 }
-​function cambiaBarcaCorrente() {
+
+function cambiaBarcaCorrente() {
 const selectCassa = document.getElementById("selectBarca");
 const nuovaBarca = selectCassa.value;
-​salvaBozzaPerBarcaSpecifica(ultimaBarcaSelezionata);
+
+salvaBozzaPerBarcaSpecifica(ultimaBarcaSelezionata);
 ultimaBarcaSelezionata = nuovaBarca;
 localStorage.setItem("cassa_barca_selezionata", nuovaBarca);
 caricaBozzaBarcaCorrente();
 }
-​function venditaRapida(id, tipo) {
+
+function venditaRapida(id, tipo) {
 modificaQtaCassa(id, tipo, 1);
 }
-​function filtraProdottiCassa() {
+
+function filtraProdottiCassa() {
 let filtro = document.getElementById("cercaProdottoCassa").value.toLowerCase();
 let cards = document.querySelectorAll(".prodotto-card");
 cards.forEach(card => {
@@ -1295,38 +1368,79 @@ if (nome.includes(filtro)) card.style.display = "block";
 else card.style.display = "none";
 });
 }
-​function verificaAvvisiScorte() {
+
+function verificaAvvisiScorte() {
 let alertBox = document.getElementById("alertBoxScorte");
 let articoliBassi = [];
-​prodotti.forEach(p => {
+
+prodotti.forEach(p => {
 let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
 if (rimasti <= 5) {
-articoliBassi.push(${p.i} ${p.n} (${rimasti} pz));
+articoliBassi.push(`${p.i} ${p.n} (${rimasti} pz)`);
 }
 });
-​if (articoliBassi.length > 0) {
+
+if (articoliBassi.length > 0) {
 alertBox.style.display = "block";
-alertBox.innerHTML = ⚠️ <b>AVVISO SCORTE IN ESAURIMENTO (≤5 pz):</b><br> + articoliBassi.join(" • ");
+alertBox.innerHTML = `⚠️ <b>AVVISO SCORTE IN ESAURIMENTO (≤5 pz):</b><br>` + articoliBassi.join(" • ");
 } else {
 alertBox.style.display = "none";
 }
 }
-​function renderizzaTabellaCassa() {
+
+function renderizzaTabellaCassa() {
 const container = document.getElementById("listaProdotti");
 container.innerHTML = "";
-​prodotti.forEach(p => {
+
+prodotti.forEach(p => {
 let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
 let badgeStockClass = rimasti < 5 ? "stock-low" : "stock-ok";
-​let div = document.createElement("div");
+
+let div = document.createElement("div");
 div.className = "prodotto-card";
 div.dataset.nome = p.n;
-div.innerHTML = <div class="prodotto-header"> <div class="prodotto-nome">${p.i} ${p.n}</div> <div class="prezzi-info">Pas: €${p.p.toFixed(2)} / Pen: €${p.pen.toFixed(2)}</div> </div> <div class="magazzino-bar"> <div class="magazzino-item"> <span>📦 Carico:</span> <input type="number" value="${p.stock || 0}" onchange="aggiornaStockIniziale('${p.id}', this.value)" style="width: 52px; padding: 4px; text-align: center; font-size: 0.85rem; border-radius: 6px; background: var(--input-bg); color: white; border: 1px solid var(--border);"> </div> <div class="magazzino-item"> <span>Rimanenza:</span> <span class="stock-badge ${badgeStockClass}">${rimasti} pz</span> </div> </div> <div class="categorie-grid"> <div class="categoria-box"> <div class="categoria-titolo pass">Passeggeri</div> <div class="controlli-qta"> <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', -1)">-</button> <input type="number" class="input-qta" value="${p.qtaPass}" id="pass_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pass', this.value)" min="0" inputmode="numeric"> <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', 1)">+</button> </div> </div> <div class="categoria-box"> <div class="categoria-titolo pen">Pendolari</div> <div class="controlli-qta"> <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', -1)">-</button> <input type="number" class="input-qta" value="${p.qtaPen}" id="pen_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pen', this.value)" min="0" inputmode="numeric"> <button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', 1)">+</button> </div> </div> </div>;
+div.innerHTML = `
+<div class="prodotto-header">
+<div class="prodotto-nome">${p.i} ${p.n}</div>
+<div class="prezzi-info">Pas: €${p.p.toFixed(2)} / Pen: €${p.pen.toFixed(2)}</div>
+</div>
+<div class="magazzino-bar">
+<div class="magazzino-item">
+<span>📦 Carico:</span>
+<input type="number" value="${p.stock || 0}" onchange="aggiornaStockIniziale('${p.id}', this.value)" style="width: 52px; padding: 4px; text-align: center; font-size: 0.85rem; border-radius: 6px; background: var(--input-bg); color: white; border: 1px solid var(--border);">
+</div>
+<div class="magazzino-item">
+<span>Rimanenza:</span>
+<span class="stock-badge ${badgeStockClass}">${rimasti} pz</span>
+</div>
+</div>
+<div class="categorie-grid">
+<div class="categoria-box">
+<div class="categoria-titolo pass">Passeggeri</div>
+<div class="controlli-qta">
+<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', -1)">-</button>
+<input type="number" class="input-qta" value="${p.qtaPass}" id="pass_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pass', this.value)" min="0" inputmode="numeric">
+<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', 1)">+</button>
+</div>
+</div>
+<div class="categoria-box">
+<div class="categoria-titolo pen">Pendolari</div>
+<div class="controlli-qta">
+<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', -1)">-</button>
+<input type="number" class="input-qta" value="${p.qtaPen}" id="pen_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pen', this.value)" min="0" inputmode="numeric">
+<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', 1)">+</button>
+</div>
+</div>
+</div>
+`;
 container.appendChild(div);
 });
-​calcolaTotaleCassa();
+
+calcolaTotaleCassa();
 verificaAvvisiScorte();
 }
-​function aggiornaStockIniziale(id, val) {
+
+function aggiornaStockIniziale(id, val) {
 let p = prodotti.find(item => item.id === id);
 if (p) {
 p.stock = Math.max(0, parseInt(val) || 0);
@@ -1334,7 +1448,8 @@ renderizzaTabellaCassa();
 salvaBozzaCassaInTempoReale();
 }
 }
-​function modificaQtaCassa(id, tipo, variazione) {
+
+function modificaQtaCassa(id, tipo, variazione) {
 let p = prodotti.find(item => item.id === id);
 if (p) {
 if (tipo === 'Pass') {
@@ -1346,7 +1461,8 @@ renderizzaTabellaCassa();
 salvaBozzaCassaInTempoReale();
 }
 }
-​function impostaQtaCassa(id, tipo, valore) {
+
+function impostaQtaCassa(id, tipo, valore) {
 let p = prodotti.find(item => item.id === id);
 if (p) {
 let val = Math.max(0, parseInt(valore) || 0);
@@ -1356,85 +1472,103 @@ renderizzaTabellaCassa();
 salvaBozzaCassaInTempoReale();
 }
 }
-​function calcolaTotaleCassa() {
+
+function calcolaTotaleCassa() {
 let incassoTeorico = 0;
 prodotti.forEach(p => {
 incassoTeorico += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
 });
-​let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
+
+let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
 let incassoContatoVal = document.getElementById("incassoContato").value;
 let incassoEffettivo = (incassoContatoVal !== "" && !isNaN(parseFloat(incassoContatoVal))) ? parseFloat(incassoContatoVal) : incassoTeorico;
-​let diff = incassoEffettivo - incassoTeorico;
+
+let diff = incassoEffettivo - incassoTeorico;
 let totaleComplessivo = fondoCassa + incassoEffettivo;
-​document.getElementById("totaleCassa").innerText = totaleComplessivo.toFixed(2) + " €";
-document.getElementById("dettaglioIncasso").innerText = Incasso Teorico: ${incassoTeorico.toFixed(2)} € | Contato: ${incassoEffettivo.toFixed(2)} €;
-​let boxDiff = document.getElementById("boxPlusAmmanco");
-if (diff > 0) boxDiff.innerHTML = <span class="badge-diff badge-plus">Plus: +${diff.toFixed(2)} €</span>;
-else if (diff < 0) boxDiff.innerHTML = <span class="badge-diff badge-ammanco">Ammanco: ${diff.toFixed(2)} €</span>;
-else boxDiff.innerHTML = <span class="badge-diff badge-ok">Quadratura Perfetta (0.00 €)</span>;
+
+document.getElementById("totaleCassa").innerText = totaleComplessivo.toFixed(2) + " €";
+document.getElementById("dettaglioIncasso").innerText = `Incasso Teorico: ${incassoTeorico.toFixed(2)} € | Contato: ${incassoEffettivo.toFixed(2)} €`;
+
+let boxDiff = document.getElementById("boxPlusAmmanco");
+if (diff > 0) boxDiff.innerHTML = `<span class="badge-diff badge-plus">Plus: +${diff.toFixed(2)} €</span>`;
+else if (diff < 0) boxDiff.innerHTML = `<span class="badge-diff badge-ammanco">Ammanco: ${diff.toFixed(2)} €</span>`;
+else boxDiff.innerHTML = `<span class="badge-diff badge-ok">Quadratura Perfetta (0.00 €)</span>`;
 }
-​function generaReportTesto() {
+
+function generaReportTesto() {
 let barca = document.getElementById("selectBarca").value;
 let operatore = document.getElementById("txtOperatore").value.trim() || "N.D.";
 let meteo = document.getElementById("selectMeteo").value;
 let dataStr = document.getElementById("txtDataCassa").value.trim() || new Date().toLocaleDateString('it-IT');
 let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
 let incassoTeorico = 0;
-​prodotti.forEach(p => {
+
+prodotti.forEach(p => {
 incassoTeorico += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
 });
-​let incassoContatoVal = document.getElementById("incassoContato").value;
+
+let incassoContatoVal = document.getElementById("incassoContato").value;
 let incassoEffettivo = (incassoContatoVal !== "" && !isNaN(parseFloat(incassoContatoVal))) ? parseFloat(incassoContatoVal) : incassoTeorico;
 let diff = incassoEffettivo - incassoTeorico;
-​let testo = 📋 *REPORT VENDITE BAR* 📋\n;
-testo += 🚢 *Postazione:* ${barca}\n;
-testo += 👤 *Operatore:* ${operatore}\n;
-testo += ⛅ *Meteo:* ${meteo}\n;
-testo += 📅 *Data:* ${dataStr}\n;
-testo += 💵 *Fondo cassa iniziale:* €${fondoCassa.toFixed(2)}\n;
-testo += ----------------------------\n;
-​let venditeEffettuate = false;
+
+let testo = `📋 *REPORT VENDITE BAR* 📋\n`;
+testo += `🚢 *Postazione:* ${barca}\n`;
+testo += `👤 *Operatore:* ${operatore}\n`;
+testo += `⛅ *Meteo:* ${meteo}\n`;
+testo += `📅 *Data:* ${dataStr}\n`;
+testo += `💵 *Fondo cassa iniziale:* €${fondoCassa.toFixed(2)}\n`;
+testo += `----------------------------\n`;
+
+let venditeEffettuate = false;
 prodotti.forEach(p => {
 if (p.qtaPass > 0 || p.qtaPen > 0) {
 venditeEffettuate = true;
 let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
-testo += ${p.i} *${p.n}* (Rimanenti: ${rimasti})\n;
-if (p.qtaPass > 0) testo +=    • Passeggeri: ${p.qtaPass} pz (€${(p.qtaPass * p.p).toFixed(2)})\n;
-if (p.qtaPen > 0) testo +=    • Pendolari: ${p.qtaPen} pz (€${(p.qtaPen * p.pen).toFixed(2)})\n;
+testo += `${p.i} *${p.n}* (Rimanenti: ${rimasti})\n`;
+if (p.qtaPass > 0) testo += `   • Passeggeri: ${p.qtaPass} pz (€${(p.qtaPass * p.p).toFixed(2)})\n`;
+if (p.qtaPen > 0) testo += `   • Pendolari: ${p.qtaPen} pz (€${(p.qtaPen * p.pen).toFixed(2)})\n`;
 }
 });
-​if (!venditeEffettuate) return null;
-​let totaleComplessivo = fondoCassa + incassoEffettivo;
-testo += ----------------------------\n;
-testo += 💰 *Incasso Teorico:* €${incassoTeorico.toFixed(2)}\n;
-testo += 💶 *Incasso Effettivo:* €${incassoEffettivo.toFixed(2)}\n;
-if (diff !== 0) testo += ⚖️ *Quadrante (Plus/Ammanco):* ${diff > 0 ? '+' : ''}${diff.toFixed(2)} €\n;
-testo += 💵 *Totale da avere in cassa:* €${totaleComplessivo.toFixed(2)};
-​return {
+
+if (!venditeEffettuate) return null;
+
+let totaleComplessivo = fondoCassa + incassoEffettivo;
+testo += `----------------------------\n`;
+testo += `💰 *Incasso Teorico:* €${incassoTeorico.toFixed(2)}\n`;
+testo += `💶 *Incasso Effettivo:* €${incassoEffettivo.toFixed(2)}\n`;
+if (diff !== 0) testo += `⚖️ *Quadrante (Plus/Ammanco):* ${diff > 0 ? '+' : ''}${diff.toFixed(2)} €\n`;
+testo += `💵 *Totale da avere in cassa:* €${totaleComplessivo.toFixed(2)}`;
+
+return {
 testo: testo, barca: barca, operatore: operatore, meteo: meteo, dataStr: dataStr, incassoTeorico: incassoTeorico,
 incassoTotale: incassoEffettivo, diffQuadratura: diff, fondoCassa: fondoCassa,
 prodotti: JSON.parse(JSON.stringify(prodotti.filter(p => p.qtaPass > 0 || p.qtaPen > 0)))
 };
 }
-​function inviaWhatsApp() {
+
+function inviaWhatsApp() {
 let report = generaReportTesto();
 if (!report) { alert("Nessuna vendita registrata al momento!"); return; }
-let url = https://api.whatsapp.com/send?text=${encodeURIComponent(report.testo)};
+let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(report.testo)}`;
 window.open(url, '_blank');
 }
-​function salvaGiornataInStorico() {
+
+function salvaGiornataInStorico() {
 let report = generaReportTesto();
 if (!report) { alert("Inserisci almeno una vendita prima di salvare la giornata!"); return; }
-​let nuovaGiornata = {
+
+let nuovaGiornata = {
 id: Date.now(), barca: report.barca, operatore: report.operatore, meteo: report.meteo, dataStr: report.dataStr,
 incassoTotale: report.incassoTotale, incassoTeorico: report.incassoTeorico,
 diffQuadratura: report.diffQuadratura, fondoCassa: report.fondoCassa,
 prodotti: report.prodotti, reportTesto: report.testo
 };
-​storicoGiornate.unshift(nuovaGiornata);
+
+storicoGiornate.unshift(nuovaGiornata);
 salvaStoricoCassaLocal();
 renderizzaStoricoCassa();
-​if (confirm(Giornata salvata per ${report.barca}!\n\nVuoi registrare l'incasso (€${report.incassoTotale.toFixed(2)}) e eventuale Plus/Ammanco (${report.diffQuadratura.toFixed(2)}€) anche nel "Calcolatore Incassi"?)) {
+
+if (confirm(`Giornata salvata per ${report.barca}!\n\nVuoi registrare l'incasso (€${report.incassoTotale.toFixed(2)}) e eventuale Plus/Ammanco (${report.diffQuadratura.toFixed(2)}€) anche nel "Calcolatore Incassi"?`)) {
 let isFesta = report.barca.toLowerCase().includes("festa");
 let meseCorrente = document.getElementById("selectMeseIncassi").value;
 datiIncassi.push({
@@ -1444,7 +1578,8 @@ cash: report.incassoTotale, pos: 0, diff: report.diffQuadratura, spesa: 0, festa
 salvaDatiIncassi();
 aggiornaTabellaIncassi();
 }
-​prodotti.forEach(p => {
+
+prodotti.forEach(p => {
 p.stock = Math.max(0, (p.stock || 0) - (p.qtaPass + p.qtaPen));
 p.qtaPass = 0;
 p.qtaPen = 0;
@@ -1452,46 +1587,62 @@ p.qtaPen = 0;
 document.getElementById("incassoContato").value = "";
 delete bozzePerBarca[report.barca];
 localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
-​avanzaAlGiornoSuccessivo();
+
+avanzaAlGiornoSuccessivo();
 salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
-​alert("Giornata salvata! L'inventario è stato aggiornato e la data impostata al giorno successivo.");
+
+alert("Giornata salvata! L'inventario è stato aggiornato e la data impostata al giorno successivo.");
 }
-​function renderizzaStoricoCassa() {
+
+function renderizzaStoricoCassa() {
 const container = document.getElementById("listaStoricoCassa");
 container.innerHTML = "";
 if (storicoGiornate.length === 0) {
 container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessuna giornata salvata.</div>';
 return;
 }
-​storicoGiornate.forEach(item => {
+
+storicoGiornate.forEach(item => {
 let div = document.createElement("div");
 div.className = "storico-card";
-let elencoArticoli = (item.prodotti || []).map(p => ${p.i} ${p.n} (Pass: ${p.qtaPass}, Pen: ${p.qtaPen})).join(' • ');
-let diffBadge = item.diffQuadratura > 0 ? <span class="badge-diff badge-plus">+${item.diffQuadratura.toFixed(2)} €</span> : (item.diffQuadratura < 0 ? <span class="badge-diff badge-ammanco">${item.diffQuadratura.toFixed(2)} €</span> : "");
-​div.innerHTML = <div class="storico-header"><span>🚢 ${item.barca} (${item.operatore || 'N.D.'})</span><span>📅 ${item.dataStr}</span></div> <div class="storico-dettaglio"><strong>Meteo:</strong> ${item.meteo || 'N.D.'} | <strong>Incasso:</strong> €${item.incassoTotale.toFixed(2)} ${diffBadge}<br><strong>Articoli:</strong> ${elencoArticoli}</div> <div class="storico-actions"> <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiStorico(${item.id})">📱 WhatsApp</button> <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaStoricoItem(${item.id})">Elimina</button> </div>;
+let elencoArticoli = (item.prodotti || []).map(p => `${p.i} ${p.n} (Pass: ${p.qtaPass}, Pen: ${p.qtaPen})`).join(' • ');
+let diffBadge = item.diffQuadratura > 0 ? `<span class="badge-diff badge-plus">+${item.diffQuadratura.toFixed(2)} €</span>` : (item.diffQuadratura < 0 ? `<span class="badge-diff badge-ammanco">${item.diffQuadratura.toFixed(2)} €</span>` : "");
+
+div.innerHTML = `
+<div class="storico-header"><span>🚢 ${item.barca} (${item.operatore || 'N.D.'})</span><span>📅 ${item.dataStr}</span></div>
+<div class="storico-dettaglio"><strong>Meteo:</strong> ${item.meteo || 'N.D.'} | <strong>Incasso:</strong> €${item.incassoTotale.toFixed(2)} ${diffBadge}<br><strong>Articoli:</strong> ${elencoArticoli}</div>
+<div class="storico-actions">
+<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiStorico(${item.id})">📱 WhatsApp</button>
+<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaStoricoItem(${item.id})">Elimina</button>
+</div>
+`;
 container.appendChild(div);
 });
 }
-​function condividiStorico(id) {
+
+function condividiStorico(id) {
 let item = storicoGiornate.find(g => g.id === id);
-if (item) window.open(https://api.whatsapp.com/send?text=${encodeURIComponent(item.reportTesto)}, '_blank');
+if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.reportTesto)}`, '_blank');
 }
-​function eliminaStoricoItem(id) {
+
+function eliminaStoricoItem(id) {
 if (confirm("Vuoi eliminare questa giornata dallo storico?")) {
 storicoGiornate = storicoGiornate.filter(g => g.id !== id);
 salvaStoricoCassaLocal();
 renderizzaStoricoCassa();
 }
 }
-​function svuotaStoricoCassa() {
+
+function svuotaStoricoCassa() {
 if (confirm("Vuoi cancellare tutto lo storico delle giornate salvate?")) {
 storicoGiornate = [];
 salvaStoricoCassaLocal();
 renderizzaStoricoCassa();
 }
 }
-​function salvaStoricoCassaLocal() { localStorage.setItem("storico_cassa_barche_v6", JSON.stringify(storicoGiornate)); }
+
+function salvaStoricoCassaLocal() { localStorage.setItem("storico_cassa_barche_v6", JSON.stringify(storicoGiornate)); }
 function caricaStoricoCassaLocal() {
 const salvati = localStorage.getItem("storico_cassa_barche_v6");
 storicoGiornate = salvati ? JSON.parse(salvati) : [];
@@ -1502,7 +1653,8 @@ storicoBuoni = salvatiBuoni ? JSON.parse(salvatiBuoni) : [];
 const salvatiCarichi = localStorage.getItem("storico_carichi_v1");
 storicoCarichi = salvatiCarichi ? JSON.parse(salvatiCarichi) : [];
 }
-​function azzeraQuantitaCassa() {
+
+function azzeraQuantitaCassa() {
 if(confirm("Vuoi azzerare le quantità del turno corrente?")) {
 prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
 document.getElementById("incassoContato").value = "";
@@ -1510,207 +1662,270 @@ salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
 }
 }
-​// 3.1 CARICO MERCE CON NUMERO DI BOLLA
+
+// 3.1 CARICO MERCE CON NUMERO DI BOLLA
 function apriModalCaricoMerce() {
 itemsCaricoMerce = [];
 const barcaAttuale = document.getElementById("selectBarca").value;
 document.getElementById("caricoBarcaDest").value = barcaAttuale;
 document.getElementById("caricoNumBolla").value = "";
 document.getElementById("caricoFornitore").value = "";
-​const selectProd = document.getElementById("caricoProdotto");
+
+const selectProd = document.getElementById("caricoProdotto");
 selectProd.innerHTML = "";
 prodotti.forEach(p => {
-selectProd.innerHTML += <option value="${p.id}">${p.i} ${p.n}</option>;
+selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n}</option>`;
 });
-​renderizzaTabellaCarico();
+
+renderizzaTabellaCarico();
 document.getElementById("modalCaricoMerce").style.display = "flex";
 }
-​function chiudiModalCaricoMerce() {
+
+function chiudiModalCaricoMerce() {
 document.getElementById("modalCaricoMerce").style.display = "none";
 }
-​function aggiungiVoceCarico() {
+
+function aggiungiVoceCarico() {
 const prodId = document.getElementById("caricoProdotto").value;
 const qta = parseInt(document.getElementById("caricoQta").value) || 0;
-​if (qta <= 0) { alert("Inserisci una quantità di carico valida."); return; }
+
+if (qta <= 0) { alert("Inserisci una quantità di carico valida."); return; }
 let p = prodotti.find(item => item.id === prodId);
-​itemsCaricoMerce.push({ id: prodId, nome: p.n, icona: p.i, qta: qta });
+
+itemsCaricoMerce.push({ id: prodId, nome: p.n, icona: p.i, qta: qta });
 renderizzaTabellaCarico();
 }
-​function rimuoviVoceCarico(idx) {
+
+function rimuoviVoceCarico(idx) {
 itemsCaricoMerce.splice(idx, 1);
 renderizzaTabellaCarico();
 }
-​function renderizzaTabellaCarico() {
+
+function renderizzaTabellaCarico() {
 const tbody = document.querySelector("#tabellaCaricoItems tbody");
 tbody.innerHTML = "";
-​itemsCaricoMerce.forEach((item, index) => {
+
+itemsCaricoMerce.forEach((item, index) => {
 let tr = document.createElement("tr");
-tr.innerHTML = <td>${item.icona} ${item.nome}</td><td><b style="color:#34d399;">+${item.qta} pz</b></td><td><button class="del-btn" onclick="rimuoviVoceCarico(${index})">X</button></td>;
+tr.innerHTML = `<td>${item.icona} ${item.nome}</td><td><b style="color:#34d399;">+${item.qta} pz</b></td><td><button class="del-btn" onclick="rimuoviVoceCarico(${index})">X</button></td>`;
 tbody.appendChild(tr);
 });
 }
-​function confermaEStampaCarico() {
+
+function confermaEStampaCarico() {
 if (itemsCaricoMerce.length === 0) {
 alert("Inserisci almeno un prodotto nella bolla di carico.");
 return;
 }
-​const barcaAttuale = document.getElementById("selectBarca").value;
+
+const barcaAttuale = document.getElementById("selectBarca").value;
 const numBolla = document.getElementById("caricoNumBolla").value.trim() || "N/A";
 const fornitore = document.getElementById("caricoFornitore").value.trim() || "Fornitore Generico";
 let dataStr = new Date().toLocaleDateString('it-IT');
-​let testoCarico = 📦 *BOLLA DI CARICO MERCE* 📦\n;
-testoCarico += 🚢 *Destinazione:* ${barcaAttuale}\n;
-testoCarico += 📑 *N° Bolla:* ${numBolla}\n;
-testoCarico += 🚚 *Fornitore:* ${fornitore}\n;
-testoCarico += 📅 *Data:* ${dataStr}\n;
-testoCarico += ----------------------------\n;
-​itemsCaricoMerce.forEach(item => {
+
+let testoCarico = `📦 *BOLLA DI CARICO MERCE* 📦\n`;
+testoCarico += `🚢 *Destinazione:* ${barcaAttuale}\n`;
+testoCarico += `📑 *N° Bolla:* ${numBolla}\n`;
+testoCarico += `🚚 *Fornitore:* ${fornitore}\n`;
+testoCarico += `📅 *Data:* ${dataStr}\n`;
+testoCarico += `----------------------------\n`;
+
+itemsCaricoMerce.forEach(item => {
 let p = prodotti.find(prod => prod.id === item.id);
 if (p) {
 p.stock = (p.stock || 0) + item.qta;
 }
-testoCarico += ${item.icona} *${item.nome}*: +${item.qta} pz\n;
+testoCarico += `${item.icona} *${item.nome}*: +${item.qta} pz\n`;
 });
-​let recCarico = {
+
+let recCarico = {
 id: Date.now(), dataStr: dataStr, barca: barcaAttuale, numBolla: numBolla,
 fornitore: fornitore, prodotti: JSON.parse(JSON.stringify(itemsCaricoMerce)), testo: testoCarico
 };
-​storicoCarichi.unshift(recCarico);
+
+storicoCarichi.unshift(recCarico);
 salvaStoricoCarichiLocal();
 renderizzaStoricoCarichi();
-​salvaBozzaCassaInTempoReale();
+
+salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
 chiudiModalCaricoMerce();
-​alert(Carico Merce registrato con successo!\n• N° Bolla: ${numBolla}\n• Rimanenze di ${barcaAttuale} incrementate.);
+
+alert(`Carico Merce registrato con successo!\n• N° Bolla: ${numBolla}\n• Rimanenze di ${barcaAttuale} incrementate.`);
 }
-​function renderizzaStoricoCarichi() {
+
+function renderizzaStoricoCarichi() {
 const container = document.getElementById("listaStoricoCarichi");
 container.innerHTML = "";
 if (storicoCarichi.length === 0) {
 container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun carico di merce con bolla registrato.</div>';
 return;
 }
-​storicoCarichi.forEach(item => {
+
+storicoCarichi.forEach(item => {
 let div = document.createElement("div");
 div.className = "storico-card";
-let elencoArticoli = (item.prodotti || []).map(p => ${p.icona} ${p.nome} (+${p.qta} pz)).join(' • ');
-​div.innerHTML = <div class="storico-header"><span>📦 Bolla N° ${item.numBolla} (${item.barca})</span><span>📅 ${item.dataStr}</span></div> <div class="storico-dettaglio"><strong>Fornitore:</strong> ${item.fornitore}<br><strong>Prodotti Caricati:</strong> ${elencoArticoli}</div> <div class="storico-actions"> <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiCarico(${item.id})">📱 WhatsApp</button> <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaCarico(${item.id})">Elimina</button> </div>;
+let elencoArticoli = (item.prodotti || []).map(p => `${p.icona} ${p.nome} (+${p.qta} pz)`).join(' • ');
+
+div.innerHTML = `
+<div class="storico-header"><span>📦 Bolla N° ${item.numBolla} (${item.barca})</span><span>📅 ${item.dataStr}</span></div>
+<div class="storico-dettaglio"><strong>Fornitore:</strong> ${item.fornitore}<br><strong>Prodotti Caricati:</strong> ${elencoArticoli}</div>
+<div class="storico-actions">
+<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiCarico(${item.id})">📱 WhatsApp</button>
+<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaCarico(${item.id})">Elimina</button>
+</div>
+`;
 container.appendChild(div);
 });
 }
-​function condividiCarico(id) {
+
+function condividiCarico(id) {
 let item = storicoCarichi.find(c => c.id === id);
-if (item) window.open(https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}, '_blank');
+if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}`, '_blank');
 }
-​function eliminaCarico(id) {
+
+function eliminaCarico(id) {
 if (confirm("Vuoi cancellare questo carico dallo storico?")) {
 storicoCarichi = storicoCarichi.filter(c => c.id !== id);
 salvaStoricoCarichiLocal();
 renderizzaStoricoCarichi();
 }
 }
-​function svuotaStoricoCarichi() {
+
+function svuotaStoricoCarichi() {
 if (confirm("Svuotare l'intero storico carichi merci?")) {
 storicoCarichi = [];
 salvaStoricoCarichiLocal();
 renderizzaStoricoCarichi();
 }
 }
-​function salvaStoricoCarichiLocal() {
+
+function salvaStoricoCarichiLocal() {
 localStorage.setItem("storico_carichi_v1", JSON.stringify(storicoCarichi));
 }
-​// 3.2 SPOSTAMENTO MERCI BARCA X ➔ BARCA Y (COSTO 0)
+
+// 3.2 SPOSTAMENTO MERCI BARCA X ➔ BARCA Y (COSTO 0)
 function apriModalTrasferimento() {
 const modal = document.getElementById("modalTrasferimento");
 const selectDa = document.getElementById("transfDaBarca");
 const selectA = document.getElementById("transfABarca");
 const selectProd = document.getElementById("transfProdotto");
-​const barcaAttuale = document.getElementById("selectBarca").value;
-selectDa.innerHTML = <option value="${barcaAttuale}">${barcaAttuale}</option>;
+
+const barcaAttuale = document.getElementById("selectBarca").value;
+selectDa.innerHTML = `<option value="${barcaAttuale}">${barcaAttuale}</option>`;
 selectA.innerHTML = "";
 listaBarche.filter(b => b !== barcaAttuale).forEach(b => {
-selectA.innerHTML += <option value="${b}">${b}</option>;
+selectA.innerHTML += `<option value="${b}">${b}</option>`;
 });
-​selectProd.innerHTML = "";
+
+selectProd.innerHTML = "";
 prodotti.forEach(p => {
 let rim = (p.stock || 0) - (p.qtaPass + p.qtaPen);
-selectProd.innerHTML += <option value="${p.id}">${p.i} ${p.n} (Disponibile: ${rim} pz)</option>;
+selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n} (Disponibile: ${rim} pz)</option>`;
 });
-​modal.style.display = "flex";
+
+modal.style.display = "flex";
 }
-​function chiudiModalTrasferimento() {
+
+function chiudiModalTrasferimento() {
 document.getElementById("modalTrasferimento").style.display = "none";
 }
-​function confermaTrasferimentoMerci() {
+
+function confermaTrasferimentoMerci() {
 const barcaDa = document.getElementById("transfDaBarca").value;
 const barcaA = document.getElementById("transfABarca").value;
 const prodId = document.getElementById("transfProdotto").value;
 const qta = parseInt(document.getElementById("transfQta").value) || 0;
-​if (qta <= 0) { alert("Inserisci una quantità valida."); return; }
-​let pOrigin = prodotti.find(item => item.id === prodId);
+
+if (qta <= 0) { alert("Inserisci una quantità valida."); return; }
+
+let pOrigin = prodotti.find(item => item.id === prodId);
 let disponi = (pOrigin.stock || 0) - (pOrigin.qtaPass + pOrigin.qtaPen);
-​if (qta > disponi) {
-alert(Quantità non disponibile! Hai solo ${disponi} pz rimasti di ${pOrigin.n}.);
+
+if (qta > disponi) {
+alert(`Quantità non disponibile! Hai solo ${disponi} pz rimasti di ${pOrigin.n}.`);
 return;
 }
-​// Sottrae dalla barca di origine attiva
+
+// Sottrae dalla barca di origine attiva
 pOrigin.stock = (pOrigin.stock || 0) - qta;
-​// Gestione bozza barca destinataria
+
+// Gestione bozza barca destinataria
 if (!bozzePerBarca[barcaA]) {
 bozzePerBarca[barcaA] = { quantita: {} };
 }
 if (!bozzePerBarca[barcaA].quantita) bozzePerBarca[barcaA].quantita = {};
-​let stockDestinataria = 0;
+
+let stockDestinataria = 0;
 if (bozzePerBarca[barcaA].quantita[prodId] && bozzePerBarca[barcaA].quantita[prodId].stock !== undefined) {
 stockDestinataria = bozzePerBarca[barcaA].quantita[prodId].stock;
 } else {
 let pDef = prodottiDefault.find(item => item.id === prodId);
 stockDestinataria = pDef ? pDef.stock : 0;
 }
-​bozzePerBarca[barcaA].quantita[prodId] = {
+
+bozzePerBarca[barcaA].quantita[prodId] = {
 pass: bozzePerBarca[barcaA].quantita[prodId]?.pass || 0,
 pen: bozzePerBarca[barcaA].quantita[prodId]?.pen || 0,
 stock: stockDestinataria + qta
 };
-​let dataStr = new Date().toLocaleDateString('it-IT');
-let testoSpostamento = 🔄 *TRASFERIMENTO MERCI (€0)* 🔄\n📅 *Data:* ${dataStr}\n🚢 *Da:* ${barcaDa} ➔ *A:* ${barcaA}\n📦 *Articolo:* ${pOrigin.i} ${pOrigin.n}\n📊 *Quantità:* ${qta} pz;
-​let recTrasferimento = {
+
+let dataStr = new Date().toLocaleDateString('it-IT');
+let testoSpostamento = `🔄 *TRASFERIMENTO MERCI (€0)* 🔄\n📅 *Data:* ${dataStr}\n🚢 *Da:* ${barcaDa} ➔ *A:* ${barcaA}\n📦 *Articolo:* ${pOrigin.i} ${pOrigin.n}\n📊 *Quantità:* ${qta} pz`;
+
+let recTrasferimento = {
 id: Date.now(), dataStr: dataStr, barcaDa: barcaDa, barcaA: barcaA,
 prodottoId: prodId, prodottoNome: pOrigin.n, prodottoIcona: pOrigin.i, qta: qta, testo: testoSpostamento
 };
-​storicoTrasferimenti.unshift(recTrasferimento);
+
+storicoTrasferimenti.unshift(recTrasferimento);
 salvaStoricoTrasferimentiLocal();
 renderizzaStoricoTrasferimenti();
-​salvaBozzaCassaInTempoReale();
+
+salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
 chiudiModalTrasferimento();
-​alert(Spostamento a COSTO 0 completato con successo!\n\n• Sottratti ${qta} pz da ${barcaDa}\n• Aggiunti ${qta} pz a ${barcaA});
+
+alert(`Spostamento a COSTO 0 completato con successo!\n\n• Sottratti ${qta} pz da ${barcaDa}\n• Aggiunti ${qta} pz a ${barcaA}`);
 }
-​function renderizzaStoricoTrasferimenti() {
+
+function renderizzaStoricoTrasferimenti() {
 const container = document.getElementById("listaStoricoTrasferimenti");
 container.innerHTML = "";
 if (storicoTrasferimenti.length === 0) {
 container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun trasferimento merci registrato.</div>';
 return;
 }
-​storicoTrasferimenti.forEach(item => {
+
+storicoTrasferimenti.forEach(item => {
 let div = document.createElement("div");
 div.className = "storico-card";
-div.innerHTML = <div class="storico-header"><span>🔄 ${item.barcaDa} ➔ ${item.barcaA}</span><span>📅 ${item.dataStr}</span></div> <div class="storico-dettaglio"><strong>Prodotto:</strong> ${item.prodottoIcona} ${item.prodottoNome} (${item.qta} pz) • <span style="color:#34d399;">Costo €0,00</span></div> <div class="storico-actions"> <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiTrasferimento(${item.id})">📱 WhatsApp</button> <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaTrasferimento(${item.id})">Elimina</button> </div>;
+div.innerHTML = `
+<div class="storico-header"><span>🔄 ${item.barcaDa} ➔ ${item.barcaA}</span><span>📅 ${item.dataStr}</span></div>
+<div class="storico-dettaglio"><strong>Prodotto:</strong> ${item.prodottoIcona} ${item.prodottoNome} (${item.qta} pz) • <span style="color:#34d399;">Costo €0,00</span></div>
+<div class="storico-actions">
+<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiTrasferimento(${item.id})">📱 WhatsApp</button>
+<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaTrasferimento(${item.id})">Elimina</button>
+</div>
+`;
 container.appendChild(div);
 });
 }
-​function condividiTrasferimento(id) {
+
+function condividiTrasferimento(id) {
 let item = storicoTrasferimenti.find(t => t.id === id);
-if (item) window.open(https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}, '_blank');
+if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}`, '_blank');
 }
-​function eliminaTrasferimento(id) {
+
+function eliminaTrasferimento(id) {
 if (confirm("Vuoi cancellare questo trasferimento e ripristinare le quantità originarie tra le barche?")) {
 let item = storicoTrasferimenti.find(t => t.id === id);
-​if (item && item.prodottoId) {
+
+if (item && item.prodottoId) {
 let qta = item.qta;
 let pId = item.prodottoId;
-​// 1. Restituisci i pezzi alla barca di ORIGINE
+
+// 1. Restituisci i pezzi alla barca di ORIGINE
 if (item.barcaDa === document.getElementById("selectBarca").value) {
 let p = prodotti.find(x => x.id === pId);
 if (p) p.stock = (p.stock || 0) + qta;
@@ -1719,7 +1934,8 @@ if (!bozzePerBarca[item.barcaDa]) bozzePerBarca[item.barcaDa] = { quantita: {} }
 if (!bozzePerBarca[item.barcaDa].quantita[pId]) bozzePerBarca[item.barcaDa].quantita[pId] = { pass: 0, pen: 0, stock: prodottiDefault.find(x => x.id === pId)?.stock || 0 };
 bozzePerBarca[item.barcaDa].quantita[pId].stock = (bozzePerBarca[item.barcaDa].quantita[pId].stock || 0) + qta;
 }
-​// 2. Rimuovi i pezzi dalla barca di DESTINAZIONE
+
+// 2. Rimuovi i pezzi dalla barca di DESTINAZIONE
 if (item.barcaA === document.getElementById("selectBarca").value) {
 let p = prodotti.find(x => x.id === pId);
 if (p) p.stock = Math.max(0, (p.stock || 0) - qta);
@@ -1728,108 +1944,135 @@ if (bozzePerBarca[item.barcaA] && bozzePerBarca[item.barcaA].quantita && bozzePe
 bozzePerBarca[item.barcaA].quantita[pId].stock = Math.max(0, (bozzePerBarca[item.barcaA].quantita[pId].stock || 0) - qta);
 }
 }
-​localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
+
+localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
 caricaBozzaBarcaCorrente();
 }
-​storicoTrasferimenti = storicoTrasferimenti.filter(t => t.id !== id);
+
+storicoTrasferimenti = storicoTrasferimenti.filter(t => t.id !== id);
 salvaStoricoTrasferimentiLocal();
 renderizzaStoricoTrasferimenti();
-​alert("Trasferimento eliminato e quantità ripristinate con successo!");
+
+alert("Trasferimento eliminato e quantità ripristinate con successo!");
 }
 }
-​function svuotaStoricoTrasferimenti() {
+
+function svuotaStoricoTrasferimenti() {
 if (confirm("Svuotare l'intero storico trasferimenti?")) {
 storicoTrasferimenti = [];
 salvaStoricoTrasferimentiLocal();
 renderizzaStoricoTrasferimenti();
 }
 }
-​function salvaStoricoTrasferimentiLocal() {
+
+function salvaStoricoTrasferimentiLocal() {
 localStorage.setItem("storico_trasferimenti_v1", JSON.stringify(storicoTrasferimenti));
 }
-​// 3.3 BUONO DI CONSEGNA CON PREZZI MODIFICABILI
+
+// 3.3 BUONO DI CONSEGNA CON PREZZI MODIFICABILI
 function apriModalBuonoConsegna() {
 itemsBuonoConsegna = [];
 const modal = document.getElementById("modalBuonoConsegna");
 const selectProd = document.getElementById("buonoProdotto");
-​selectProd.innerHTML = "";
+
+selectProd.innerHTML = "";
 prodotti.forEach(p => {
-selectProd.innerHTML += <option value="${p.id}">${p.i} ${p.n} (Pas €${p.p.toFixed(2)})</option>;
+selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n} (Pas €${p.p.toFixed(2)})</option>`;
 });
-​aggiornaPrezzoStandardBuono();
+
+aggiornaPrezzoStandardBuono();
 renderizzaTabellaBuono();
 modal.style.display = "flex";
 }
-​function chiudiModalBuonoConsegna() {
+
+function chiudiModalBuonoConsegna() {
 document.getElementById("modalBuonoConsegna").style.display = "none";
 }
-​function aggiornaPrezzoStandardBuono() {
+
+function aggiornaPrezzoStandardBuono() {
 const prodId = document.getElementById("buonoProdotto").value;
 let p = prodotti.find(item => item.id === prodId);
 if (p) {
 document.getElementById("buonoPrezzoUnitario").value = p.p.toFixed(2);
 }
 }
-​function aggiungiVoceBuono() {
+
+function aggiungiVoceBuono() {
 const prodId = document.getElementById("buonoProdotto").value;
 const qta = parseInt(document.getElementById("buonoQta").value) || 0;
 const prezzo = parseFloat(document.getElementById("buonoPrezzoUnitario").value) || 0;
-​if (qta <= 0) { alert("Quantità non valida."); return; }
+
+if (qta <= 0) { alert("Quantità non valida."); return; }
 let p = prodotti.find(item => item.id === prodId);
-​itemsBuonoConsegna.push({
+
+itemsBuonoConsegna.push({
 id: prodId, nome: p.n, icona: p.i, qta: qta, prezzoUnitario: prezzo, totale: qta * prezzo
 });
-​renderizzaTabellaBuono();
+
+renderizzaTabellaBuono();
 }
-​function rimuoviVoceBuono(idx) {
+
+function rimuoviVoceBuono(idx) {
 itemsBuonoConsegna.splice(idx, 1);
 renderizzaTabellaBuono();
 }
-​function renderizzaTabellaBuono() {
+
+function renderizzaTabellaBuono() {
 const tbody = document.querySelector("#tabellaBuonoItems tbody");
 tbody.innerHTML = "";
 let totBuono = 0;
-​itemsBuonoConsegna.forEach((item, index) => {
+
+itemsBuonoConsegna.forEach((item, index) => {
 totBuono += item.totale;
 let tr = document.createElement("tr");
-tr.innerHTML = <td>${item.icona} ${item.nome}</td><td>${item.qta} pz</td><td>€ ${item.prezzoUnitario.toFixed(2)}</td><td><b>€ ${item.totale.toFixed(2)}</b></td><td><button class="del-btn" onclick="rimuoviVoceBuono(${index})">X</button></td>;
+tr.innerHTML = `<td>${item.icona} ${item.nome}</td><td>${item.qta} pz</td><td>€ ${item.prezzoUnitario.toFixed(2)}</td><td><b>€ ${item.totale.toFixed(2)}</b></td><td><button class="del-btn" onclick="rimuoviVoceBuono(${index})">X</button></td>`;
 tbody.appendChild(tr);
 });
 }
-​function confermaEStampaBuono() {
+
+function confermaEStampaBuono() {
 if (itemsBuonoConsegna.length === 0) {
 alert("Aggiungi almeno un articolo al buono di consegna!");
 return;
 }
-​const cliente = document.getElementById("buonoCliente").value.trim() || "Destinazione Generica";
+
+const cliente = document.getElementById("buonoCliente").value.trim() || "Destinazione Generica";
 const barcaAttuale = document.getElementById("selectBarca").value;
 let dataStr = new Date().toLocaleDateString('it-IT');
-​let testoReport = 📄 *BUONO DI CONSEGNA / BOLLA* 📄\n;
-testoReport += 🚢 *Origine:* ${barcaAttuale}\n;
-testoReport += 👤 *Destinatario:* ${cliente}\n;
-testoReport += 📅 *Data:* ${dataStr}\n;
-testoReport += ----------------------------\n;
-​let totGenerale = 0;
-​itemsBuonoConsegna.forEach(item => {
+
+let testoReport = `📄 *BUONO DI CONSEGNA / BOLLA* 📄\n`;
+testoReport += `🚢 *Origine:* ${barcaAttuale}\n`;
+testoReport += `👤 *Destinatario:* ${cliente}\n`;
+testoReport += `📅 *Data:* ${dataStr}\n`;
+testoReport += `----------------------------\n`;
+
+let totGenerale = 0;
+
+itemsBuonoConsegna.forEach(item => {
 let p = prodotti.find(prod => prod.id === item.id);
 if (p) {
 p.stock = Math.max(0, (p.stock || 0) - item.qta);
 }
 totGenerale += item.totale;
-testoReport += ${item.icona} *${item.nome}*: ${item.qta} pz x €${item.prezzoUnitario.toFixed(2)} = €${item.totale.toFixed(2)}\n;
+testoReport += `${item.icona} *${item.nome}*: ${item.qta} pz x €${item.prezzoUnitario.toFixed(2)} = €${item.totale.toFixed(2)}\n`;
 });
-​testoReport += ----------------------------\n;
-testoReport += 💰 *TOTALE BUONO:* €${totGenerale.toFixed(2)};
-​let recBuono = {
+
+testoReport += `----------------------------\n`;
+testoReport += `💰 *TOTALE BUONO:* €${totGenerale.toFixed(2)}`;
+
+let recBuono = {
 id: Date.now(), dataStr: dataStr, barca: barcaAttuale, cliente: cliente,
 totale: totGenerale, prodotti: JSON.parse(JSON.stringify(itemsBuonoConsegna)), testo: testoReport
 };
-​storicoBuoni.unshift(recBuono);
+
+storicoBuoni.unshift(recBuono);
 salvaStoricoBuoniLocal();
 renderizzaStoricoBuoni();
-​let incassoAttualeInput = document.getElementById("incassoContato");
+
+let incassoAttualeInput = document.getElementById("incassoContato");
 let incassoAttualeVal = parseFloat(incassoAttualeInput.value);
-​if (isNaN(incassoAttualeVal) || incassoAttualeInput.value.trim() === "") {
+
+if (isNaN(incassoAttualeVal) || incassoAttualeInput.value.trim() === "") {
 let incassoTeoricoCorrente = 0;
 prodotti.forEach(p => {
 incassoTeoricoCorrente += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
@@ -1838,33 +2081,47 @@ incassoAttualeInput.value = (incassoTeoricoCorrente + totGenerale).toFixed(2);
 } else {
 incassoAttualeInput.value = (incassoAttualeVal + totGenerale).toFixed(2);
 }
-​salvaBozzaCassaInTempoReale();
+
+salvaBozzaCassaInTempoReale();
 renderizzaTabellaCassa();
 chiudiModalBuonoConsegna();
-​if (confirm(Buono completato!\n• Rimanenze scaricate\n• Incasso cassa incrementato di €${totGenerale.toFixed(2)}\n\nVuoi inviare la bolla su WhatsApp?)) {
-window.open(https://api.whatsapp.com/send?text=${encodeURIComponent(testoReport)}, '_blank');
+
+if (confirm(`Buono completato!\n• Rimanenze scaricate\n• Incasso cassa incrementato di €${totGenerale.toFixed(2)}\n\nVuoi inviare la bolla su WhatsApp?`)) {
+window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(testoReport)}`, '_blank');
 }
 }
-​function renderizzaStoricoBuoni() {
+
+function renderizzaStoricoBuoni() {
 const container = document.getElementById("listaStoricoBuoni");
 container.innerHTML = "";
 if (storicoBuoni.length === 0) {
 container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun buono di consegna emesso.</div>';
 return;
 }
-​storicoBuoni.forEach(item => {
+
+storicoBuoni.forEach(item => {
 let div = document.createElement("div");
 div.className = "storico-card";
-let elencoArticoli = (item.prodotti || []).map(p => ${p.icona} ${p.nome} (${p.qta} pz x €${p.prezzoUnitario.toFixed(2)})).join(' • ');
-​div.innerHTML = <div class="storico-header"><span>📄 ${item.cliente} (${item.barca})</span><span>📅 ${item.dataStr}</span></div> <div class="storico-dettaglio"><strong>Totale Buono:</strong> €${item.totale.toFixed(2)}<br><strong>Articoli:</strong> ${elencoArticoli}</div> <div class="storico-actions"> <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiBuono(${item.id})">📱 WhatsApp</button> <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaBuono(${item.id})">Elimina</button> </div>;
+let elencoArticoli = (item.prodotti || []).map(p => `${p.icona} ${p.nome} (${p.qta} pz x €${p.prezzoUnitario.toFixed(2)})`).join(' • ');
+
+div.innerHTML = `
+<div class="storico-header"><span>📄 ${item.cliente} (${item.barca})</span><span>📅 ${item.dataStr}</span></div>
+<div class="storico-dettaglio"><strong>Totale Buono:</strong> €${item.totale.toFixed(2)}<br><strong>Articoli:</strong> ${elencoArticoli}</div>
+<div class="storico-actions">
+<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiBuono(${item.id})">📱 WhatsApp</button>
+<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaBuono(${item.id})">Elimina</button>
+</div>
+`;
 container.appendChild(div);
 });
 }
-​function condividiBuono(id) {
+
+function condividiBuono(id) {
 let item = storicoBuoni.find(b => b.id === id);
-if (item) window.open(https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}, '_blank');
+if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}`, '_blank');
 }
-​function eliminaBuono(id) {
+
+function eliminaBuono(id) {
 if (confirm("Vuoi cancellare questo buono dallo storico? L'importo verrà stornato dalla cassa attiva.")) {
 let buonoDaEliminare = storicoBuoni.find(b => b.id === id);
 if (buonoDaEliminare) {
@@ -1882,27 +2139,31 @@ salvaBozzaCassaInTempoReale();
 calcolaTotaleCassa();
 }
 }
-​function svuotaStoricoBuoni() {
+
+function svuotaStoricoBuoni() {
 if (confirm("Svuotare l'intero storico dei buoni emessi?")) {
 storicoBuoni = [];
 salvaStoricoBuoniLocal();
 renderizzaStoricoBuoni();
 }
 }
-​function salvaStoricoBuoniLocal() {
+
+function salvaStoricoBuoniLocal() {
 localStorage.setItem("storico_buoni_v1", JSON.stringify(storicoBuoni));
 }
-​// 4. BACKUP JSON
+
+// 4. BACKUP JSON
 function esportaDatiJSON() {
 salvaBozzaCassaInTempoReale();
 let backup = { versione: "v22_full_features", timestamp: new Date().toISOString(), bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoBuoni, storicoCarichi, datiIncassi, mesiArchivati };
 let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
 let anchor = document.createElement('a');
 anchor.setAttribute("href", dataStr);
-anchor.setAttribute("download", backup_gestionale_${new Date().toISOString().slice(0,10)}.json);
+anchor.setAttribute("download", `backup_gestionale_${new Date().toISOString().slice(0,10)}.json`);
 document.body.appendChild(anchor); anchor.click(); anchor.remove();
 }
-​function importaDatiJSON(event) {
+
+function importaDatiJSON(event) {
 let file = event.target.files[0];
 if (!file) return;
 let reader = new FileReader();
@@ -1922,15 +2183,18 @@ alert("Importazione completata con successo!");
 };
 reader.readAsText(file);
 }
-​// 5. REPORT VENDITE PRODOTTO
+
+// 5. REPORT VENDITE PRODOTTO
 function aggiornaReportProdotti() {
 const barcaSelezionata = document.getElementById("filtroBarcaProdotti").value;
 const tbody = document.querySelector("#tabellaReportProdotti tbody");
 tbody.innerHTML = "";
-​let giornateFiltrate = barcaSelezionata === "TUTTE" ? storicoGiornate : storicoGiornate.filter(g => g.barca === barcaSelezionata);
+
+let giornateFiltrate = barcaSelezionata === "TUTTE" ? storicoGiornate : storicoGiornate.filter(g => g.barca === barcaSelezionata);
 let mappaProdotti = {};
 let diffQuadraturaTotale = 0;
-​giornateFiltrate.forEach(giornata => {
+
+giornateFiltrate.forEach(giornata => {
 diffQuadraturaTotale += (giornata.diffQuadratura || 0);
 (giornata.prodotti || []).forEach(p => {
 if (!mappaProdotti[p.id]) {
@@ -1941,9 +2205,11 @@ mappaProdotti[p.id].qtaPen += p.qtaPen;
 mappaProdotti[p.id].incassoTotale += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
 });
 });
-​let elencoOrdinato = Object.values(mappaProdotti).sort((a, b) => (b.qtaPass + b.qtaPen) - (a.qtaPass + a.qtaPen));
+
+let elencoOrdinato = Object.values(mappaProdotti).sort((a, b) => (b.qtaPass + b.qtaPen) - (a.qtaPass + a.qtaPen));
 let totalePezziComplessivi = 0, totaleIncassoComplessivo = 0;
-​if (elencoOrdinato.length === 0) {
+
+if (elencoOrdinato.length === 0) {
 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 12px;">Nessun dato. Salva le giornate in "Cassa".</td></tr>';
 } else {
 elencoOrdinato.forEach(item => {
@@ -1951,35 +2217,42 @@ let totPezzi = item.qtaPass + item.qtaPen;
 totalePezziComplessivi += totPezzi;
 totaleIncassoComplessivo += item.incassoTotale;
 let tr = document.createElement("tr");
-tr.innerHTML = <td><strong>${item.icona} ${item.nome}</strong></td><td>${item.qtaPass} pz</td><td>${item.qtaPen} pz</td><td><b>${totPezzi} pz</b></td><td style="color: #34d399; font-weight: bold;">€ ${item.incassoTotale.toFixed(2)}</td>;
+tr.innerHTML = `<td><strong>${item.icona} ${item.nome}</strong></td><td>${item.qtaPass} pz</td><td>${item.qtaPen} pz</td><td><b>${totPezzi} pz</b></td><td style="color: #34d399; font-weight: bold;">€ ${item.incassoTotale.toFixed(2)}</td>`;
 tbody.appendChild(tr);
 });
 }
-​document.getElementById("kpiPezziTotali").innerText = ${totalePezziComplessivi} pz;
-document.getElementById("kpiIncassoProdotti").innerText = € ${totaleIncassoComplessivo.toFixed(2)};
+
+document.getElementById("kpiPezziTotali").innerText = `${totalePezziComplessivi} pz`;
+document.getElementById("kpiIncassoProdotti").innerText = `€ ${totaleIncassoComplessivo.toFixed(2)}`;
 let kpiDiff = document.getElementById("kpiDiffQuadratura");
-kpiDiff.innerHTML = diffQuadraturaTotale !== 0 ? <span style="color:${diffQuadraturaTotale > 0 ? '#34d399' : '#f87171'}">€ ${diffQuadraturaTotale.toFixed(2)}</span> : '<span style="color:#9ca3af">€ 0,00</span>';
+kpiDiff.innerHTML = diffQuadraturaTotale !== 0 ? `<span style="color:${diffQuadraturaTotale > 0 ? '#34d399' : '#f87171'}">€ ${diffQuadraturaTotale.toFixed(2)}</span>` : '<span style="color:#9ca3af">€ 0,00</span>';
 }
-​// 6. GESTIONE INCASSI MENSILI, SPESE E ARCHIVIAZIONE
+
+// 6. GESTIONE INCASSI MENSILI, SPESE E ARCHIVIAZIONE
 function caricaDatiIncassi() {
 const salvati = localStorage.getItem('calcolatore_incassi_dati_v7');
 datiIncassi = salvati ? JSON.parse(salvati) : [];
 const salvatiMesi = localStorage.getItem('mesi_archivati_v1');
 mesiArchivati = salvatiMesi ? JSON.parse(salvatiMesi) : [];
 }
-​function salvaDatiIncassi() {
+
+function salvaDatiIncassi() {
 localStorage.setItem('calcolatore_incassi_dati_v7', JSON.stringify(datiIncassi));
 mostraNotificaSalvataggio();
 }
-​function formatValuta(val) {
+
+function formatValuta(val) {
 return '€ ' + val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-​function gestisciCambioPostazioneIncassi() {
+
+function gestisciCambioPostazioneIncassi() {
 let p = document.getElementById('selectPostazioneIncassi').value;
 if (p.toLowerCase().includes("festa")) document.getElementById('chkFesta').checked = true;
 }
-​function cambiaMeseCorrente() { aggiornaTabellaIncassi(); }
-​function aggiungiNuovoMeseCustom() {
+
+function cambiaMeseCorrente() { aggiornaTabellaIncassi(); }
+
+function aggiungiNuovoMeseCustom() {
 let nomeMese = prompt("Inserisci il nome del nuovo mese (es. Dicembre 2026):");
 if (nomeMese && nomeMese.trim() !== "") {
 let select = document.getElementById("selectMeseIncassi");
@@ -1990,19 +2263,24 @@ select.value = nomeMese.trim();
 aggiornaTabellaIncassi();
 }
 }
-​function estraiNumeroGiorno(giornoStr) {
+
+function estraiNumeroGiorno(giornoStr) {
 if (!giornoStr) return 0;
 let match = giornoStr.match(/\d+/);
 return match ? parseInt(match[0], 10) : 0;
 }
-​function aggiornaTabellaIncassi() {
+
+function aggiornaTabellaIncassi() {
 const tbody = document.querySelector('#tabellaIncassi tbody');
 tbody.innerHTML = '';
 let meseSelezionato = document.getElementById('selectMeseIncassi').value;
 let filtro = document.getElementById('txtFiltro').value.toLowerCase();
-​let totIncasso = 0, tot5p = 0, totFissa = 0, totSpese = 0, recordVisibili = 0;
-​datiIncassi.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
-​datiIncassi.forEach((item, index) => {
+
+let totIncasso = 0, tot5p = 0, totFissa = 0, totSpese = 0, recordVisibili = 0;
+
+datiIncassi.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
+
+datiIncassi.forEach((item, index) => {
 if ((item.mese || "Novembre 2026") !== meseSelezionato) return;
 let incassoGiorno = (item.cash || 0) + (item.pos || 0);
 let p5 = incassoGiorno * 0.05;
@@ -2010,23 +2288,41 @@ let isFesta = item.festa || (item.postazione && item.postazione.toLowerCase().in
 let fissa = isFesta ? 0 : 26;
 let spesaGiorno = item.spesa || 0;
 let nettoGiorno = (p5 + fissa) - spesaGiorno;
-​totIncasso += incassoGiorno; tot5p += p5; totFissa += fissa; totSpese += spesaGiorno;
-​if (filtro && !item.giorno.toLowerCase().includes(filtro) && !item.postazione.toLowerCase().includes(filtro)) return;
+
+totIncasso += incassoGiorno; tot5p += p5; totFissa += fissa; totSpese += spesaGiorno;
+
+if (filtro && !item.giorno.toLowerCase().includes(filtro) && !item.postazione.toLowerCase().includes(filtro)) return;
 recordVisibili++;
-​let tr = document.createElement('tr');
+
+let tr = document.createElement('tr');
 let diffVal = item.diff || 0;
-let diffFormatted = diffVal !== 0 ? <span style="color:${diffVal > 0 ? '#34d399' : '#f87171'}; font-weight:bold;">${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)} €</span> : "€ 0,00";
-​tr.innerHTML = <td>${item.giorno}</td> <td>${item.postazione}</td> <td>${formatValuta(item.cash || 0)}</td> <td>${formatValuta(item.pos || 0)}</td> <td><b>${formatValuta(incassoGiorno)}</b></td> <td style="color: #f87171;">${formatValuta(spesaGiorno)}</td> <td>${diffFormatted}</td> <td>${formatValuta(p5)}</td> <td>${isFesta ? '<span style="color:#f59e0b; font-weight:bold;">€ 0,00 (Festa)</span>' : formatValuta(fissa)}</td> <td><b>${formatValuta(nettoGiorno)}</b></td> <td><button class="del-btn" onclick="eliminaRecordIncasso(${index})">Elimina</button></td>;
+let diffFormatted = diffVal !== 0 ? `<span style="color:${diffVal > 0 ? '#34d399' : '#f87171'}; font-weight:bold;">${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)} €</span>` : "€ 0,00";
+
+tr.innerHTML = `
+<td>${item.giorno}</td>
+<td>${item.postazione}</td>
+<td>${formatValuta(item.cash || 0)}</td>
+<td>${formatValuta(item.pos || 0)}</td>
+<td><b>${formatValuta(incassoGiorno)}</b></td>
+<td style="color: #f87171;">${formatValuta(spesaGiorno)}</td>
+<td>${diffFormatted}</td>
+<td>${formatValuta(p5)}</td>
+<td>${isFesta ? '<span style="color:#f59e0b; font-weight:bold;">€ 0,00 (Festa)</span>' : formatValuta(fissa)}</td>
+<td><b>${formatValuta(nettoGiorno)}</b></td>
+<td><button class="del-btn" onclick="eliminaRecordIncasso(${index})">Elimina</button></td>
+`;
 tbody.appendChild(tr);
 });
-​document.getElementById('lblIncasso').innerText = formatValuta(totIncasso);
+
+document.getElementById('lblIncasso').innerText = formatValuta(totIncasso);
 document.getElementById('lbl5p').innerText = formatValuta(tot5p);
 document.getElementById('lblFissa').innerText = formatValuta(totFissa);
 document.getElementById('lblTotSpese').innerText = formatValuta(totSpese);
 document.getElementById('lblTotale').innerText = formatValuta((tot5p + totFissa) - totSpese);
-document.getElementById('lblContatore').innerText = ${recordVisibili} record (${meseSelezionato});
+document.getElementById('lblContatore').innerText = `${recordVisibili} record (${meseSelezionato})`;
 }
-​function aggiungiRecordIncasso() {
+
+function aggiungiRecordIncasso() {
 let meseSel = document.getElementById('selectMeseIncassi').value;
 let g = document.getElementById('txtGiorno').value.trim();
 let p = document.getElementById('selectPostazioneIncassi').value;
@@ -2035,10 +2331,13 @@ let pos = parseFloat(document.getElementById('txtPos').value) || 0;
 let diff = parseFloat(document.getElementById('txtDiff').value) || 0;
 let spesa = parseFloat(document.getElementById('txtSpesa').value) || 0;
 let festa = document.getElementById('chkFesta').checked || p.toLowerCase().includes("festa");
-​if (!g) { alert('Inserisci un giorno o una data.'); return; }
-​datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: c, pos: pos, diff: diff, spesa: spesa, festa: festa });
+
+if (!g) { alert('Inserisci un giorno o una data.'); return; }
+
+datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: c, pos: pos, diff: diff, spesa: spesa, festa: festa });
 salvaDatiIncassi();
-​document.getElementById('txtGiorno').value = '';
+
+document.getElementById('txtGiorno').value = '';
 document.getElementById('txtCash').value = '0';
 document.getElementById('txtPos').value = '0';
 document.getElementById('txtDiff').value = '0';
@@ -2046,18 +2345,21 @@ document.getElementById('txtSpesa').value = '0';
 document.getElementById('chkFesta').checked = false;
 aggiornaTabellaIncassi();
 }
-​function eliminaRecordIncasso(index) {
+
+function eliminaRecordIncasso(index) {
 if (confirm('Vuoi eliminare questo record?')) {
 datiIncassi.splice(index, 1);
 salvaDatiIncassi();
 aggiornaTabellaIncassi();
 }
 }
-​function chiudiEArchiviaMeseCorrente() {
+
+function chiudiEArchiviaMeseCorrente() {
 let meseSel = document.getElementById('selectMeseIncassi').value;
 let datiMese = datiIncassi.filter(item => (item.mese || "Novembre 2026") === meseSel);
-if (datiMese.length === 0) { alert(Nessun dato registrato per ${meseSel}!); return; }
-​let totIncasso = 0, tot5p = 0, totFissa = 0, totDiff = 0, totSpese = 0;
+if (datiMese.length === 0) { alert(`Nessun dato registrato per ${meseSel}!`); return; }
+
+let totIncasso = 0, tot5p = 0, totFissa = 0, totDiff = 0, totSpese = 0;
 datiMese.forEach(item => {
 let incasso = (item.cash || 0) + (item.pos || 0);
 totIncasso += incasso;
@@ -2066,19 +2368,23 @@ totFissa += (item.festa || item.postazione.toLowerCase().includes("festa")) ? 0 
 totDiff += (item.diff || 0);
 totSpese += (item.spesa || 0);
 });
-​let nettoTotale = (tot5p + totFissa) - totSpese;
-​let archiviazione = {
+
+let nettoTotale = (tot5p + totFissa) - totSpese;
+
+let archiviazione = {
 id: Date.now(), mese: meseSel, dataArchiviazione: new Date().toLocaleDateString('it-IT'),
 totaleIncassato: totIncasso, totale5percento: tot5p, totaleFissa: totFissa,
 totaleSpese: totSpese, totaleDiff: totDiff, totaleComplessivo: nettoTotale, numeroGiornate: datiMese.length
 };
-​mesiArchivati = mesiArchivati.filter(m => m.mese !== meseSel);
+
+mesiArchivati = mesiArchivati.filter(m => m.mese !== meseSel);
 mesiArchivati.unshift(archiviazione);
 localStorage.setItem("mesi_archivati_v1", JSON.stringify(mesiArchivati));
 renderizzaMesiArchivati();
-alert(Mese di ${meseSel} chiuso e archiviato con successo!\nNetto spettante: €${nettoTotale.toFixed(2)});
+alert(`Mese di ${meseSel} chiuso e archiviato con successo!\nNetto spettante: €${nettoTotale.toFixed(2)}`);
 }
-​function renderizzaMesiArchivati() {
+
+function renderizzaMesiArchivati() {
 const container = document.getElementById("listaMesiArchivati");
 if (!container) return;
 container.innerHTML = "";
@@ -2086,35 +2392,48 @@ if (mesiArchivati.length === 0) {
 container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun mese ancora chiuso o archiviato.</div>';
 return;
 }
-​mesiArchivati.forEach(m => {
+
+mesiArchivati.forEach(m => {
 let div = document.createElement("div");
 div.className = "storico-card";
-div.innerHTML = <div class="storico-header"><span>📅 ${m.mese}</span><span>Archiviato il ${m.dataArchiviazione}</span></div> <div class="storico-dettaglio"> <strong>Incasso Totale:</strong> €${m.totaleIncassato.toFixed(2)} | <strong>5%:</strong> €${m.totale5percento.toFixed(2)} | <strong>Quota Fissa:</strong> €${m.totaleFissa.toFixed(2)}<br> <strong>Spese Uscite:</strong> €${(m.totaleSpese || 0).toFixed(2)}<br> <span style="color: #34d399; font-size: 0.9rem; font-weight: bold;">Netto Spettante: €${m.totaleComplessivo.toFixed(2)}</span> (${m.numeroGiornate} giornate) </div>;
+div.innerHTML = `
+<div class="storico-header"><span>📅 ${m.mese}</span><span>Archiviato il ${m.dataArchiviazione}</span></div>
+<div class="storico-dettaglio">
+<strong>Incasso Totale:</strong> €${m.totaleIncassato.toFixed(2)} | <strong>5%:</strong> €${m.totale5percento.toFixed(2)} | <strong>Quota Fissa:</strong> €${m.totaleFissa.toFixed(2)}<br>
+<strong>Spese Uscite:</strong> €${(m.totaleSpese || 0).toFixed(2)}<br>
+<span style="color: #34d399; font-size: 0.9rem; font-weight: bold;">Netto Spettante: €${m.totaleComplessivo.toFixed(2)}</span> (${m.numeroGiornate} giornate)
+</div>
+`;
 container.appendChild(div);
 });
 }
-​function ripristinaDefaultIncassi() {
+
+function ripristinaDefaultIncassi() {
 if (confirm('Ripristinare i dati iniziali di test?')) {
 datiIncassi = [];
 salvaDatiIncassi();
 aggiornaTabellaIncassi();
 }
 }
-​// 7. GRAFICI & ANALISI (CHART.JS)
+
+// 7. GRAFICI & ANALISI (CHART.JS)
 function renderizzaGrafici() {
 const meseSelezionato = document.getElementById('selectMeseIncassi').value;
 const datiFiltrati = datiIncassi.filter(item => (item.mese || "Novembre 2026") === meseSelezionato);
-​datiFiltrati.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
+
+datiFiltrati.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
 const labelsGiorno = datiFiltrati.map(d => d.giorno);
 const dataValoriIncasso = datiFiltrati.map(d => (d.cash || 0) + (d.pos || 0));
-​const ctxAndamento = document.getElementById('chartAndamentoIncassi').getContext('2d');
+
+const ctxAndamento = document.getElementById('chartAndamentoIncassi').getContext('2d');
 if (chartAndamentoInstance) chartAndamentoInstance.destroy();
-​chartAndamentoInstance = new Chart(ctxAndamento, {
+
+chartAndamentoInstance = new Chart(ctxAndamento, {
 type: 'line',
 data: {
 labels: labelsGiorno,
 datasets: [{
-label: Incasso Giornaliero (€) - ${meseSelezionato},
+label: `Incasso Giornaliero (€) - ${meseSelezionato}`,
 data: dataValoriIncasso,
 borderColor: '#10b981',
 backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -2133,19 +2452,23 @@ y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
 }
 }
 });
-​let mappaTop = {};
+
+let mappaTop = {};
 storicoGiornate.forEach(giornata => {
 (giornata.prodotti || []).forEach(p => {
 let totPz = p.qtaPass + p.qtaPen;
 mappaTop[p.n] = (mappaTop[p.n] || 0) + totPz;
 });
 });
-​let top5Prodotti = Object.entries(mappaTop)
+
+let top5Prodotti = Object.entries(mappaTop)
 .sort((a, b) => b[1] - a[1])
 .slice(0, 5);
-​const ctxTop = document.getElementById('chartTopProdotti').getContext('2d');
+
+const ctxTop = document.getElementById('chartTopProdotti').getContext('2d');
 if (chartTopProdottiInstance) chartTopProdottiInstance.destroy();
-​chartTopProdottiInstance = new Chart(ctxTop, {
+
+chartTopProdottiInstance = new Chart(ctxTop, {
 type: 'bar',
 data: {
 labels: top5Prodotti.map(item => item[0]),
@@ -2167,16 +2490,20 @@ y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
 }
 });
 }
-​// 8. INIZIALIZZAZIONE AUTOMATICA ALL'AVVIO
+
+// 8. INIZIALIZZAZIONE AUTOMATICA ALL'AVVIO
 window.onload = function() {
 const bozzeSalvate = localStorage.getItem("cassa_bozze_per_barca_v6");
 if (bozzeSalvate) {
 try { bozzePerBarca = JSON.parse(bozzeSalvate); } catch(e) { bozzePerBarca = {}; }
 }
-​popolaSelectBarche();
-​dataTracciata = new Date();
+
+popolaSelectBarche();
+
+dataTracciata = new Date();
 impostaDataInInput(dataTracciata);
-​caricaBozzaBarcaCorrente();
+
+caricaBozzaBarcaCorrente();
 caricaStoricoCassaLocal();
 renderizzaStoricoCassa();
 renderizzaStoricoTrasferimenti();
@@ -2187,5 +2514,6 @@ aggiornaTabellaIncassi();
 renderizzaMesiArchivati();
 };
 </script>
-​</body>
-  </html>
+
+</body>
+</html>
