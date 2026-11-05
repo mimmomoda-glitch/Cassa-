@@ -2056,10 +2056,21 @@ if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(i
 }
 
 function eliminaBuono(id) {
-if (confirm("Vuoi cancellare questo buono dallo storico?")) {
+if (confirm("Vuoi cancellare questo buono dallo storico? L'importo verrà stornato dalla cassa attiva.")) {
+let buonoDaEliminare = storicoBuoni.find(b => b.id === id);
+if (buonoDaEliminare) {
+let incassoAttualeInput = document.getElementById("incassoContato");
+let incassoAttualeVal = parseFloat(incassoAttualeInput.value);
+if (!isNaN(incassoAttualeVal)) {
+let nuovoValore = Math.max(0, incassoAttualeVal - buonoDaEliminare.totale);
+incassoAttualeInput.value = nuovoValore > 0 ? nuovoValore.toFixed(2) : "";
+}
+}
 storicoBuoni = storicoBuoni.filter(b => b.id !== id);
 salvaStoricoBuoniLocal();
 renderizzaStoricoBuoni();
+salvaBozzaCassaInTempoReale();
+calcolaTotaleCassa();
 }
 }
 
