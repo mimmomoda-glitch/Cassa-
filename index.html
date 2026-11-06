@@ -57,6 +57,7 @@ animation: fadeIn 0.2s ease-in-out;
 from { opacity: 0; transform: translateY(4px); }
 to { opacity: 1; transform: translateY(0); }
 }
+
 /* BARRA NAVIGAZIONE INFERIORE MOBILE PER SETTORI */
 .bottom-nav {
 position: fixed;
@@ -92,6 +93,7 @@ transition: all 0.15s ease;
 user-select: none;
 -webkit-user-select: none;
 touch-action: manipulation;
+-webkit-appearance: none;
 }
 .nav-item.active {
 color: #818cf8;
@@ -154,7 +156,7 @@ border-color: var(--primary);
 box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.4);
 }
 .btn {
-padding: 10px 12px;
+padding: 12px 14px;
 font-size: 0.9rem;
 font-weight: 700;
 border: none;
@@ -168,9 +170,13 @@ justify-content: center;
 gap: 6px;
 min-height: 44px;
 width: 100%;
+touch-action: manipulation;
+-webkit-appearance: none;
+user-select: none;
 }
 .btn:active {
-transform: scale(0.98);
+transform: scale(0.97);
+opacity: 0.9;
 }
 .btn-danger { background: #991b1b; color: #fca5a5; }
 .btn-success { background: var(--success); color: white; }
@@ -249,9 +255,9 @@ margin-bottom: 10px;
 background: var(--subcard-bg);
 border: 1px solid var(--border);
 color: white;
-padding: 6px 10px;
+padding: 8px 12px;
 border-radius: 20px;
-font-size: 0.75rem;
+font-size: 0.78rem;
 font-weight: bold;
 white-space: nowrap;
 cursor: pointer;
@@ -259,8 +265,12 @@ display: flex;
 align-items: center;
 gap: 4px;
 transition: background 0.15s;
+touch-action: manipulation;
+-webkit-appearance: none;
+user-select: none;
+min-height: 38px;
 }
-.btn-quick:active { background: var(--primary); }
+.btn-quick:active { background: var(--primary); transform: scale(0.97); }
 .settings-grid {
 display: grid;
 grid-template-columns: 1fr;
@@ -409,12 +419,12 @@ gap: 2px;
 width: 100%;
 }
 .btn-qta {
-width: 28px;
-height: 32px;
+width: 32px;
+height: 36px;
 background: #4b5563;
 border: none;
 border-radius: 6px;
-font-size: 1rem;
+font-size: 1.1rem;
 font-weight: bold;
 cursor: pointer;
 display: flex;
@@ -423,17 +433,19 @@ justify-content: center;
 color: white;
 flex-shrink: 0;
 user-select: none;
+touch-action: manipulation;
+-webkit-appearance: none;
 }
 .btn-qta:active {
 background: #6b7280;
-transform: scale(0.95);
+transform: scale(0.92);
 }
 .input-qta {
-width: 34px !important;
-height: 32px !important;
+width: 36px !important;
+height: 36px !important;
 padding: 0 !important;
 text-align: center;
-font-size: 0.9rem !important;
+font-size: 0.95rem !important;
 font-weight: 800;
 border: 1px solid var(--border);
 background: var(--bg);
@@ -445,16 +457,29 @@ appearance: textfield;
 }
 .input-prezzo-custom {
 width: 100% !important;
-height: 28px !important;
+height: 32px !important;
 padding: 2px !important;
 text-align: center;
-font-size: 0.72rem !important;
+font-size: 0.78rem !important;
 font-weight: bold;
 background: var(--bg);
 color: #c084fc;
 border: 1px solid var(--border);
 border-radius: 6px;
 margin-top: 4px;
+}
+.input-inventario-reale {
+width: 65px !important;
+height: 36px !important;
+padding: 4px !important;
+text-align: center;
+font-size: 0.95rem !important;
+font-weight: 800;
+background: #0f172a;
+color: #38bdf8;
+border: 2px solid #38bdf8;
+border-radius: 8px;
+box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
 }
 .actions-box {
 display: grid;
@@ -623,7 +648,7 @@ table {
 width: 100%;
 border-collapse: collapse;
 font-size: 0.78rem;
-min-width: 540px;
+min-width: 600px;
 }
 th, td {
 padding: 8px 6px;
@@ -640,13 +665,17 @@ font-size: 0.65rem;
 .del-btn {
 background: var(--danger);
 color: white;
-padding: 3px 6px;
-font-size: 0.7rem;
+padding: 6px 10px;
+font-size: 0.75rem;
 border-radius: 6px;
 border: none;
 cursor: pointer;
 font-weight: bold;
+min-height: 32px;
+touch-action: manipulation;
+-webkit-appearance: none;
 }
+.del-btn:active { transform: scale(0.95); opacity: 0.9; }
 .kpi-container {
 display: grid;
 grid-template-columns: repeat(2, 1fr);
@@ -706,6 +735,15 @@ display: flex;
 gap: 6px;
 flex-wrap: wrap;
 }
+.info-box-inventario {
+background: rgba(56, 189, 248, 0.1);
+border: 1px solid #38bdf8;
+padding: 10px;
+border-radius: 10px;
+margin-bottom: 12px;
+font-size: 0.8rem;
+color: #bae6fd;
+}
 @media print {
 body { background: white; color: black; }
 .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar { display: none !important; }
@@ -723,11 +761,11 @@ body { background: white; color: black; }
 <!-- SETTORE 1: GESTIONE CASSA VELOCE -->
 <div id="app-cassa" class="app-view active">
 <div class="container">
-<h2 class="title-centered">Controllo Cassa & Inventario</h2>
+<h2 class="title-centered">Controllo Cassa & Vendite Barca</h2>
 
 <div class="settings-grid">
 <div class="settings-field">
-<label for="selectBarca">Postazione / Barca:</label>
+<label for="selectBarca">Postazione / Barca Attiva:</label>
 <select id="selectBarca" onchange="cambiaBarcaCorrente()"></select>
 </div>
 <div class="settings-field">
@@ -764,7 +802,7 @@ body { background: white; color: black; }
 <div class="card-totale">
 <div class="label">Totale da avere in cassa</div>
 <div class="amount" id="totaleCassa">50.00 €</div>
-<div class="details" id="dettaglioIncasso">Incasso Teorico: 0.00 €</div>
+<div class="details" id="dettaglioIncasso">Venduto Teorico: 0.00 €</div>
 <div style="margin-top: 4px;" id="boxPlusAmmanco"></div>
 </div>
 
@@ -791,7 +829,7 @@ body { background: white; color: black; }
 <button type="button" class="btn btn-success" onclick="apriModalCaricoMerce()">📦 Carico Merce con Bolla</button>
 <button type="button" class="btn btn-primary" onclick="apriModalTrasferimento()">🔄 Spostamento Barca X ➔ Y</button>
 <button type="button" class="btn btn-secondary btn-full" onclick="window.print()">🖨️ Stampa Report PDF</button>
-<button type="button" class="btn btn-danger btn-full" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
+<button type="button" class="btn btn-danger btn-full" onclick="azzeraQuantitaCassa()">Azzera Vendite Correnti</button>
 </div>
 
 <div class="storico-section">
@@ -936,16 +974,24 @@ body { background: white; color: black; }
 </div>
 </div>
 
-<!-- SETTORE 3: RECAP E VALORE INVENTARIO MAGAZZINO -->
+<!-- SETTORE 3: INVENTARIO FISICO, CONTA RIMANENZE E VALUTAZIONE -->
 <div id="app-report-prodotti" class="app-view">
 <div class="container">
-<h2 class="title-centered">📦 Saldo Vendite & Valore Inventario</h2>
+<h2 class="title-centered">📋 Conteggio Fisico Inventario & Valore Merce</h2>
+
+<div class="info-box-inventario">
+📌 <b>Come fare la conta periodica del magazzino:</b><br>
+1. Seleziona la <b>Barca</b> in cui stai contando la merce.<br>
+2. Scrivi nella colonna <b>Conta Reale (Fisica)</b> i pezzi effettivamente trovati a bordo.<br>
+3. Il valore in € al prezzo di vendita si aggiorna all'istante.<br>
+4. Premi <b>"💾 Salva Conta Inventario & Allinea Magazzino"</b> per registrare la rettifica ufficiale.
+</div>
 
 <div class="settings-grid" style="margin-bottom: 12px;">
 <div class="settings-field">
-<label for="filtroBarcaProdotti">Seleziona Barca / Postazione:</label>
+<label for="filtroBarcaProdotti">Seleziona Barca da Contare:</label>
 <select id="filtroBarcaProdotti" onchange="aggiornaReportProdotti()">
-<option value="TUTTE">-- Tutte le Barche (Totale) --</option>
+<option value="VESUVIO JET">VESUVIO JET</option>
 </select>
 </div>
 </div>
@@ -964,7 +1010,7 @@ body { background: white; color: black; }
 <strong id="kpiDiffQuadratura">€ 0,00</strong>
 </div>
 <div class="kpi-box" style="background: rgba(16, 185, 129, 0.15); border-color: #10b981;">
-<span>Valore Magazzino (Rimanenza)</span>
+<span>Valore Rimanenza a Bordo</span>
 <strong id="kpiValoreMagazzino" style="color: #34d399;">€ 0,00</strong>
 </div>
 </div>
@@ -974,11 +1020,11 @@ body { background: white; color: black; }
 <thead>
 <tr>
 <th>Prodotto</th>
-<th>Pass.</th>
-<th>Pend.</th>
-<th>Buono</th>
-<th>Giacenza Rimasta</th>
-<th>Valore Giacenza (€)</th>
+<th>Prezzo Vendita</th>
+<th>Giacenza Teorica</th>
+<th>Conta Reale (Fisica)</th>
+<th>Diff. (pz)</th>
+<th>Valore Rimanenza (€)</th>
 <th>Incasso Gen.</th>
 </tr>
 </thead>
@@ -986,16 +1032,20 @@ body { background: white; color: black; }
 </table>
 </div>
 
+<div style="margin-top: 10px;">
+<button type="button" class="btn btn-primary btn-full" onclick="applicaContaFisicaInventario()">💾 Salva Conta Inventario & Allinea Magazzino</button>
+</div>
+
 <!-- QUADRATURA CONTABILE INVENTARIO DEFALCATO -->
-<div class="storico-section" style="margin-top: 14px; background: rgba(30, 41, 59, 0.9);">
-<h3 style="font-size: 0.95rem; margin-bottom: 8px; color: #818cf8;">⚖️ Quadratura Valore Caricato vs Incassato + Rimanenza</h3>
+<div class="storico-section" style="margin-top: 16px; background: rgba(30, 41, 59, 0.9);">
+<h3 style="font-size: 0.95rem; margin-bottom: 8px; color: #818cf8;">⚖️ Quadratura Valore Caricato = Incasso + Merce Rimanente</h3>
 <div class="table-responsive">
 <table style="min-width: 100%;">
 <thead>
 <tr>
 <th>Valore Caricato Totale (€)</th>
-<th>- Incasso Defalcato (€)</th>
-<th>= Rimanenza Teorica (€)</th>
+<th>- Incasso Realizzato (€)</th>
+<th>= Merce Rimanente (€)</th>
 <th>Stato Quadratura</th>
 </tr>
 </thead>
@@ -1009,6 +1059,14 @@ body { background: white; color: black; }
 </tbody>
 </table>
 </div>
+</div>
+
+<div class="storico-section" style="margin-top: 14px;">
+<h3 style="font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+<span>📋 Registro Verifiche & Conteggi Fisici</span>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoConteggi()" style="font-size: 0.7rem; padding: 4px 6px; min-height: 28px; width: auto;">Svuota Registro</button>
+</h3>
+<div id="listaStoricoConteggi"></div>
 </div>
 </div>
 </div>
@@ -1190,6 +1248,7 @@ let bozzePerBarca = {};
 let storicoGiornate = [];
 let storicoTrasferimenti = [];
 let storicoCarichi = [];
+let storicoConteggi = [];
 let datiIncassi = [...datiPrecaricatiDefault];
 let mesiArchivati = [...mesiArchivatiDefault];
 let timerSalvataggioToast = null;
@@ -1204,7 +1263,7 @@ const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
 
 selectCassa.innerHTML = "";
 selectIncassi.innerHTML = "";
-selectFiltroProdotti.innerHTML = '<option value="TUTTE">-- Tutte le Barche (Totale) --</option>';
+selectFiltroProdotti.innerHTML = "";
 
 listaBarche.forEach(barca => {
 let opt1 = document.createElement("option");
@@ -1222,6 +1281,7 @@ selectFiltroProdotti.appendChild(opt3);
 
 selectCassa.value = "VESUVIO JET";
 selectIncassi.value = "VESUVIO JET";
+selectFiltroProdotti.value = "VESUVIO JET";
 }
 
 function cambiaTab(idApp) {
@@ -1278,6 +1338,7 @@ localStorage.setItem("cassa_bozze_barche", JSON.stringify(bozzePerBarca));
 localStorage.setItem("cassa_storico_giornate", JSON.stringify(storicoGiornate));
 localStorage.setItem("cassa_storico_trasferimenti", JSON.stringify(storicoTrasferimenti));
 localStorage.setItem("cassa_storico_carichi", JSON.stringify(storicoCarichi));
+localStorage.setItem("cassa_storico_conteggi", JSON.stringify(storicoConteggi));
 localStorage.setItem("cassa_dati_incassi", JSON.stringify(datiIncassi));
 localStorage.setItem("cassa_mesi_archivati", JSON.stringify(mesiArchivati));
 localStorage.setItem("cassa_prodotti_master", JSON.stringify(prodotti));
@@ -1299,6 +1360,9 @@ if (t) storicoTrasferimenti = JSON.parse(t);
 const c = localStorage.getItem("cassa_storico_carichi");
 if (c) storicoCarichi = JSON.parse(c);
 
+const cont = localStorage.getItem("cassa_storico_conteggi");
+if (cont) storicoConteggi = JSON.parse(cont);
+
 const inc = localStorage.getItem("cassa_dati_incassi");
 if (inc) datiIncassi = JSON.parse(inc);
 
@@ -1314,7 +1378,10 @@ renderizzaStorici();
 }
 
 function cambiaBarcaCorrente() {
+const b = document.getElementById("selectBarca").value;
+document.getElementById("filtroBarcaProdotti").value = b;
 caricaBozzaBarcaCorrente();
+aggiornaReportProdotti();
 }
 
 function caricaBozzaBarcaCorrente() {
@@ -1719,6 +1786,42 @@ Da: <b style="color:#f87171;">${t.daBarca}</b> ➔ A: <b style="color:#34d399;">
 });
 }
 }
+
+renderizzaStoricoConteggi();
+}
+
+function renderizzaStoricoConteggi() {
+const div = document.getElementById("listaStoricoConteggi");
+if (!div) return;
+div.innerHTML = "";
+
+if (storicoConteggi.length === 0) {
+div.innerHTML = "<p style='font-size:0.78rem; color:var(--text-muted);'>Nessun conteggio inventario salvato.</p>";
+return;
+}
+
+storicoConteggi.forEach(c => {
+div.innerHTML += `
+<div class="storico-card">
+<div class="storico-header">
+<span>📋 Inventario ${c.barca}</span>
+<span style="color:#38bdf8;">${c.data}</span>
+</div>
+<div class="storico-dettaglio">
+Valore Merce Rimanente a Bordo: <b style="color:#34d399;">€${c.valoreTotale.toFixed(2)}</b><br>
+Pezzi Totali Contati: <b>${c.pezziTotali} pz</b>
+</div>
+</div>
+`;
+});
+}
+
+function svuotaStoricoConteggi() {
+if (confirm("Cancellare il registro dei conteggi inventario?")) {
+storicoConteggi = [];
+salvaDatiLocali();
+renderizzaStoricoConteggi();
+}
 }
 
 function eliminaStoricoCassa(id) {
@@ -1985,7 +2088,6 @@ const quota5pGiorno = incassoGiorno * 0.05;
 const quotaFissaGiorno = item.festa ? 0 : 26.00;
 const diffGiorno = item.diff || 0;
 
-// Netto del giorno: 5% + Quota Fissa + Plus/Ammanco cassa
 const nettoGiorno = quota5pGiorno + quotaFissaGiorno + diffGiorno;
 
 totIncasso += incassoGiorno;
@@ -2148,7 +2250,7 @@ aggiornaListaMesiArchivati();
 }
 
 function aggiornaReportProdotti() {
-const barcaSel = document.getElementById("filtroBarcaProdotti").value;
+const barcaSel = document.getElementById("filtroBarcaProdotti").value || "VESUVIO JET";
 const tbody = document.querySelector("#tabellaReportProdotti tbody");
 tbody.innerHTML = "";
 
@@ -2164,7 +2266,7 @@ let penTot = 0;
 let buoTot = 0;
 
 storicoGiornate.forEach(g => {
-if (barcaSel === "TUTTE" || g.barca === barcaSel) {
+if (g.barca === barcaSel) {
 const itemP = g.dettaglioPezzi.find(x => x.id === p.id);
 if (itemP) {
 passTot += (itemP.pass || 0);
@@ -2179,10 +2281,8 @@ const przBuo = p.prezzoBuo !== undefined ? p.prezzoBuo : p.p;
 const incassoGenerato = (passTot * p.p) + (penTot * p.pen) + (buoTot * przBuo);
 
 let stockCorrente = p.stock;
-if (barcaSel !== "TUTTE") {
 const bStock = bozzePerBarca[barcaSel] && bozzePerBarca[barcaSel].stock ? bozzePerBarca[barcaSel].stock[p.id] : undefined;
 if (bStock !== undefined) stockCorrente = bStock;
-}
 
 const valoreGiacenza = stockCorrente * p.p;
 valoreMagazzinoTotale += valoreGiacenza;
@@ -2194,18 +2294,34 @@ incassoTotale += incassoGenerato;
 const tr = document.createElement("tr");
 tr.innerHTML = `
 <td><span>${p.i}</span> <b>${p.n}</b></td>
-<td>${passTot}</td>
-<td>${penTot}</td>
-<td>${buoTot}</td>
+<td style="color:#c084fc; font-weight:bold;">€ ${p.p.toFixed(2)}</td>
 <td><b>${stockCorrente} pz</b></td>
-<td style="color:#34d399; font-weight:bold;">€ ${valoreGiacenza.toFixed(2)}</td>
-<td><b style="color:#34d399;">€${incassoGenerato.toFixed(2)}</b></td>
+<td><input type="number" class="input-inventario-reale" id="conta_reale_${p.id}" value="${stockCorrente}" min="0"></td>
+<td id="diff_pz_${p.id}" style="font-weight:bold; color:#94a3b8;">0 pz</td>
+<td style="color:#34d399; font-weight:bold;" id="val_reale_${p.id}">€ ${valoreGiacenza.toFixed(2)}</td>
+<td><b style="color:#34d399;">€ ${incassoGenerato.toFixed(2)}</b></td>
 `;
 tbody.appendChild(tr);
+
+setTimeout(() => {
+const inputReale = document.getElementById(`conta_reale_${p.id}`);
+if (inputReale) {
+inputReale.addEventListener('input', function() {
+const reale = parseInt(this.value) || 0;
+const diff = reale - stockCorrente;
+const tdDiff = document.getElementById(`diff_pz_${p.id}`);
+const tdVal = document.getElementById(`val_reale_${p.id}`);
+
+tdDiff.textContent = (diff >= 0 ? '+' : '') + diff + ' pz';
+tdDiff.style.color = diff === 0 ? '#94a3b8' : (diff > 0 ? '#34d399' : '#f87171');
+tdVal.textContent = '€ ' + (reale * p.p).toFixed(2);
+});
+}
+}, 50);
 });
 
 storicoGiornate.forEach(g => {
-if (barcaSel === "TUTTE" || g.barca === barcaSel) {
+if (g.barca === barcaSel) {
 diffTotale += g.diff;
 }
 });
@@ -2229,6 +2345,53 @@ cellStato.innerHTML = `<span class="badge-diff badge-ammanco">Ammanco €${scart
 } else {
 cellStato.innerHTML = `<span class="badge-diff badge-plus">Plusvalenza €${Math.abs(scartoQuadratura).toFixed(2)}</span>`;
 }
+}
+
+function applicaContaFisicaInventario() {
+const barcaSel = document.getElementById("filtroBarcaProdotti").value;
+if (!barcaSel) {
+alert("Seleziona prima una barca valida!");
+return;
+}
+
+if (!confirm(`Vuoi aggiornare ufficialmente lo stock della barca ${barcaSel} con i valori della conta fisica inseriti?`)) {
+return;
+}
+
+if (!bozzePerBarca[barcaSel]) bozzePerBarca[barcaSel] = {};
+if (!bozzePerBarca[barcaSel].stock) bozzePerBarca[barcaSel].stock = {};
+
+let valoreMerceTotale = 0;
+let pezziTotaliContati = 0;
+
+prodotti.forEach(p => {
+const inputReale = document.getElementById(`conta_reale_${p.id}`);
+if (inputReale) {
+const qtaReale = Math.max(0, parseInt(inputReale.value) || 0);
+bozzePerBarca[barcaSel].stock[p.id] = qtaReale;
+valoreMerceTotale += (qtaReale * p.p);
+pezziTotaliContati += qtaReale;
+
+if (document.getElementById("selectBarca").value === barcaSel) {
+p.stock = qtaReale;
+}
+}
+});
+
+const logRec = {
+id: Date.now(),
+data: new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}),
+barca: barcaSel,
+valoreTotale: valoreMerceTotale,
+pezziTotali: pezziTotaliContati
+};
+storicoConteggi.unshift(logRec);
+
+salvaDatiLocali();
+caricaBozzaBarcaCorrente();
+aggiornaReportProdotti();
+renderizzaStoricoConteggi();
+alert(`✅ Inventario per ${barcaSel} aggiornato con successo!\nValore magazzino rimasto a bordo: €${valoreMerceTotale.toFixed(2)}`);
 }
 
 function renderizzaGrafici() {
@@ -2310,9 +2473,9 @@ y: { ticks: { color: '#9ca3af' } }
 
 function esportaDatiJSON() {
 const backupData = {
-bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoCarichi, datiIncassi, mesiArchivati, prodotti
+bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoCarichi, storicoConteggi, datiIncassi, mesiArchivati, prodotti
 };
-const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' + ';charset=utf-8' });
+const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8' });
 const url = URL.createObjectURL(blob);
 const a = document.createElement('a');
 a.href = url;
@@ -2331,6 +2494,7 @@ if (data.bozzePerBarca) bozzePerBarca = data.bozzePerBarca;
 if (data.storicoGiornate) storicoGiornate = data.storicoGiornate;
 if (data.storicoTrasferimenti) storicoTrasferimenti = data.storicoTrasferimenti;
 if (data.storicoCarichi) storicoCarichi = data.storicoCarichi;
+if (data.storicoConteggi) storicoConteggi = data.storicoConteggi;
 if (data.datiIncassi) datiIncassi = data.datiIncassi;
 if (data.mesiArchivati) mesiArchivati = data.mesiArchivati;
 if (data.prodotti) prodotti = data.prodotti;
