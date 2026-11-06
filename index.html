@@ -1,5 +1,3 @@
-<!-- Chosen Palette: Indigo Dark / Emerald Theme -->
-<!-- Application Structure Plan: Single-page application designed for boat bar operations, cash desk management, inventory tracking, daily closings, and monthly financial reporting. Main sections: 1. Controllo Cassa & Inventario; 2. Gestione Incassi & Spese; 3. Saldo Vendite & Inventario; 4. Grafici & Analisi Performance. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -399,7 +397,7 @@ display: flex;
 align-items: center;
 justify-content: center;
 color: white;
-transition: background 0.1s, transform 0.05s;
+transition: background 0.15s, transform 0.05s;
 flex-shrink: 0;
 user-select: none;
 }
@@ -1025,7 +1023,7 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 
 <div style="display:flex; gap:8px;">
-<button type="button" class="btn btn-success" style="flex:1;" onclick="confermaEStampaCarico()">📦 Conferma & Incrementa</button>
+<button type="button" class="btn btn-success" style="flex:1;" onclick="confermaEStampaCarico()">📦 Conferma & Incrementa Stock</button>
 <button type="button" class="btn btn-secondary" onclick="chiudiModalCaricoMerce()">Annulla</button>
 </div>
 </div>
@@ -1034,22 +1032,22 @@ body { padding: 4px; padding-bottom: 80px; }
 <div id="modalTrasferimento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>🔄 Spostamento Merci (Costo 0)</h3>
-<p style="font-size:0.8rem; color:var(--text-muted);">Sposta prodotti da una barca all'altra.</p>
+<p style="font-size:0.8rem; color:var(--text-muted);">Sposta stock/prodotti da una barca all'altra.</p>
 <div class="settings-grid">
 <div class="settings-field">
-<label>Barca Origine:</label>
-<select id="transfDaBarca" disabled></select>
+<label>Barca Origine (Diminuisce):</label>
+<select id="transfDaBarca" onchange="aggiornaBarcheDestinazioneModal()"></select>
 </div>
 <div class="settings-field">
-<label>Barca Destinazione:</label>
+<label>Barca Destinazione (Aumenta):</label>
 <select id="transfABarca"></select>
 </div>
 <div class="settings-field">
-<label>Prodotto:</label>
+<label>Prodotto da spostare:</label>
 <select id="transfProdotto"></select>
 </div>
 <div class="settings-field">
-<label>Quantità:</label>
+<label>Quantità pz:</label>
 <input type="number" id="transfQta" value="1" min="1">
 </div>
 </div>
@@ -1146,7 +1144,7 @@ const prodottiDefault = [
 {id:'mag', n:"Maglie", i:"👕", p:5, pen:5, qtaPass:0, qtaPen:0, stock: 15},
 {id:'mik', n:"Mikado", i:"🥖", p:3, pen:1.5, qtaPass:0, qtaPen:0, stock: 20},
 {id:'muf', n:"Muffin", i:"🧁", p:3, pen:1, qtaPass:0, qtaPen:0, stock: 15},
-{id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 25},
+{id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, stock: 25},
 {id:'pav', n:"Pavesini", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, stock: 20},
 {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:0, qtaPen:0, stock: 36},
 {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:0, qtaPen:0, stock: 24},
@@ -1337,9 +1335,17 @@ document.getElementById("incassoCash").value = bozza.cash || "";
 document.getElementById("incassoPos").value = bozza.pos || "";
 
 const qtaSaved = bozza.quantita || {};
+const stockSaved = bozza.stock || {};
+
 prodotti.forEach(p => {
 p.qtaPass = qtaSaved[p.id + '_pass'] || 0;
 p.qtaPen = qtaSaved[p.id + '_pen'] || 0;
+if (stockSaved[p.id] !== undefined) {
+p.stock = stockSaved[p.id];
+} else {
+const defP = prodottiDefault.find(d => d.id === p.id);
+p.stock = defP ? defP.stock : 50;
+}
 });
 
 generaListaProdottiCassa();
@@ -1349,20 +1355,23 @@ calcolaTotaleCassa();
 function salvaBozzaCassaInTempoReale() {
 const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
 const quantitaObj = {};
+const stockObj = {};
+
 prodotti.forEach(p => {
 quantitaObj[p.id + '_pass'] = p.qtaPass || 0;
 quantitaObj[p.id + '_pen'] = p.qtaPen || 0;
+stockObj[p.id] = p.stock !== undefined ? p.stock : 50;
 });
 
-bozzePerBarca[barca] = {
-operatore: document.getElementById("txtOperatore").value,
-data: document.getElementById("txtDataCassa").value,
-meteo: document.getElementById("selectMeteo").value,
-fondo: document.getElementById("fondoCassa").value,
-cash: document.getElementById("incassoCash").value,
-pos: document.getElementById("incassoPos").value,
-quantita: quantitaObj
-};
+if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
+bozzePerBarca[barca].operatore = document.getElementById("txtOperatore").value;
+bozzePerBarca[barca].data = document.getElementById("txtDataCassa").value;
+bozzePerBarca[barca].meteo = document.getElementById("selectMeteo").value;
+bozzePerBarca[barca].fondo = document.getElementById("fondoCassa").value;
+bozzePerBarca[barca].cash = document.getElementById("incassoCash").value;
+bozzePerBarca[barca].pos = document.getElementById("incassoPos").value;
+bozzePerBarca[barca].quantita = quantitaObj;
+bozzePerBarca[barca].stock = stockObj;
 
 salvaDatiLocali();
 }
@@ -1390,7 +1399,7 @@ card.innerHTML = `
 <div class="prezzi-info">Pass: €${p.p.toFixed(2)} | Pen: €${p.pen.toFixed(2)}</div>
 </div>
 <div class="magazzino-bar">
-<div class="magazzino-item">Magazzino: <span class="stock-badge ${badgeStockClass}">${p.stock} pz</span></div>
+<div class="magazzino-item">Giacenza Barca: <span class="stock-badge ${badgeStockClass}">${p.stock} pz</span></div>
 </div>
 <div class="categorie-grid">
 <div class="categoria-box">
@@ -1526,6 +1535,9 @@ const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
 let totaleVenduto = 0;
 const dettaglioPezzi = [];
 
+if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
+if (!bozzePerBarca[barca].stock) bozzePerBarca[barca].stock = {};
+
 prodotti.forEach(p => {
 if (p.qtaPass > 0 || p.qtaPen > 0) {
 const totPz = p.qtaPass + p.qtaPen;
@@ -1533,6 +1545,7 @@ const incProd = (p.qtaPass * p.p) + (p.qtaPen * p.pen);
 totaleVenduto += incProd;
 
 p.stock = Math.max(0, p.stock - totPz);
+bozzePerBarca[barca].stock[p.id] = p.stock;
 
 dettaglioPezzi.push({
 id: p.id,
@@ -1587,9 +1600,7 @@ container.innerHTML = "";
 
 if (storicoGiornate.length === 0) {
 container.innerHTML = "<p style='font-size:0.8rem; color:var(--text-muted);'>Nessuna giornata ancora salvata.</p>";
-return;
-}
-
+} else {
 storicoGiornate.forEach(item => {
 const div = document.createElement("div");
 div.className = "storico-card";
@@ -1609,6 +1620,29 @@ Differenza Quadratura: <b style="color:${item.diff >= 0 ? '#34d399' : '#f87171'}
 `;
 container.appendChild(div);
 });
+}
+
+const containerTransf = document.getElementById("listaStoricoTrasferimenti");
+if (containerTransf) {
+containerTransf.innerHTML = "";
+if (storicoTrasferimenti.length === 0) {
+containerTransf.innerHTML = "<p style='font-size:0.8rem; color:var(--text-muted);'>Nessun trasferimento effettuato.</p>";
+} else {
+storicoTrasferimenti.forEach(t => {
+containerTransf.innerHTML += `
+<div class="storico-card">
+<div class="storico-header">
+<span>🔄 ${t.prodotto} (${t.qta} pz)</span>
+<span style="color:#a7f3d0;">${t.data}</span>
+</div>
+<div class="storico-dettaglio">
+Da: <b style="color:#f87171;">${t.daBarca}</b> ➔ A: <b style="color:#34d399;">${t.aBarca}</b> (Costo €0)
+</div>
+</div>
+`;
+});
+}
+}
 }
 
 function eliminaStoricoCassa(id) {
@@ -1697,63 +1731,136 @@ alert("Aggiungi almeno un prodotto alla bolla!");
 return;
 }
 
+if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
+if (!bozzePerBarca[barca].stock) bozzePerBarca[barca].stock = {};
+
 itemsCaricoMerce.forEach(item => {
 const p = prodotti.find(x => x.id === item.id);
-if (p) p.stock += item.qta;
+if (p) {
+const stockAtt = bozzePerBarca[barca].stock[p.id] !== undefined ? bozzePerBarca[barca].stock[p.id] : p.stock;
+bozzePerBarca[barca].stock[p.id] = stockAtt + item.qta;
+if (document.getElementById("selectBarca").value === barca) {
+p.stock = bozzePerBarca[barca].stock[p.id];
+}
+}
 });
 
-const rec = { id: Date.now(), data: new Date().toLocaleDateString(), barca, numBolla, fornitore, items: [...itemsCaricoMerce] };
+const rec = { id: Date.now(), data: new Date().toLocaleDateString('it-IT'), barca, numBolla, fornitore, items: [...itemsCaricoMerce] };
 storicoCarichi.unshift(rec);
 
 salvaDatiLocali();
-generaListaProdottiCassa();
+caricaBozzaBarcaCorrente();
 renderizzaStorici();
 chiudiModalCaricoMerce();
 alert("Carico registrato e magazzino aggiornato!");
 }
 
 function apriModalTrasferimento() {
-document.getElementById("transfDaBarca").value = document.getElementById("selectBarca").value;
-const selectA = document.getElementById("transfABarca");
-selectA.innerHTML = "";
+const selectDa = document.getElementById("transfDaBarca");
+selectDa.innerHTML = "";
 listaBarche.forEach(b => {
-if (b !== document.getElementById("selectBarca").value) {
-selectA.innerHTML += `<option value="${b}">${b}</option>`;
-}
+selectDa.innerHTML += `<option value="${b}">${b}</option>`;
 });
-const selectP = document.getElementById("transfProdotto");
-selectP.innerHTML = "";
-prodotti.forEach(p => {
-selectP.innerHTML += `<option value="${p.id}">${p.n} (Stock: ${p.stock})</option>`;
-});
+
+const barcaAttiva = document.getElementById("selectBarca").value || "VESUVIO JET";
+selectDa.value = barcaAttiva;
+
+aggiornaBarcheDestinazioneModal();
 document.getElementById("modalTrasferimento").style.display = "flex";
 }
+
+function aggiornaBarcheDestinazioneModal() {
+const daBarca = document.getElementById("transfDaBarca").value;
+const selectA = document.getElementById("transfABarca");
+selectA.innerHTML = "";
+listaBarche.filter(b => b !== daBarca).forEach(b => {
+selectA.innerHTML += `<option value="${b}">${b}</option>`;
+});
+aggiornaSelectProdottoTrasferimento();
+}
+
+function aggiornaSelectProdottoTrasferimento() {
+const daBarca = document.getElementById("transfDaBarca").value;
+const selectP = document.getElementById("transfProdotto");
+selectP.innerHTML = "";
+
+const stockMap = (bozzePerBarca[daBarca] && bozzePerBarca[daBarca].stock) ? bozzePerBarca[daBarca].stock : {};
+
+prodotti.forEach(p => {
+const st = stockMap[p.id] !== undefined ? stockMap[p.id] : p.stock;
+selectP.innerHTML += `<option value="${p.id}">${p.n} (Disponibili su ${daBarca}: ${st} pz)</option>`;
+});
+}
+
 function chiudiModalTrasferimento() { document.getElementById("modalTrasferimento").style.display = "none"; }
 
 function confermaTrasferimentoMerci() {
-const daBarca = document.getElementById("selectBarca").value;
+const daBarca = document.getElementById("transfDaBarca").value;
 const aBarca = document.getElementById("transfABarca").value;
 const idP = document.getElementById("transfProdotto").value;
 const qta = parseInt(document.getElementById("transfQta").value) || 0;
 
-const p = prodotti.find(x => x.id === idP);
-if (!p || qta <= 0) return;
-
-if (p.stock < qta) {
-alert("Quantità non sufficiente in magazzino!");
+if (daBarca === aBarca) {
+alert("Seleziona due barche diverse per lo spostamento!");
 return;
 }
 
-p.stock -= qta;
+const p = prodotti.find(x => x.id === idP);
+if (!p || qta <= 0) {
+alert("Inserisci una quantità valida!");
+return;
+}
 
-const rec = { id: Date.now(), data: new Date().toLocaleDateString(), daBarca, aBarca, prodotto: p.n, qta };
+if (!bozzePerBarca[daBarca]) bozzePerBarca[daBarca] = {};
+if (!bozzePerBarca[daBarca].stock) {
+bozzePerBarca[daBarca].stock = {};
+prodotti.forEach(prod => { bozzePerBarca[daBarca].stock[prod.id] = prod.stock; });
+}
+
+if (!bozzePerBarca[aBarca]) bozzePerBarca[aBarca] = {};
+if (!bozzePerBarca[aBarca].stock) {
+bozzePerBarca[aBarca].stock = {};
+prodotti.forEach(prod => { bozzePerBarca[aBarca].stock[prod.id] = prod.stock; });
+}
+
+const stockDa = bozzePerBarca[daBarca].stock[idP] !== undefined ? bozzePerBarca[daBarca].stock[idP] : p.stock;
+const stockA = bozzePerBarca[aBarca].stock[idP] !== undefined ? bozzePerBarca[aBarca].stock[idP] : p.stock;
+
+if (stockDa < qta) {
+if (!confirm(`La barca d'origine (${daBarca}) ha solo ${stockDa} pezzi in stock di ${p.n}. Vuoi procedere comunque col trasferimento?`)) {
+return;
+}
+}
+
+const nuovoStockDa = Math.max(0, stockDa - qta);
+const nuovoStockA = stockA + qta;
+
+bozzePerBarca[daBarca].stock[idP] = nuovoStockDa;
+bozzePerBarca[aBarca].stock[idP] = nuovoStockA;
+
+const barcaCorrente = document.getElementById("selectBarca").value;
+if (barcaCorrente === daBarca) {
+p.stock = nuovoStockDa;
+} else if (barcaCorrente === aBarca) {
+p.stock = nuovoStockA;
+}
+
+const rec = { 
+id: Date.now(), 
+data: new Date().toLocaleDateString('it-IT'), 
+daBarca, 
+aBarca, 
+prodotto: p.n, 
+qta 
+};
 storicoTrasferimenti.unshift(rec);
 
 salvaDatiLocali();
-generaListaProdottiCassa();
+caricaBozzaBarcaCorrente();
 renderizzaStorici();
 chiudiModalTrasferimento();
-alert(`Trasferiti ${qta}x ${p.n} a ${aBarca} a costo €0!`);
+
+alert(`✅ Trasferimento completato!\n\n• ${p.n} su ${daBarca}: ${stockDa} ➔ ${nuovoStockDa} pz (-${qta})\n• ${p.n} su ${aBarca}: ${stockA} ➔ ${nuovoStockA} pz (+${qta})`);
 }
 
 function apriModalBuonoConsegna() {
@@ -1811,7 +1918,7 @@ const p = prodotti.find(x => x.id === item.id);
 if (p) p.stock = Math.max(0, p.stock - item.qta);
 });
 
-const rec = { id: Date.now(), data: new Date().toLocaleDateString(), cliente, totale: totaleBuono, items: [...itemsBuonoConsegna] };
+const rec = { id: Date.now(), data: new Date().toLocaleDateString('it-IT'), cliente, totale: totaleBuono, items: [...itemsBuonoConsegna] };
 storicoBuoni.unshift(rec);
 
 salvaDatiLocali();
@@ -1865,7 +1972,6 @@ datiFiltrati.forEach((item, index) => {
 const incassoGiorno = item.cash + item.pos;
 const quota5pGiorno = incassoGiorno * 0.05;
 const quotaFissaGiorno = item.festa ? 0 : 26.00;
-// CALCOLO CORRETTO NETTO GIORNO: (5% Incasso) + Paga Base (€26) - Spesa + Plus/Ammanco
 const nettoGiorno = quota5pGiorno + quotaFissaGiorno - item.spesa + item.diff;
 
 totIncasso += incassoGiorno;
@@ -1960,7 +2066,7 @@ totNetto += (q5 + qf - item.spesa + item.diff);
 
 const recordArchivio = {
 mese: meseSelezionato,
-dataArchiviazione: new Date().toLocaleDateString(),
+dataArchiviazione: new Date().toLocaleDateString('it-IT'),
 incassoTotale: totIncasso,
 quota5p: tot5p,
 quotaFissa: totFissa,
