@@ -1261,6 +1261,8 @@ const selectCassa = document.getElementById("selectBarca");
 const selectIncassi = document.getElementById("selectPostazioneIncassi");
 const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
 
+if(!selectCassa) return;
+
 selectCassa.innerHTML = "";
 selectIncassi.innerHTML = "";
 selectFiltroProdotti.innerHTML = "";
@@ -1322,11 +1324,17 @@ e.preventDefault();
 const targetApp = this.getAttribute('data-app');
 cambiaTab(targetApp);
 });
+item.addEventListener('touchstart', function(e) {
+e.preventDefault();
+const targetApp = this.getAttribute('data-app');
+cambiaTab(targetApp);
+}, {passive: false});
 });
 });
 
 function mostraNotificaSalvataggio() {
 const el = document.getElementById("saveIndicator");
+if(!el) return;
 el.style.display = "flex";
 clearTimeout(timerSalvataggioToast);
 timerSalvataggioToast = setTimeout(() => { el.style.display = "none"; }, 1500);
@@ -1447,6 +1455,7 @@ salvaDatiLocali();
 
 function generaListaProdottiCassa() {
 const lista = document.getElementById("listaProdotti");
+if(!lista) return;
 lista.innerHTML = "";
 let alertScorteHTML = "";
 
@@ -1503,11 +1512,13 @@ lista.appendChild(card);
 });
 
 const alertBox = document.getElementById("alertBoxScorte");
+if (alertBox) {
 if (alertScorteHTML !== "") {
 alertBox.innerHTML = alertScorteHTML;
 alertBox.style.display = "block";
 } else {
 alertBox.style.display = "none";
+}
 }
 }
 
@@ -1739,6 +1750,7 @@ alert("Giornata salvata con successo e sincronizzata nell'archivio incassi!");
 
 function renderizzaStorici() {
 const container = document.getElementById("listaStoricoCassa");
+if(!container) return;
 container.innerHTML = "";
 
 if (storicoGiornate.length === 0) {
@@ -2054,6 +2066,7 @@ function aggiornaTabellaIncassi() {
 const meseSelezionato = document.getElementById("selectMeseIncassi").value;
 const filtro = document.getElementById("txtFiltro").value.toLowerCase();
 const tbody = document.querySelector("#tabellaIncassi tbody");
+if(!tbody) return;
 tbody.innerHTML = "";
 
 const meseArchiviato = mesiArchivati.find(m => m.mese === meseSelezionato);
@@ -2203,6 +2216,7 @@ alert(`Mese archiviato! Netto: €${totNetto.toFixed(2)}`);
 
 function aggiornaListaMesiArchivati() {
 const div = document.getElementById("listaMesiArchivati");
+if(!div) return;
 div.innerHTML = "";
 
 if (mesiArchivati.length === 0) {
@@ -2252,6 +2266,7 @@ aggiornaListaMesiArchivati();
 function aggiornaReportProdotti() {
 const barcaSel = document.getElementById("filtroBarcaProdotti").value || "VESUVIO JET";
 const tbody = document.querySelector("#tabellaReportProdotti tbody");
+if(!tbody) return;
 tbody.innerHTML = "";
 
 let pezziTotali = 0;
@@ -2326,17 +2341,27 @@ diffTotale += g.diff;
 }
 });
 
-document.getElementById("kpiPezziTotali").textContent = `${pezziTotali} pz`;
-document.getElementById("kpiIncassoProdotti").textContent = `€ ${incassoTotale.toFixed(2)}`;
-document.getElementById("kpiDiffQuadratura").textContent = `€ ${diffTotale.toFixed(2)}`;
-document.getElementById("kpiDiffQuadratura").style.color = diffTotale >= 0 ? "#34d399" : "#f87171";
-document.getElementById("kpiValoreMagazzino").textContent = `€ ${valoreMagazzinoTotale.toFixed(2)}`;
+const kpiPezzi = document.getElementById("kpiPezziTotali");
+if(kpiPezzi) kpiPezzi.textContent = `${pezziTotali} pz`;
+const kpiInc = document.getElementById("kpiIncassoProdotti");
+if(kpiInc) kpiInc.textContent = `€ ${incassoTotale.toFixed(2)}`;
+const kpiDiff = document.getElementById("kpiDiffQuadratura");
+if(kpiDiff) {
+kpiDiff.textContent = `€ ${diffTotale.toFixed(2)}`;
+kpiDiff.style.color = diffTotale >= 0 ? "#34d399" : "#f87171";
+}
+const kpiMag = document.getElementById("kpiValoreMagazzino");
+if(kpiMag) kpiMag.textContent = `€ ${valoreMagazzinoTotale.toFixed(2)}`;
 
-document.getElementById("cellValoreCaricatoTotale").textContent = `€ ${valoreCaricatoTotale.toFixed(2)}`;
-document.getElementById("cellIncassoDefalcato").textContent = `- € ${incassoTotale.toFixed(2)}`;
-document.getElementById("cellRimanenzaTeorica").textContent = `= € ${valoreMagazzinoTotale.toFixed(2)}`;
+const cellCaricato = document.getElementById("cellValoreCaricatoTotale");
+if(cellCaricato) cellCaricato.textContent = `€ ${valoreCaricatoTotale.toFixed(2)}`;
+const cellInc = document.getElementById("cellIncassoDefalcato");
+if(cellInc) cellInc.textContent = `- € ${incassoTotale.toFixed(2)}`;
+const cellRim = document.getElementById("cellRimanenzaTeorica");
+if(cellRim) cellRim.textContent = `= € ${valoreMagazzinoTotale.toFixed(2)}`;
 
 const cellStato = document.getElementById("cellStatoQuadratura");
+if(cellStato) {
 const scartoQuadratura = (valoreCaricatoTotale - incassoTotale) - valoreMagazzinoTotale;
 if (Math.abs(scartoQuadratura) < 0.01) {
 cellStato.innerHTML = `<span class="badge-diff badge-ok">Allineato Perfect (€0.00)</span>`;
@@ -2344,6 +2369,7 @@ cellStato.innerHTML = `<span class="badge-diff badge-ok">Allineato Perfect (€0
 cellStato.innerHTML = `<span class="badge-diff badge-ammanco">Ammanco €${scartoQuadratura.toFixed(2)}</span>`;
 } else {
 cellStato.innerHTML = `<span class="badge-diff badge-plus">Plusvalenza €${Math.abs(scartoQuadratura).toFixed(2)}</span>`;
+}
 }
 }
 
@@ -2395,8 +2421,12 @@ alert(`✅ Inventario per ${barcaSel} aggiornato con successo!\nValore magazzino
 }
 
 function renderizzaGrafici() {
-const ctx1 = document.getElementById('chartAndamentoIncassi').getContext('2d');
-const ctx2 = document.getElementById('chartTopProdotti').getContext('2d');
+const el1 = document.getElementById('chartAndamentoIncassi');
+const el2 = document.getElementById('chartTopProdotti');
+if(!el1 || !el2) return;
+
+const ctx1 = el1.getContext('2d');
+const ctx2 = el2.getContext('2d');
 
 if (chartAndamentoInstance) chartAndamentoInstance.destroy();
 if (chartTopProdottiInstance) chartTopProdottiInstance.destroy();
