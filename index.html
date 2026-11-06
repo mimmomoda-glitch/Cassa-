@@ -1,7 +1,5 @@
 <!-- Chosen Palette: Indigo Dark / Emerald Theme -->
-<!-- Application Structure Plan: Single-page application designed for boat bar operations, cash desk management, inventory tracking, daily closings, and monthly financial reporting. Main sections: 1. Controllo Cassa & Inventario (POS/Cash input, stock management, closing days, quick actions); 2. Gestione Incassi & Spese (Automatic ledger synced from Cassa closing, monthly reports, expenses); 3. Saldo Vendite & Inventario (Item-level sales stats); 4. Grafici & Analisi Performance (Chart.js dynamic visual representations). Designed for single-click data transfer without double data entry. -->
-<!-- Visualization & Content Choices: Uses Chart.js canvas elements for daily earnings trends and top sold items. HTML/CSS cards and responsive tables for stock counts, day logs, and financial ledgers. All custom interactions managed in Vanilla JS with LocalStorage persistence and JSON import/export. -->
-<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<!-- Application Structure Plan: Single-page application designed for boat bar operations, cash desk management, inventory tracking, daily closings, and monthly financial reporting. Main sections: 1. Controllo Cassa & Inventario; 2. Gestione Incassi & Spese; 3. Saldo Vendite & Inventario; 4. Grafici & Analisi Performance. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -28,7 +26,7 @@
 --text: #f9fafb;
 --text-muted: #9ca3af;
 --border: #374151;
---nav-bg: rgba(17, 24, 39, 0.95);
+--nav-bg: rgba(17, 24, 39, 0.98);
 --pass-color: #38bdf8;
 --pen-color: #fb923c;
 }
@@ -41,7 +39,7 @@ font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, H
 background-color: var(--bg);
 margin: 0;
 padding: 0;
-padding-bottom: 85px;
+padding-bottom: 90px;
 color: var(--text);
 line-height: 1.4;
 overflow-x: hidden;
@@ -65,42 +63,49 @@ position: fixed;
 bottom: 0;
 left: 0;
 right: 0;
+height: 70px;
 background: var(--nav-bg);
-backdrop-filter: blur(12px);
--webkit-backdrop-filter: blur(12px);
-border-top: 1px solid rgba(255, 255, 255, 0.1);
+border-top: 1px solid rgba(255, 255, 255, 0.15);
 display: flex;
 justify-content: space-around;
-padding: 6px 4px;
-padding-bottom: max(6px, env(safe-area-inset-bottom));
-z-index: 1000;
-box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+align-items: center;
+padding: 0 4px;
+padding-bottom: env(safe-area-inset-bottom);
+z-index: 99999;
+box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
 }
 .nav-item {
-background: none;
+background: transparent;
 border: none;
 color: var(--text-muted);
 display: flex;
 flex-direction: column;
 align-items: center;
+justify-content: center;
 gap: 2px;
-font-size: 0.7rem;
-font-weight: 600;
+font-size: 0.75rem;
+font-weight: 700;
 cursor: pointer;
-padding: 6px 2px;
-border-radius: 12px;
-transition: all 0.15s ease;
+height: 100%;
 width: 25%;
+transition: all 0.15s ease;
+user-select: none;
+-webkit-user-select: none;
+touch-action: manipulation;
 }
 .nav-item.active {
 color: #818cf8;
-background: rgba(129, 140, 248, 0.12);
+background: rgba(129, 140, 248, 0.15);
 }
 .nav-icon {
-font-size: 1.25rem;
+font-size: 1.35rem;
 filter: grayscale(60%);
 opacity: 0.7;
 transition: all 0.15s ease;
+pointer-events: none;
+}
+.nav-item span {
+pointer-events: none;
 }
 .nav-item.active .nav-icon {
 filter: grayscale(0%);
@@ -658,7 +663,6 @@ display: flex;
 gap: 8px;
 flex-wrap: wrap;
 }
-/* MEDIA QUERIES PER STAMPA RICEVUTA PDF */
 @media print {
 body { background: white; color: black; padding-bottom: 0; }
 .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar { display: none !important; }
@@ -700,7 +704,7 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 <div class="settings-field">
 <label for="txtDataCassa">Giorno / Data:</label>
-<input type="text" id="txtDataCassa" placeholder="es. 4 Novembre 2026" oninput="salvaBozzaCassaInTempoReale()">
+<input type="text" id="txtDataCassa" placeholder="es. 6 Novembre 2026" oninput="salvaBozzaCassaInTempoReale()">
 </div>
 <div class="settings-field">
 <label for="selectMeteo">Meteo & Mare:</label>
@@ -732,17 +736,15 @@ body { padding: 4px; padding-bottom: 80px; }
 <div style="margin-top: 6px;" id="boxPlusAmmanco"></div>
 </div>
 
-<!-- ALERT PER SCORTE IN ESAURIMENTO -->
 <div id="alertBoxScorte" class="alert-box-scorte"></div>
 
-<!-- TASTI RAPIDI PER VENDITE FREQUENTI -->
 <div class="quick-actions-bar">
 <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); display: flex; align-items: center;">⚡ Veloci:</span>
-<button class="btn-quick" onclick="venditaRapida('cia', 'Pass')">☕ +1 Cialda</button>
-<button class="btn-quick" onclick="venditaRapida('acq', 'Pass')">💧 +1 Acqua Pass</button>
-<button class="btn-quick" onclick="venditaRapida('acq', 'Pen')">💧 +1 Acqua Pen</button>
-<button class="btn-quick" onclick="venditaRapida('ltn', 'Pass')">🥤 +1 Lattina</button>
-<button class="btn-quick" onclick="venditaRapida('per', 'Pass')">🍺 +1 Birra</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('cia', 'Pass')">☕ +1 Cialda</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('acq', 'Pass')">💧 +1 Acqua Pass</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('acq', 'Pen')">💧 +1 Acqua Pen</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('ltn', 'Pass')">🥤 +1 Lattina</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('per', 'Pass')">🍺 +1 Birra</button>
 </div>
 
 <div style="margin-bottom: 12px;">
@@ -752,20 +754,19 @@ body { padding: 4px; padding-bottom: 80px; }
 <div class="prodotti-lista" id="listaProdotti"></div>
 
 <div class="actions-box">
-<button class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
-<button class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia WhatsApp</button>
-<button class="btn btn-success" onclick="apriModalCaricoMerce()">📦 Carico Merce con Bolla</button>
-<button class="btn btn-primary" onclick="apriModalTrasferimento()">🔄 Spostamento Barca X ➔ Y (Costo 0)</button>
-<button class="btn btn-warning" onclick="apriModalBuonoConsegna()">📄 Buono di Consegna Personalizzato</button>
-<button class="btn btn-secondary" onclick="window.print()">🖨️ Stampa Report PDF</button>
-<button class="btn btn-danger" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
+<button type="button" class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
+<button type="button" class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Copia & Invia WhatsApp</button>
+<button type="button" class="btn btn-success" onclick="apriModalCaricoMerce()">📦 Carico Merce con Bolla</button>
+<button type="button" class="btn btn-primary" onclick="apriModalTrasferimento()">🔄 Spostamento Barca X ➔ Y (Costo 0)</button>
+<button type="button" class="btn btn-warning" onclick="apriModalBuonoConsegna()">📄 Buono di Consegna Personalizzato</button>
+<button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ Stampa Report PDF</button>
+<button type="button" class="btn btn-danger" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
 </div>
 
-<!-- REGISTRI STORICI -->
 <div class="storico-section">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>📦 Registro Carichi Merci & Bolle Fornitori</span>
-<button class="btn btn-secondary" onclick="svuotaStoricoCarichi()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoCarichi()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
 </h3>
 <div id="listaStoricoCarichi"></div>
 </div>
@@ -773,7 +774,7 @@ body { padding: 4px; padding-bottom: 80px; }
 <div class="storico-section" style="margin-top: 14px;">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>🔄 Registro Spostamenti Merci (Costo €0)</span>
-<button class="btn btn-secondary" onclick="svuotaStoricoTrasferimenti()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoTrasferimenti()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
 </h3>
 <div id="listaStoricoTrasferimenti"></div>
 </div>
@@ -781,7 +782,7 @@ body { padding: 4px; padding-bottom: 80px; }
 <div class="storico-section" style="margin-top: 14px;">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>📄 Registro Buoni di Consegna Emessi</span>
-<button class="btn btn-secondary" onclick="svuotaStoricoBuoni()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoBuoni()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota</button>
 </h3>
 <div id="listaStoricoBuoni"></div>
 </div>
@@ -789,7 +790,7 @@ body { padding: 4px; padding-bottom: 80px; }
 <div class="storico-section" style="margin-top: 14px;">
 <h3 style="font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
 <span>📜 Storico Giornate Salvate</span>
-<button class="btn btn-secondary" onclick="svuotaStoricoCassa()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota Storico</button>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoCassa()" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;">Svuota Storico</button>
 </h3>
 <div id="listaStoricoCassa"></div>
 </div>
@@ -797,8 +798,8 @@ body { padding: 4px; padding-bottom: 80px; }
 <div class="backup-section">
 <div class="backup-title">📁 Gestione Dati e Backup JSON</div>
 <div class="backup-buttons">
-<button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; min-height: 36px;" onclick="esportaDatiJSON()">📥 Export JSON</button>
-<button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; min-height: 36px;" onclick="document.getElementById('inputImportJSON').click()">📤 Import JSON</button>
+<button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; min-height: 36px;" onclick="esportaDatiJSON()">📥 Export JSON</button>
+<button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; min-height: 36px;" onclick="document.getElementById('inputImportJSON').click()">📤 Import JSON</button>
 <input type="file" id="inputImportJSON" accept=".json" style="display: none;" onchange="importaDatiJSON(event)">
 </div>
 </div>
@@ -811,8 +812,8 @@ body { padding: 4px; padding-bottom: 80px; }
 <h1>
 <span>Gestione Incassi & Spese</span>
 <div style="display: flex; gap: 6px;">
-<button class="btn btn-secondary" onclick="aggiungiNuovoMeseCustom()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">+ Nuovo Mese</button>
-<button class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset</button>
+<button type="button" class="btn btn-secondary" onclick="aggiungiNuovoMeseCustom()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">+ Nuovo Mese</button>
+<button type="button" class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">Reset</button>
 </div>
 </h1>
 
@@ -853,12 +854,12 @@ body { padding: 4px; padding-bottom: 80px; }
 <h3>Aggiungi Spesa o Rettifica Manuale</h3>
 <div class="field">
 <label>Giorno / Data:</label>
-<input type="text" id="txtGiorno" placeholder="es. 4 Novembre 2026">
+<input type="text" id="txtGiorno" placeholder="es. 6 Novembre 2026">
 </div>
 
 <div class="field">
 <label>Postazione / Barca:</label>
-<select id="selectPostazioneIncassi" onchange="gestisciCambioPostazioneIncassi()"></select>
+<select id="selectPostazioneIncassi"></select>
 </div>
 
 <div class="field">
@@ -874,12 +875,12 @@ body { padding: 4px; padding-bottom: 80px; }
 <div class="field" style="grid-column: 1 / -1;">
 <label class="checkbox-container">
 <input type="checkbox" id="chkFesta">
-<span>Giorno di Festa (Escludi Quota €26)</span>
+<span>Giorno di Festa (Escludi Paga Base €26)</span>
 </label>
 </div>
 
 <div class="field" style="grid-column: 1 / -1;">
-<button class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Registra Spesa / Rettifica</button>
+<button type="button" class="btn btn-success" onclick="aggiungiRecordIncasso()">+ Registra Spesa / Rettifica</button>
 </div>
 </div>
 
@@ -912,7 +913,7 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 
 <div style="margin-top: 16px;">
-<button class="btn btn-warning btn-full" onclick="chiudiEArchiviaMeseCorrente()">🔒 Chiudi & Archivia Mese Corrente</button>
+<button type="button" class="btn btn-warning btn-full" onclick="chiudiEArchiviaMeseCorrente()">🔒 Chiudi & Archivia Mese Corrente</button>
 </div>
 
 <div class="storico-section" style="margin-top: 16px;">
@@ -985,11 +986,11 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 </div>
 
-<!-- MODALE CARICO MERCE CON NUMERO DI BOLLA -->
+<!-- MODALI -->
 <div id="modalCaricoMerce" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>📦 Carico Merce con Bolla di Consegna</h3>
-<p style="font-size:0.8rem; color:var(--text-muted);">Registra l'arrivo della merce da fornitore. Le quantità inserite andranno ad <b>incrementare le rimanenze</b> della barca selezionata in cassa.</p>
+<p style="font-size:0.8rem; color:var(--text-muted);">Registra l'arrivo della merce da fornitore.</p>
 <div class="settings-grid">
 <div class="settings-field">
 <label>Barca / Postazione Destinataria:</label>
@@ -997,11 +998,11 @@ body { padding: 4px; padding-bottom: 80px; }
 </div>
 <div class="settings-field">
 <label>Numero Bolla / Documento:</label>
-<input type="text" id="caricoNumBolla" placeholder="es. BOL-10492 o N° 45">
+<input type="text" id="caricoNumBolla" placeholder="es. BOL-10492">
 </div>
 <div class="settings-field">
 <label>Fornitore / Provenienza:</label>
-<input type="text" id="caricoFornitore" placeholder="es. Deposito Centrale, Beverage Spa, ecc.">
+<input type="text" id="caricoFornitore" placeholder="es. Deposito Centrale">
 </div>
 <div class="settings-field">
 <label>Seleziona Prodotto:</label>
@@ -1012,70 +1013,63 @@ body { padding: 4px; padding-bottom: 80px; }
 <input type="number" id="caricoQta" value="10" min="1">
 </div>
 </div>
-<button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="aggiungiVoceCarico()">+ Aggiungi alla Bolla di Carico</button>
+<button type="button" class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="aggiungiVoceCarico()">+ Aggiungi alla Bolla</button>
 
 <div class="table-responsive" style="margin-bottom:10px;">
 <table id="tabellaCaricoItems">
 <thead>
-<tr>
-<th>Prodotto</th>
-<th>Quantità Aggiunta</th>
-<th>Azioni</th>
-</tr>
+<tr><th>Prodotto</th><th>Quantità</th><th>Azioni</th></tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>
 
 <div style="display:flex; gap:8px;">
-<button class="btn btn-success" style="flex:1;" onclick="confermaEStampaCarico()">📦 Conferma & Incrementa Rimanenze</button>
-<button class="btn btn-secondary" onclick="chiudiModalCaricoMerce()">Annulla</button>
+<button type="button" class="btn btn-success" style="flex:1;" onclick="confermaEStampaCarico()">📦 Conferma & Incrementa</button>
+<button type="button" class="btn btn-secondary" onclick="chiudiModalCaricoMerce()">Annulla</button>
 </div>
 </div>
 </div>
 
-<!-- MODALE SPOSTAMENTO MERCI TRA BARCHE (COSTO 0) -->
 <div id="modalTrasferimento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>🔄 Spostamento Merci (Costo 0)</h3>
-<p style="font-size:0.8rem; color:var(--text-muted);">Sposta prodotti dalla barca selezionata a un'altra. Le quantità verranno sottratte dalle tue rimanenze e <b>sommate a quelle della barca destinataria</b> (€0,00).</p>
+<p style="font-size:0.8rem; color:var(--text-muted);">Sposta prodotti da una barca all'altra.</p>
 <div class="settings-grid">
 <div class="settings-field">
-<label>Barca di Origine (Da dove togli):</label>
+<label>Barca Origine:</label>
 <select id="transfDaBarca" disabled></select>
 </div>
 <div class="settings-field">
-<label>Barca Destinazione (A chi dai):</label>
+<label>Barca Destinazione:</label>
 <select id="transfABarca"></select>
 </div>
 <div class="settings-field">
-<label>Prodotto da Trasferire:</label>
+<label>Prodotto:</label>
 <select id="transfProdotto"></select>
 </div>
 <div class="settings-field">
-<label>Quantità da spostare:</label>
+<label>Quantità:</label>
 <input type="number" id="transfQta" value="1" min="1">
 </div>
 </div>
 <div style="display:flex; gap:8px; margin-top:12px;">
-<button class="btn btn-success" style="flex:1;" onclick="confermaTrasferimentoMerci()">Conferma Spostamento</button>
-<button class="btn btn-secondary" onclick="chiudiModalTrasferimento()">Annulla</button>
+<button type="button" class="btn btn-success" style="flex:1;" onclick="confermaTrasferimentoMerci()">Conferma Spostamento</button>
+<button type="button" class="btn btn-secondary" onclick="chiudiModalTrasferimento()">Annulla</button>
 </div>
 </div>
 </div>
 
-<!-- MODALE BUONO DI CONSEGNA CON PREZZI MODIFICABILI -->
 <div id="modalBuonoConsegna" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:12px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>📄 Genera Buono di Consegna</h3>
-<p style="font-size:0.8rem; color:var(--text-muted);">Crea una bolla di consegna modificando il prezzo degli articoli. Gli articoli verranno scaricati dalle rimanenze e l'importo aggiunto alla cassa.</p>
 <div class="settings-grid">
 <div class="settings-field">
-<label>Destinatario / Cliente:</label>
-<input type="text" id="buonoCliente" placeholder="es. Barca X, Bar Centrale, ecc.">
+<label>Destinatario:</label>
+<input type="text" id="buonoCliente" placeholder="es. Barca X">
 </div>
 <div class="settings-field">
-<label>Seleziona Prodotto:</label>
+<label>Prodotto:</label>
 <select id="buonoProdotto" onchange="aggiornaPrezzoStandardBuono()"></select>
 </div>
 <div class="settings-field">
@@ -1083,56 +1077,49 @@ body { padding: 4px; padding-bottom: 80px; }
 <input type="number" id="buonoQta" value="1" min="1">
 </div>
 <div class="settings-field">
-<label>Prezzo Unitario Modificabile (€):</label>
+<label>Prezzo Unitario (€):</label>
 <input type="number" id="buonoPrezzoUnitario" step="0.10" value="0.00">
 </div>
 </div>
-<button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="aggiungiVoceBuono()">+ Aggiungi al Buono</button>
+<button type="button" class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="aggiungiVoceBuono()">+ Aggiungi al Buono</button>
 
 <div class="table-responsive" style="margin-bottom:10px;">
 <table id="tabellaBuonoItems">
 <thead>
-<tr>
-<th>Prodotto</th>
-<th>Qta</th>
-<th>Prezzo Unit.</th>
-<th>Totale</th>
-<th>Azioni</th>
-</tr>
+<tr><th>Prodotto</th><th>Qta</th><th>Prezzo Unit.</th><th>Totale</th><th>Azioni</th></tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>
 
 <div style="display:flex; gap:8px;">
-<button class="btn btn-success" style="flex:1;" onclick="confermaEStampaBuono()">📄 Completa & Scarica Rimanenze</button>
-<button class="btn btn-secondary" onclick="chiudiModalBuonoConsegna()">Annulla</button>
+<button type="button" class="btn btn-success" style="flex:1;" onclick="confermaEStampaBuono()">📄 Completa Buono</button>
+<button type="button" class="btn btn-secondary" onclick="chiudiModalBuonoConsegna()">Annulla</button>
 </div>
 </div>
 </div>
 
-<!-- NAVBAR INFERIORE MOBILE -->
-<nav class="bottom-nav">
-<button class="nav-item active" onclick="cambiaApp('app-cassa', this)">
+<!-- NAVBAR INFERIORE MOBILE DEFINITIVA -->
+<div class="bottom-nav" id="mainBottomNav">
+<div class="nav-item active" data-app="app-cassa">
 <span class="nav-icon">💶</span>
 <span>Cassa</span>
-</button>
-<button class="nav-item" onclick="cambiaApp('app-incassi', this)">
+</div>
+<div class="nav-item" data-app="app-incassi">
 <span class="nav-icon">📊</span>
 <span>Incassi</span>
-</button>
-<button class="nav-item" onclick="cambiaApp('app-report-prodotti', this)">
+</div>
+<div class="nav-item" data-app="app-report-prodotti">
 <span class="nav-icon">📦</span>
 <span>Report</span>
-</button>
-<button class="nav-item" onclick="cambiaApp('app-grafici', this)">
+</div>
+<div class="nav-item" data-app="app-grafici">
 <span class="nav-icon">📈</span>
 <span>Grafici</span>
-</button>
-</nav>
+</div>
+</div>
 
 <script>
-// 1. CONFIGURAZIONE E LISTE BASE
 const listaBarche = [
 "NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET",
 "ISCHIA JET", "SUPER FLYTE", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET",
@@ -1182,24 +1169,35 @@ const prodottiDefault = [
 {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, stock: 30}
 ];
 
-// STATO GLOBALE
+const datiPrecaricatiDefault = [
+{ mese: "Novembre 2026", data: "1 novembre 2026", postazione: "VESUVIO JET", cash: 125.00, pos: 29.50, spesa: 0, diff: 0, festa: false },
+{ mese: "Novembre 2026", data: "2 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, spesa: 0, diff: 0, festa: false },
+{ mese: "Novembre 2026", data: "3 novembre 2026", postazione: "VESUVIO JET", cash: 3.50, pos: 0.00, spesa: 0, diff: 0, festa: false },
+{ mese: "Novembre 2026", data: "4 novembre 2026", postazione: "VESUVIO JET", cash: 115.00, pos: 124.00, spesa: 0, diff: 0, festa: false },
+{ mese: "Novembre 2026", data: "5 novembre 2026", postazione: "VESUVIO JET", cash: 290.00, pos: 91.00, spesa: 0, diff: 0, festa: false },
+{ mese: "Novembre 2026", data: "6 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, spesa: 0, diff: 0, festa: false }
+];
+
+const mesiArchivatiDefault = [
+{ mese: "Ottobre 2026", dataArchiviazione: "31/10/2026", incassoTotale: 9981.00, quota5p: 499.05, quotaFissa: 754.00, speseUscite: 0.00, nettoSpettante: 1253.05, giornate: 29 },
+{ mese: "Settembre 2026", dataArchiviazione: "01/10/2026", incassoTotale: 18320.50, quota5p: 916.02, quotaFissa: 754.00, speseUscite: 0.00, nettoSpettante: 1670.02, giornate: 29 },
+{ mese: "Agosto 2026", dataArchiviazione: "31/10/2026", incassoTotale: 15185.50, quota5p: 759.27, quotaFissa: 728.00, speseUscite: 0.00, nettoSpettante: 1487.27, giornate: 31 }
+];
+
 let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
 let bozzePerBarca = {};
 let storicoGiornate = [];
 let storicoTrasferimenti = [];
 let storicoBuoni = [];
 let storicoCarichi = [];
-let datiIncassi = [];
-let mesiArchivati = [];
+let datiIncassi = [...datiPrecaricatiDefault];
+let mesiArchivati = [...mesiArchivatiDefault];
 let timerSalvataggioToast = null;
-let dataTracciata = new Date();
 let chartAndamentoInstance = null;
 let chartTopProdottiInstance = null;
 let itemsBuonoConsegna = [];
 let itemsCaricoMerce = [];
-let ultimaBarcaSelezionata = "TREMITI JET";
 
-// 2. FUNZIONI DI UTILITÀ E NAVIGAZIONE
 function popolaSelectBarche() {
 const selectCassa = document.getElementById("selectBarca");
 const selectIncassi = document.getElementById("selectPostazioneIncassi");
@@ -1223,24 +1221,22 @@ opt3.value = barca; opt3.textContent = barca;
 selectFiltroProdotti.appendChild(opt3);
 });
 
-const ultimaBarca = localStorage.getItem("cassa_barca_selezionata");
-if (ultimaBarca && listaBarche.includes(ultimaBarca)) {
-selectCassa.value = ultimaBarca;
-selectIncassi.value = ultimaBarca;
-ultimaBarcaSelezionata = ultimaBarca;
-} else if (listaBarche.includes("TREMITI JET")) {
-selectCassa.value = "TREMITI JET";
-selectIncassi.value = "TREMITI JET";
-ultimaBarcaSelezionata = "TREMITI JET";
-}
+selectCassa.value = "VESUVIO JET";
+selectIncassi.value = "VESUVIO JET";
 }
 
-function cambiaApp(idApp, bottoneCliccato) {
-document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+function cambiaApp(idApp) {
+const targetView = document.getElementById(idApp);
+if (!targetView) return;
 
-document.getElementById(idApp).classList.add('active');
-bottoneCliccato.classList.add('active');
+document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+targetView.classList.add('active');
+
+const activeBtn = document.querySelector(`.nav-item[data-app="${idApp}"]`);
+if (activeBtn) activeBtn.classList.add('active');
+
 window.scrollTo(0, 0);
 
 if (idApp === 'app-report-prodotti') {
@@ -1252,1188 +1248,860 @@ aggiornaTabellaIncassi();
 }
 }
 
-function mostraNotificaSalvataggio() {
-const ind = document.getElementById("saveIndicator");
-ind.style.display = "flex";
-ind.style.opacity = "1";
-clearTimeout(timerSalvataggioToast);
-timerSalvataggioToast = setTimeout(() => {
-ind.style.opacity = "0";
-setTimeout(() => { ind.style.display = "none"; }, 300);
-}, 1000);
-}
+document.addEventListener("DOMContentLoaded", function() {
+popolaSelectBarche();
+caricaDatiLocali();
+generaListaProdottiCassa();
+calcolaTotaleCassa();
+aggiornaTabellaIncassi();
+aggiornaListaMesiArchivati();
 
-function impostaDataInInput(d) {
-let optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
-let strData = d.toLocaleDateString('it-IT', optionsDate);
-document.getElementById("txtDataCassa").value = strData;
-document.getElementById("txtGiorno").value = strData;
-
-let optionMonth = { month: 'long', year: 'numeric' };
-let meseStr = d.toLocaleDateString('it-IT', optionMonth);
-meseStr = meseStr.charAt(0).toUpperCase() + meseStr.slice(1);
-
-let selectMese = document.getElementById("selectMeseIncassi");
-let esiste = Array.from(selectMese.options).some(opt => opt.value === meseStr);
-if (!esiste) {
-let opt = document.createElement("option");
-opt.value = meseStr; opt.textContent = meseStr;
-selectMese.insertBefore(opt, selectMese.firstChild);
-}
-selectMese.value = meseStr;
-}
-
-function avanzaAlGiornoSuccessivo() {
-dataTracciata.setDate(dataTracciata.getDate() + 1);
-impostaDataInInput(dataTracciata);
-}
-
-// 3. LOGICA CASSA, BOZZE E INVENTARIO
-
-function salvaBozzaPerBarcaSpecifica(nomeBarca) {
-if (!nomeBarca) return;
-
-let mappaQta = {};
-prodotti.forEach(p => {
-if (p.qtaPass > 0 || p.qtaPen > 0 || p.stock !== undefined) {
-mappaQta[p.id] = { pass: p.qtaPass, pen: p.qtaPen, stock: p.stock };
-}
-});
-
-bozzePerBarca[nomeBarca] = {
-operatore: document.getElementById("txtOperatore").value,
-meteo: document.getElementById("selectMeteo").value,
-dataStr: document.getElementById("txtDataCassa").value,
-fondoCassa: parseFloat(document.getElementById("fondoCassa").value) || 0,
-incassoCash: document.getElementById("incassoCash").value,
-incassoPos: document.getElementById("incassoPos").value,
-quantita: mappaQta
+const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+navItems.forEach(item => {
+const triggerAppChange = (e) => {
+e.preventDefault();
+e.stopPropagation();
+const targetApp = item.getAttribute('data-app');
+cambiaApp(targetApp);
 };
-
-localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
-mostraNotificaSalvataggio();
-}
-
-function salvaBozzaCassaInTempoReale() {
-const barcaCorrente = document.getElementById("selectBarca").value;
-ultimaBarcaSelezionata = barcaCorrente;
-salvaBozzaPerBarcaSpecifica(barcaCorrente);
-localStorage.setItem("cassa_barca_selezionata", barcaCorrente);
-}
-
-function caricaBozzaBarcaCorrente() {
-const barcaCorrente = document.getElementById("selectBarca").value;
-prodotti = JSON.parse(JSON.stringify(prodottiDefault));
-
-if (bozzePerBarca && bozzePerBarca[barcaCorrente]) {
-let bozza = bozzePerBarca[barcaCorrente];
-if (bozza.operatore !== undefined) document.getElementById("txtOperatore").value = bozza.operatore;
-if (bozza.meteo !== undefined) document.getElementById("selectMeteo").value = bozza.meteo;
-if (bozza.dataStr !== undefined) document.getElementById("txtDataCassa").value = bozza.dataStr;
-if (bozza.fondoCassa !== undefined) document.getElementById("fondoCassa").value = bozza.fondoCassa;
-if (bozza.incassoCash !== undefined) document.getElementById("incassoCash").value = bozza.incassoCash;
-if (bozza.incassoPos !== undefined) document.getElementById("incassoPos").value = bozza.incassoPos;
-if (bozza.quantita) {
-prodotti.forEach(p => {
-if (bozza.quantita[p.id]) {
-p.qtaPass = bozza.quantita[p.id].pass || 0;
-p.qtaPen = bozza.quantita[p.id].pen || 0;
-if (bozza.quantita[p.id].stock !== undefined) p.stock = bozza.quantita[p.id].stock;
-}
+item.addEventListener('touchstart', triggerAppChange, { passive: false });
+item.addEventListener('click', triggerAppChange);
 });
+});
+
+function mostraNotificaSalvataggio() {
+const el = document.getElementById("saveIndicator");
+el.style.display = "flex";
+clearTimeout(timerSalvataggioToast);
+timerSalvataggioToast = setTimeout(() => { el.style.display = "none"; }, 1500);
 }
-} else {
-document.getElementById("incassoCash").value = "";
-document.getElementById("incassoPos").value = "";
+
+function salvaDatiLocali() {
+try {
+localStorage.setItem("cassa_bozze_barche", JSON.stringify(bozzePerBarca));
+localStorage.setItem("cassa_storico_giornate", JSON.stringify(storicoGiornate));
+localStorage.setItem("cassa_storico_trasferimenti", JSON.stringify(storicoTrasferimenti));
+localStorage.setItem("cassa_storico_buoni", JSON.stringify(storicoBuoni));
+localStorage.setItem("cassa_storico_carichi", JSON.stringify(storicoCarichi));
+localStorage.setItem("cassa_dati_incassi", JSON.stringify(datiIncassi));
+localStorage.setItem("cassa_mesi_archivati", JSON.stringify(mesiArchivati));
+localStorage.setItem("cassa_prodotti_master", JSON.stringify(prodotti));
+mostraNotificaSalvataggio();
+} catch (e) { console.error("Errore salvataggio localStorage", e); }
 }
-renderizzaTabellaCassa();
+
+function caricaDatiLocali() {
+try {
+const b = localStorage.getItem("cassa_bozze_barche");
+if (b) bozzePerBarca = JSON.parse(b);
+
+const s = localStorage.getItem("cassa_storico_giornate");
+if (s) storicoGiornate = JSON.parse(s);
+
+const t = localStorage.getItem("cassa_storico_trasferimenti");
+if (t) storicoTrasferimenti = JSON.parse(t);
+
+const bu = localStorage.getItem("cassa_storico_buoni");
+if (bu) storicoBuoni = JSON.parse(bu);
+
+const c = localStorage.getItem("cassa_storico_carichi");
+if (c) storicoCarichi = JSON.parse(c);
+
+const inc = localStorage.getItem("cassa_dati_incassi");
+if (inc) datiIncassi = JSON.parse(inc);
+
+const arch = localStorage.getItem("cassa_mesi_archivati");
+if (arch) mesiArchivati = JSON.parse(arch);
+
+const p = localStorage.getItem("cassa_prodotti_master");
+if (p) prodotti = JSON.parse(p);
+} catch (e) { console.error("Errore caricamento localStorage", e); }
+
+caricaBozzaBarcaCorrente();
+renderizzaStorici();
 }
 
 function cambiaBarcaCorrente() {
-const selectCassa = document.getElementById("selectBarca");
-const nuovaBarca = selectCassa.value;
-
-salvaBozzaPerBarcaSpecifica(ultimaBarcaSelezionata);
-ultimaBarcaSelezionata = nuovaBarca;
-localStorage.setItem("cassa_barca_selezionata", nuovaBarca);
 caricaBozzaBarcaCorrente();
 }
 
-function venditaRapida(id, tipo) {
-modificaQtaCassa(id, tipo, 1);
-}
+function caricaBozzaBarcaCorrente() {
+const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
+const bozza = bozzePerBarca[barca] || {};
 
-function filtraProdottiCassa() {
-let filtro = document.getElementById("cercaProdottoCassa").value.toLowerCase();
-let cards = document.querySelectorAll(".prodotto-card");
-cards.forEach(card => {
-let nome = card.dataset.nome ? card.dataset.nome.toLowerCase() : "";
-if (nome.includes(filtro)) card.style.display = "block";
-else card.style.display = "none";
+document.getElementById("txtOperatore").value = bozza.operatore || "";
+document.getElementById("txtDataCassa").value = bozza.data || "6 Novembre 2026";
+document.getElementById("selectMeteo").value = bozza.meteo || "☀️ Sole / Mare Calmo";
+document.getElementById("fondoCassa").value = bozza.fondo !== undefined ? bozza.fondo : "50.00";
+document.getElementById("incassoCash").value = bozza.cash || "";
+document.getElementById("incassoPos").value = bozza.pos || "";
+
+const qtaSaved = bozza.quantita || {};
+prodotti.forEach(p => {
+p.qtaPass = qtaSaved[p.id + '_pass'] || 0;
+p.qtaPen = qtaSaved[p.id + '_pen'] || 0;
 });
+
+generaListaProdottiCassa();
+calcolaTotaleCassa();
 }
 
-function verificaAvvisiScorte() {
-let alertBox = document.getElementById("alertBoxScorte");
-let articoliBassi = [];
+function salvaBozzaCassaInTempoReale() {
+const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
+const quantitaObj = {};
+prodotti.forEach(p => {
+quantitaObj[p.id + '_pass'] = p.qtaPass || 0;
+quantitaObj[p.id + '_pen'] = p.qtaPen || 0;
+});
+
+bozzePerBarca[barca] = {
+operatore: document.getElementById("txtOperatore").value,
+data: document.getElementById("txtDataCassa").value,
+meteo: document.getElementById("selectMeteo").value,
+fondo: document.getElementById("fondoCassa").value,
+cash: document.getElementById("incassoCash").value,
+pos: document.getElementById("incassoPos").value,
+quantita: quantitaObj
+};
+
+salvaDatiLocali();
+}
+
+function generaListaProdottiCassa() {
+const lista = document.getElementById("listaProdotti");
+lista.innerHTML = "";
+let alertScorteHTML = "";
 
 prodotti.forEach(p => {
-let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
-if (rimasti <= 5) {
-articoliBassi.push(`${p.i} ${p.n} (${rimasti} pz)`);
+const card = document.createElement("div");
+card.className = "prodotto-card";
+card.id = "card_prod_" + p.id;
+
+let badgeStockClass = "stock-ok";
+if (p.stock <= 5) badgeStockClass = "stock-low";
+
+if (p.stock <= 5) {
+alertScorteHTML += `⚠️ <b>${p.n}</b>: Solo ${p.stock} unità in magazzino!<br>`;
 }
+
+card.innerHTML = `
+<div class="prodotto-header">
+<div class="prodotto-nome"><span>${p.i}</span> <span>${p.n}</span></div>
+<div class="prezzi-info">Pass: €${p.p.toFixed(2)} | Pen: €${p.pen.toFixed(2)}</div>
+</div>
+<div class="magazzino-bar">
+<div class="magazzino-item">Magazzino: <span class="stock-badge ${badgeStockClass}">${p.stock} pz</span></div>
+</div>
+<div class="categorie-grid">
+<div class="categoria-box">
+<div class="categoria-titolo pass">Passeggeri (€${p.p.toFixed(2)})</div>
+<div class="controlli-qta">
+<button type="button" class="btn-qta" onclick="modificaQta('${p.id}', 'Pass', -1)">-</button>
+<input type="number" class="input-qta" id="qta_pass_${p.id}" value="${p.qtaPass}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pass', this.value)">
+<button type="button" class="btn-qta" onclick="modificaQta('${p.id}', 'Pass', 1)">+</button>
+</div>
+</div>
+<div class="categoria-box">
+<div class="categoria-titolo pen">Pendolari (€${p.pen.toFixed(2)})</div>
+<div class="controlli-qta">
+<button type="button" class="btn-qta" onclick="modificaQta('${p.id}', 'Pen', -1)">-</button>
+<input type="number" class="input-qta" id="qta_pen_${p.id}" value="${p.qtaPen}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pen', this.value)">
+<button type="button" class="btn-qta" onclick="modificaQta('${p.id}', 'Pen', 1)">+</button>
+</div>
+</div>
+</div>
+`;
+lista.appendChild(card);
 });
 
-if (articoliBassi.length > 0) {
+const alertBox = document.getElementById("alertBoxScorte");
+if (alertScorteHTML !== "") {
+alertBox.innerHTML = alertScorteHTML;
 alertBox.style.display = "block";
-alertBox.innerHTML = `⚠️ <b>AVVISO SCORTE IN ESAURIMENTO (≤5 pz):</b><br>` + articoliBassi.join(" • ");
 } else {
 alertBox.style.display = "none";
 }
 }
 
-function renderizzaTabellaCassa() {
-const container = document.getElementById("listaProdotti");
-container.innerHTML = "";
+function modificaQta(idProd, tipo, delta) {
+const prod = prodotti.find(p => p.id === idProd);
+if (!prod) return;
 
-prodotti.forEach(p => {
-let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
-let badgeStockClass = rimasti < 5 ? "stock-low" : "stock-ok";
-
-let div = document.createElement("div");
-div.className = "prodotto-card";
-div.dataset.nome = p.n;
-div.innerHTML = `
-<div class="prodotto-header">
-<div class="prodotto-nome">${p.i} ${p.n}</div>
-<div class="prezzi-info">Pas: €${p.p.toFixed(2)} / Pen: €${p.pen.toFixed(2)}</div>
-</div>
-<div class="magazzino-bar">
-<div class="magazzino-item">
-<span>📦 Carico:</span>
-<input type="number" value="${p.stock || 0}" onchange="aggiornaStockIniziale('${p.id}', this.value)" style="width: 52px; padding: 4px; text-align: center; font-size: 0.85rem; border-radius: 6px; background: var(--input-bg); color: white; border: 1px solid var(--border);">
-</div>
-<div class="magazzino-item">
-<span>Rimanenza:</span>
-<span class="stock-badge ${badgeStockClass}">${rimasti} pz</span>
-</div>
-</div>
-<div class="categorie-grid">
-<div class="categoria-box">
-<div class="categoria-titolo pass">Passeggeri</div>
-<div class="controlli-qta">
-<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', -1)">-</button>
-<input type="number" class="input-qta" value="${p.qtaPass}" id="pass_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pass', this.value)" min="0" inputmode="numeric">
-<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pass', 1)">+</button>
-</div>
-</div>
-<div class="categoria-box">
-<div class="categoria-titolo pen">Pendolari</div>
-<div class="controlli-qta">
-<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', -1)">-</button>
-<input type="number" class="input-qta" value="${p.qtaPen}" id="pen_${p.id}" onchange="impostaQtaCassa('${p.id}', 'Pen', this.value)" min="0" inputmode="numeric">
-<button class="btn-qta" onclick="modificaQtaCassa('${p.id}', 'Pen', 1)">+</button>
-</div>
-</div>
-</div>
-`;
-container.appendChild(div);
-});
+if (tipo === 'Pass') {
+prod.qtaPass = Math.max(0, prod.qtaPass + delta);
+document.getElementById(`qta_pass_${idProd}`).value = prod.qtaPass;
+} else {
+prod.qtaPen = Math.max(0, prod.qtaPen + delta);
+document.getElementById(`qta_pen_${idProd}`).value = prod.qtaPen;
+}
 
 calcolaTotaleCassa();
-verificaAvvisiScorte();
-}
-
-function aggiornaStockIniziale(id, val) {
-let p = prodotti.find(item => item.id === id);
-if (p) {
-p.stock = Math.max(0, parseInt(val) || 0);
-renderizzaTabellaCassa();
 salvaBozzaCassaInTempoReale();
 }
-}
 
-function modificaQtaCassa(id, tipo, variazione) {
-let p = prodotti.find(item => item.id === id);
-if (p) {
+function impostaQtaManuale(idProd, tipo, val) {
+const prod = prodotti.find(p => p.id === idProd);
+if (!prod) return;
+const qta = Math.max(0, parseInt(val) || 0);
+
 if (tipo === 'Pass') {
-p.qtaPass = Math.max(0, p.qtaPass + variazione);
+prod.qtaPass = qta;
 } else {
-p.qtaPen = Math.max(0, p.qtaPen + variazione);
-}
-renderizzaTabellaCassa();
-salvaBozzaCassaInTempoReale();
-}
+prod.qtaPen = qta;
 }
 
-function impostaQtaCassa(id, tipo, valore) {
-let p = prodotti.find(item => item.id === id);
-if (p) {
-let val = Math.max(0, parseInt(valore) || 0);
-if (tipo === 'Pass') p.qtaPass = val;
-else p.qtaPen = val;
-renderizzaTabellaCassa();
+calcolaTotaleCassa();
 salvaBozzaCassaInTempoReale();
 }
+
+function venditaRapida(idProd, tipo) {
+modificaQta(idProd, tipo, 1);
 }
 
 function calcolaTotaleCassa() {
-let incassoTeorico = 0;
+let totaleVenduto = 0;
 prodotti.forEach(p => {
-incassoTeorico += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+totaleVenduto += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
 });
 
-let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
-let cashVal = parseFloat(document.getElementById("incassoCash").value) || 0;
-let posVal = parseFloat(document.getElementById("incassoPos").value) || 0;
-let incassoEffettivo = cashVal + posVal;
+const fondo = parseFloat(document.getElementById("fondoCassa").value) || 0;
+const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
+const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
 
-let incassoConsiderato = (document.getElementById("incassoCash").value !== "" || document.getElementById("incassoPos").value !== "") ? incassoEffettivo : incassoTeorico;
+const totaleDaAvere = fondo + totaleVenduto;
+const incassoRealeDichiarato = cash + pos;
+const diff = incassoRealeDichiarato - totaleVenduto;
 
-let diff = incassoConsiderato - incassoTeorico;
-let totaleComplessivo = fondoCassa + incassoConsiderato;
+document.getElementById("totaleCassa").textContent = `${totaleDaAvere.toFixed(2)} €`;
+document.getElementById("dettaglioIncasso").textContent = `Venduto Teorico: €${totaleVenduto.toFixed(2)} | Fondo: €${fondo.toFixed(2)}`;
 
-document.getElementById("totaleCassa").innerText = totaleComplessivo.toFixed(2) + " €";
-document.getElementById("dettaglioIncasso").innerText = `Incasso Teorico: ${incassoTeorico.toFixed(2)} € | Cash: ${cashVal.toFixed(2)} € + POS: ${posVal.toFixed(2)} €`;
-
-let boxDiff = document.getElementById("boxPlusAmmanco");
-if (diff > 0) boxDiff.innerHTML = `<span class="badge-diff badge-plus">Plus: +${diff.toFixed(2)} €</span>`;
-else if (diff < 0) boxDiff.innerHTML = `<span class="badge-diff badge-ammanco">Ammanco: ${diff.toFixed(2)} €</span>`;
-else boxDiff.innerHTML = `<span class="badge-diff badge-ok">Quadratura Perfetta (0.00 €)</span>`;
+const boxDiff = document.getElementById("boxPlusAmmanco");
+if (incassoRealeDichiarato > 0 || cash > 0 || pos > 0) {
+if (Math.abs(diff) < 0.01) {
+boxDiff.innerHTML = `<span class="badge-diff badge-ok">Quadratura Perfetta (€0.00)</span>`;
+} else if (diff > 0) {
+boxDiff.innerHTML = `<span class="badge-diff badge-plus">Plusvalenza: +€${diff.toFixed(2)}</span>`;
+} else {
+boxDiff.innerHTML = `<span class="badge-diff badge-ammanco">Ammanco Cassa: -€${Math.abs(diff).toFixed(2)}</span>`;
+}
+} else {
+boxDiff.innerHTML = "";
+}
 }
 
-function generaReportTesto() {
-let barca = document.getElementById("selectBarca").value;
-let operatore = document.getElementById("txtOperatore").value.trim() || "N.D.";
-let meteo = document.getElementById("selectMeteo").value;
-let dataStr = document.getElementById("txtDataCassa").value.trim() || new Date().toLocaleDateString('it-IT');
-let fondoCassa = parseFloat(document.getElementById("fondoCassa").value) || 0;
-let incassoTeorico = 0;
-
+function filtraProdottiCassa() {
+const q = document.getElementById("cercaProdottoCassa").value.toLowerCase();
 prodotti.forEach(p => {
-incassoTeorico += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
-});
-
-let cashVal = parseFloat(document.getElementById("incassoCash").value) || 0;
-let posVal = parseFloat(document.getElementById("incassoPos").value) || 0;
-let incassoEffettivo = (document.getElementById("incassoCash").value !== "" || document.getElementById("incassoPos").value !== "") ? (cashVal + posVal) : incassoTeorico;
-let diff = incassoEffettivo - incassoTeorico;
-
-let testo = `📋 *REPORT VENDITE BAR* 📋\n`;
-testo += `🚢 *Postazione:* ${barca}\n`;
-testo += `👤 *Operatore:* ${operatore}\n`;
-testo += `⛅ *Meteo:* ${meteo}\n`;
-testo += `📅 *Data:* ${dataStr}\n`;
-testo += `💵 *Fondo cassa iniziale:* €${fondoCassa.toFixed(2)}\n`;
-testo += `----------------------------\n`;
-
-let venditeEffettuate = false;
-prodotti.forEach(p => {
-if (p.qtaPass > 0 || p.qtaPen > 0) {
-venditeEffettuate = true;
-let rimasti = (p.stock || 0) - (p.qtaPass + p.qtaPen);
-testo += `${p.i} *${p.n}* (Rimanenti: ${rimasti})\n`;
-if (p.qtaPass > 0) testo += `   • Passeggeri: ${p.qtaPass} pz (€${(p.qtaPass * p.p).toFixed(2)})\n`;
-if (p.qtaPen > 0) testo += `   • Pendolari: ${p.qtaPen} pz (€${(p.qtaPen * p.pen).toFixed(2)})\n`;
+const card = document.getElementById("card_prod_" + p.id);
+if (card) {
+if (p.n.toLowerCase().includes(q)) {
+card.style.display = "block";
+} else {
+card.style.display = "none";
+}
 }
 });
-
-if (!venditeEffettuate) return null;
-
-let totaleComplessivo = fondoCassa + incassoEffettivo;
-testo += `----------------------------\n`;
-testo += `💰 *Incasso Teorico:* €${incassoTeorico.toFixed(2)}\n`;
-testo += `💵 *Cash:* €${cashVal.toFixed(2)} | 💳 *POS:* €${posVal.toFixed(2)}\n`;
-testo += `💶 *Incasso Totale:* €${incassoEffettivo.toFixed(2)}\n`;
-if (diff !== 0) testo += `⚖️ *Quadrante (Plus/Ammanco):* ${diff > 0 ? '+' : ''}${diff.toFixed(2)} €\n`;
-testo += `💵 *Totale da avere in cassa:* €${totaleComplessivo.toFixed(2)}`;
-
-return {
-testo: testo, barca: barca, operatore: operatore, meteo: meteo, dataStr: dataStr, incassoTeorico: incassoTeorico,
-cash: cashVal, pos: posVal, incassoTotale: incassoEffettivo, diffQuadratura: diff, fondoCassa: fondoCassa,
-prodotti: JSON.parse(JSON.stringify(prodotti.filter(p => p.qtaPass > 0 || p.qtaPen > 0)))
-};
 }
 
-function inviaWhatsApp() {
-let report = generaReportTesto();
-if (!report) { alert("Nessuna vendita registrata al momento!"); return; }
-let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(report.testo)}`;
-window.open(url, '_blank');
+function azzeraQuantitaCassa() {
+if (confirm("Sei sicuro di voler azzerare le quantitá di vendita Correnti?")) {
+prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
+document.getElementById("incassoCash").value = "";
+document.getElementById("incassoPos").value = "";
+generaListaProdottiCassa();
+calcolaTotaleCassa();
+salvaBozzaCassaInTempoReale();
+}
 }
 
 function salvaGiornataInStorico() {
-let report = generaReportTesto();
-if (!report) { alert("Inserisci almeno una vendita prima di salvare la giornata!"); return; }
+const barca = document.getElementById("selectBarca").value;
+const data = document.getElementById("txtDataCassa").value || "6 Novembre 2026";
+const op = document.getElementById("txtOperatore").value || "Anonimo";
+const meteo = document.getElementById("selectMeteo").value;
+const fondo = parseFloat(document.getElementById("fondoCassa").value) || 0;
+const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
+const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
 
-let nuovaGiornata = {
-id: Date.now(), barca: report.barca, operatore: report.operatore, meteo: report.meteo, dataStr: report.dataStr,
-incassoTotale: report.incassoTotale, incassoTeorico: report.incassoTeorico,
-diffQuadratura: report.diffQuadratura, fondoCassa: report.fondoCassa,
-prodotti: report.prodotti, reportTesto: report.testo
-};
-
-storicoGiornate.unshift(nuovaGiornata);
-salvaStoricoCassaLocal();
-renderizzaStoricoCassa();
-
-// TRASFERIMENTO AUTOMATICO NELLA SEZIONE INCASSI & SPESE
-let isFesta = report.barca.toLowerCase().includes("festa");
-let meseCorrente = document.getElementById("selectMeseIncassi").value;
-datiIncassi.push({
-mese: meseCorrente, giorno: report.dataStr, postazione: report.barca,
-cash: report.cash, pos: report.pos, diff: report.diffQuadratura, spesa: 0, festa: isFesta
-});
-salvaDatiIncassi();
-aggiornaTabellaIncassi();
+let totaleVenduto = 0;
+const dettaglioPezzi = [];
 
 prodotti.forEach(p => {
-p.stock = Math.max(0, (p.stock || 0) - (p.qtaPass + p.qtaPen));
-p.qtaPass = 0;
-p.qtaPen = 0;
+if (p.qtaPass > 0 || p.qtaPen > 0) {
+const totPz = p.qtaPass + p.qtaPen;
+const incProd = (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+totaleVenduto += incProd;
+
+p.stock = Math.max(0, p.stock - totPz);
+
+dettaglioPezzi.push({
+id: p.id,
+nome: p.n,
+pass: p.qtaPass,
+pen: p.qtaPen,
+tot: totPz,
+incasso: incProd
 });
+}
+});
+
+const diff = (cash + pos) - totaleVenduto;
+
+const record = {
+id: Date.now(),
+barca, data, op, meteo, fondo, cash, pos,
+totaleVenduto, diff, dettaglioPezzi
+};
+
+storicoGiornate.unshift(record);
+
+const recordIncasso = {
+mese: "Novembre 2026",
+data: data,
+postazione: barca,
+cash: cash,
+pos: pos,
+spesa: 0,
+diff: diff,
+festa: false
+};
+datiIncassi.unshift(recordIncasso);
+
+prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
 document.getElementById("incassoCash").value = "";
 document.getElementById("incassoPos").value = "";
-delete bozzePerBarca[report.barca];
-localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
 
-avanzaAlGiornoSuccessivo();
 salvaBozzaCassaInTempoReale();
-renderizzaTabellaCassa();
+salvaDatiLocali();
+renderizzaStorici();
+generaListaProdottiCassa();
+calcolaTotaleCassa();
+aggiornaTabellaIncassi();
 
-alert("Giornata salvata con successo!\n• L'inventario è stato aggiornato.\n• I dati Cash (€" + report.cash.toFixed(2) + ") e POS (€" + report.pos.toFixed(2) + ") sono stati inviati AUTOMATICAMENTE nel 'Calcolatore Incassi'.\n• La data è stata avanzata al giorno successivo.");
+alert("Giornata salvata con successo e sincronizzata nell'archivio incassi!");
 }
 
-function renderizzaStoricoCassa() {
+function renderizzaStorici() {
 const container = document.getElementById("listaStoricoCassa");
 container.innerHTML = "";
+
 if (storicoGiornate.length === 0) {
-container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessuna giornata salvata.</div>';
+container.innerHTML = "<p style='font-size:0.8rem; color:var(--text-muted);'>Nessuna giornata ancora salvata.</p>";
 return;
 }
 
 storicoGiornate.forEach(item => {
-let div = document.createElement("div");
+const div = document.createElement("div");
 div.className = "storico-card";
-let elencoArticoli = (item.prodotti || []).map(p => `${p.i} ${p.n} (Pass: ${p.qtaPass}, Pen: ${p.qtaPen})`).join(' • ');
-let diffBadge = item.diffQuadratura > 0 ? `<span class="badge-diff badge-plus">+${item.diffQuadratura.toFixed(2)} €</span>` : (item.diffQuadratura < 0 ? `<span class="badge-diff badge-ammanco">${item.diffQuadratura.toFixed(2)} €</span>` : "");
-
 div.innerHTML = `
-<div class="storico-header"><span>🚢 ${item.barca} (${item.operatore || 'N.D.'})</span><span>📅 ${item.dataStr}</span></div>
-<div class="storico-dettaglio"><strong>Meteo:</strong> ${item.meteo || 'N.D.'} | <strong>Incasso:</strong> €${item.incassoTotale.toFixed(2)} ${diffBadge}<br><strong>Articoli:</strong> ${elencoArticoli}</div>
+<div class="storico-header">
+<span>${item.barca} - ${item.data}</span>
+<span>${(item.cash + item.pos).toFixed(2)} €</span>
+</div>
+<div class="storico-dettaglio">
+Addetto: <b>${item.op}</b> | Meteo: ${item.meteo}<br>
+Cash: €${item.cash.toFixed(2)} | POS: €${item.pos.toFixed(2)} | Venduto: €${item.totaleVenduto.toFixed(2)}<br>
+Differenza Quadratura: <b style="color:${item.diff >= 0 ? '#34d399' : '#f87171'}">${item.diff >= 0 ? '+' : ''}${item.diff.toFixed(2)} €</b>
+</div>
 <div class="storico-actions">
-<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiStorico(${item.id})">📱 WhatsApp</button>
-<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaStoricoItem(${item.id})">Elimina</button>
+<button type="button" class="del-btn" onclick="eliminaStoricoCassa(${item.id})">Elimina</button>
 </div>
 `;
 container.appendChild(div);
 });
 }
 
-function condividiStorico(id) {
-let item = storicoGiornate.find(g => g.id === id);
-if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.reportTesto)}`, '_blank');
-}
-
-function eliminaStoricoItem(id) {
-if (confirm("Vuoi eliminare questa giornata dallo storico?")) {
-storicoGiornate = storicoGiornate.filter(g => g.id !== id);
-salvaStoricoCassaLocal();
-renderizzaStoricoCassa();
+function eliminaStoricoCassa(id) {
+if (confirm("Vuoi davvero eliminare questa giornata dallo storico?")) {
+storicoGiornate = storicoGiornate.filter(i => i.id !== id);
+salvaDatiLocali();
+renderizzaStorici();
 }
 }
 
 function svuotaStoricoCassa() {
-if (confirm("Vuoi cancellare tutto lo storico delle giornate salvate?")) {
+if (confirm("Vuoi cancellare l'intero storico delle giornate salvate?")) {
 storicoGiornate = [];
-salvaStoricoCassaLocal();
-renderizzaStoricoCassa();
+salvaDatiLocali();
+renderizzaStorici();
 }
 }
 
-function salvaStoricoCassaLocal() { localStorage.setItem("storico_cassa_barche_v6", JSON.stringify(storicoGiornate)); }
-function caricaStoricoCassaLocal() {
-const salvati = localStorage.getItem("storico_cassa_barche_v6");
-storicoGiornate = salvati ? JSON.parse(salvati) : [];
-const salvatiTransf = localStorage.getItem("storico_trasferimenti_v1");
-storicoTrasferimenti = salvatiTransf ? JSON.parse(salvatiTransf) : [];
-const salvatiBuoni = localStorage.getItem("storico_buoni_v1");
-storicoBuoni = salvatiBuoni ? JSON.parse(salvatiBuoni) : [];
-const salvatiCarichi = localStorage.getItem("storico_carichi_v1");
-storicoCarichi = salvatiCarichi ? JSON.parse(salvatiCarichi) : [];
+function inviaWhatsApp() {
+const barca = document.getElementById("selectBarca").value;
+const data = document.getElementById("txtDataCassa").value || "6 Novembre 2026";
+const op = document.getElementById("txtOperatore").value || "N.D.";
+const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
+const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
+
+let totaleVenduto = 0;
+let testoProdotti = "";
+
+prodotti.forEach(p => {
+if (p.qtaPass > 0 || p.qtaPen > 0) {
+const inc = (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+totaleVenduto += inc;
+testoProdotti += `• ${p.n}: Pass ${p.qtaPass} | Pen ${p.qtaPen}\n`;
+}
+});
+
+const diff = (cash + pos) - totaleVenduto;
+
+let msg = `📊 *REPORT CASSA - ${barca}*\n`;
+msg += `📅 Data: ${data}\n👤 Addetto: ${op}\n\n`;
+msg += `💰 *INCASSI:*\n- Cash: €${cash.toFixed(2)}\n- POS: €${pos.toFixed(2)}\n- Tot. Incassato: €${(cash+pos).toFixed(2)}\n\n`;
+msg += `🛒 *VENDITE TEORICHE:* €${totaleVenduto.toFixed(2)}\n`;
+msg += `${testoProdotti}\n`;
+msg += `⚖️ *QUADRATURA:* ${diff >= 0 ? '+' : ''}€${diff.toFixed(2)}\n`;
+
+window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
-function azzeraQuantitaCassa() {
-if(confirm("Vuoi azzerare le quantità del turno corrente?")) {
-prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; });
-document.getElementById("incassoCash").value = "";
-document.getElementById("incassoPos").value = "";
-salvaBozzaCassaInTempoReale();
-renderizzaTabellaCassa();
-}
-}
-
-// 3.1 CARICO MERCE CON NUMERO DI BOLLA
 function apriModalCaricoMerce() {
-itemsCaricoMerce = [];
-const barcaAttuale = document.getElementById("selectBarca").value;
-document.getElementById("caricoBarcaDest").value = barcaAttuale;
-document.getElementById("caricoNumBolla").value = "";
-document.getElementById("caricoFornitore").value = "";
-
+document.getElementById("caricoBarcaDest").value = document.getElementById("selectBarca").value;
 const selectProd = document.getElementById("caricoProdotto");
 selectProd.innerHTML = "";
 prodotti.forEach(p => {
-selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n}</option>`;
+selectProd.innerHTML += `<option value="${p.id}">${p.n}</option>`;
 });
-
-renderizzaTabellaCarico();
+itemsCaricoMerce = [];
+aggiornaTabellaCaricoItems();
 document.getElementById("modalCaricoMerce").style.display = "flex";
 }
-
-function chiudiModalCaricoMerce() {
-document.getElementById("modalCaricoMerce").style.display = "none";
-}
+function chiudiModalCaricoMerce() { document.getElementById("modalCaricoMerce").style.display = "none"; }
 
 function aggiungiVoceCarico() {
-const prodId = document.getElementById("caricoProdotto").value;
+const idP = document.getElementById("caricoProdotto").value;
 const qta = parseInt(document.getElementById("caricoQta").value) || 0;
-
-if (qta <= 0) { alert("Inserisci una quantità di carico valida."); return; }
-let p = prodotti.find(item => item.id === prodId);
-
-itemsCaricoMerce.push({ id: prodId, nome: p.n, icona: p.i, qta: qta });
-renderizzaTabellaCarico();
+const p = prodotti.find(x => x.id === idP);
+if (!p || qta <= 0) return;
+itemsCaricoMerce.push({ id: p.id, nome: p.n, qta: qta });
+aggiornaTabellaCaricoItems();
 }
 
-function rimuoviVoceCarico(idx) {
-itemsCaricoMerce.splice(idx, 1);
-renderizzaTabellaCarico();
-}
-
-function renderizzaTabellaCarico() {
+function aggiornaTabellaCaricoItems() {
 const tbody = document.querySelector("#tabellaCaricoItems tbody");
 tbody.innerHTML = "";
-
 itemsCaricoMerce.forEach((item, index) => {
-let tr = document.createElement("tr");
-tr.innerHTML = `<td>${item.icona} ${item.nome}</td><td><b style="color:#34d399;">+${item.qta} pz</b></td><td><button class="del-btn" onclick="rimuoviVoceCarico(${index})">X</button></td>`;
-tbody.appendChild(tr);
+tbody.innerHTML += `<tr><td>${item.nome}</td><td>+${item.qta}</td><td><button type="button" class="del-btn" onclick="itemsCaricoMerce.splice(${index},1); aggiornaTabellaCaricoItems();">X</button></td></tr>`;
 });
 }
 
 function confermaEStampaCarico() {
+const barca = document.getElementById("caricoBarcaDest").value;
+const numBolla = document.getElementById("caricoNumBolla").value || "N.D.";
+const fornitore = document.getElementById("caricoFornitore").value || "N.D.";
+
 if (itemsCaricoMerce.length === 0) {
-alert("Inserisci almeno un prodotto nella bolla di carico.");
+alert("Aggiungi almeno un prodotto alla bolla!");
 return;
 }
-
-const barcaAttuale = document.getElementById("selectBarca").value;
-const numBolla = document.getElementById("caricoNumBolla").value.trim() || "N/A";
-const fornitore = document.getElementById("caricoFornitore").value.trim() || "Fornitore Generico";
-let dataStr = new Date().toLocaleDateString('it-IT');
-
-let testoCarico = `📦 *BOLLA DI CARICO MERCE* 📦\n`;
-testoCarico += `🚢 *Destinazione:* ${barcaAttuale}\n`;
-testoCarico += `📑 *N° Bolla:* ${numBolla}\n`;
-testoCarico += `🚚 *Fornitore:* ${fornitore}\n`;
-testoCarico += `📅 *Data:* ${dataStr}\n`;
-testoCarico += `----------------------------\n`;
 
 itemsCaricoMerce.forEach(item => {
-let p = prodotti.find(prod => prod.id === item.id);
-if (p) {
-p.stock = (p.stock || 0) + item.qta;
-}
-testoCarico += `${item.icona} *${item.nome}*: +${item.qta} pz\n`;
+const p = prodotti.find(x => x.id === item.id);
+if (p) p.stock += item.qta;
 });
 
-let recCarico = {
-id: Date.now(), dataStr: dataStr, barca: barcaAttuale, numBolla: numBolla,
-fornitore: fornitore, prodotti: JSON.parse(JSON.stringify(itemsCaricoMerce)), testo: testoCarico
-};
+const rec = { id: Date.now(), data: new Date().toLocaleDateString(), barca, numBolla, fornitore, items: [...itemsCaricoMerce] };
+storicoCarichi.unshift(rec);
 
-storicoCarichi.unshift(recCarico);
-salvaStoricoCarichiLocal();
-renderizzaStoricoCarichi();
-
-salvaBozzaCassaInTempoReale();
-renderizzaTabellaCassa();
+salvaDatiLocali();
+generaListaProdottiCassa();
+renderizzaStorici();
 chiudiModalCaricoMerce();
-
-alert(`Carico Merce registrato con successo!\n• N° Bolla: ${numBolla}\n• Rimanenze di ${barcaAttuale} incrementate.`);
+alert("Carico registrato e magazzino aggiornato!");
 }
 
-function renderizzaStoricoCarichi() {
-const container = document.getElementById("listaStoricoCarichi");
-container.innerHTML = "";
-if (storicoCarichi.length === 0) {
-container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun carico di merce con bolla registrato.</div>';
-return;
-}
-
-storicoCarichi.forEach(item => {
-let div = document.createElement("div");
-div.className = "storico-card";
-let elencoArticoli = (item.prodotti || []).map(p => `${p.icona} ${p.nome} (+${p.qta} pz)`).join(' • ');
-
-div.innerHTML = `
-<div class="storico-header"><span>📦 Bolla N° ${item.numBolla} (${item.barca})</span><span>📅 ${item.dataStr}</span></div>
-<div class="storico-dettaglio"><strong>Fornitore:</strong> ${item.fornitore}<br><strong>Prodotti Caricati:</strong> ${elencoArticoli}</div>
-<div class="storico-actions">
-<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiCarico(${item.id})">📱 WhatsApp</button>
-<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaCarico(${item.id})">Elimina</button>
-</div>
-`;
-container.appendChild(div);
-});
-}
-
-function condividiCarico(id) {
-let item = storicoCarichi.find(c => c.id === id);
-if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}`, '_blank');
-}
-
-function eliminaCarico(id) {
-if (confirm("Vuoi cancellare questo carico dallo storico?")) {
-storicoCarichi = storicoCarichi.filter(c => c.id !== id);
-salvaStoricoCarichiLocal();
-renderizzaStoricoCarichi();
-}
-}
-
-function svuotaStoricoCarichi() {
-if (confirm("Svuotare l'intero storico carichi merci?")) {
-storicoCarichi = [];
-salvaStoricoCarichiLocal();
-renderizzaStoricoCarichi();
-}
-}
-
-function salvaStoricoCarichiLocal() {
-localStorage.setItem("storico_carichi_v1", JSON.stringify(storicoCarichi));
-}
-
-// 3.2 SPOSTAMENTO MERCI BARCA X ➔ BARCA Y (COSTO 0)
 function apriModalTrasferimento() {
-const modal = document.getElementById("modalTrasferimento");
-const selectDa = document.getElementById("transfDaBarca");
+document.getElementById("transfDaBarca").value = document.getElementById("selectBarca").value;
 const selectA = document.getElementById("transfABarca");
-const selectProd = document.getElementById("transfProdotto");
-
-const barcaAttuale = document.getElementById("selectBarca").value;
-selectDa.innerHTML = `<option value="${barcaAttuale}">${barcaAttuale}</option>`;
 selectA.innerHTML = "";
-listaBarche.filter(b => b !== barcaAttuale).forEach(b => {
+listaBarche.forEach(b => {
+if (b !== document.getElementById("selectBarca").value) {
 selectA.innerHTML += `<option value="${b}">${b}</option>`;
+}
 });
-
-selectProd.innerHTML = "";
+const selectP = document.getElementById("transfProdotto");
+selectP.innerHTML = "";
 prodotti.forEach(p => {
-let rim = (p.stock || 0) - (p.qtaPass + p.qtaPen);
-selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n} (Disponibile: ${rim} pz)</option>`;
+selectP.innerHTML += `<option value="${p.id}">${p.n} (Stock: ${p.stock})</option>`;
 });
-
-modal.style.display = "flex";
+document.getElementById("modalTrasferimento").style.display = "flex";
 }
-
-function chiudiModalTrasferimento() {
-document.getElementById("modalTrasferimento").style.display = "none";
-}
+function chiudiModalTrasferimento() { document.getElementById("modalTrasferimento").style.display = "none"; }
 
 function confermaTrasferimentoMerci() {
-const barcaDa = document.getElementById("transfDaBarca").value;
-const barcaA = document.getElementById("transfABarca").value;
-const prodId = document.getElementById("transfProdotto").value;
+const daBarca = document.getElementById("selectBarca").value;
+const aBarca = document.getElementById("transfABarca").value;
+const idP = document.getElementById("transfProdotto").value;
 const qta = parseInt(document.getElementById("transfQta").value) || 0;
 
-if (qta <= 0) { alert("Inserisci una quantità valida."); return; }
+const p = prodotti.find(x => x.id === idP);
+if (!p || qta <= 0) return;
 
-let pOrigin = prodotti.find(item => item.id === prodId);
-let disponi = (pOrigin.stock || 0) - (pOrigin.qtaPass + pOrigin.qtaPen);
-
-if (qta > disponi) {
-alert(`Quantità non disponibile! Hai solo ${disponi} pz rimasti di ${pOrigin.n}.`);
+if (p.stock < qta) {
+alert("Quantità non sufficiente in magazzino!");
 return;
 }
 
-// Sottrae dalla barca di origine attiva
-pOrigin.stock = (pOrigin.stock || 0) - qta;
+p.stock -= qta;
 
-// Gestione bozza barca destinataria
-if (!bozzePerBarca[barcaA]) {
-bozzePerBarca[barcaA] = { quantita: {} };
-}
-if (!bozzePerBarca[barcaA].quantita) bozzePerBarca[barcaA].quantita = {};
+const rec = { id: Date.now(), data: new Date().toLocaleDateString(), daBarca, aBarca, prodotto: p.n, qta };
+storicoTrasferimenti.unshift(rec);
 
-let stockDestinataria = 0;
-if (bozzePerBarca[barcaA].quantita[prodId] && bozzePerBarca[barcaA].quantita[prodId].stock !== undefined) {
-stockDestinataria = bozzePerBarca[barcaA].quantita[prodId].stock;
-} else {
-let pDef = prodottiDefault.find(item => item.id === prodId);
-stockDestinataria = pDef ? pDef.stock : 0;
-}
-
-bozzePerBarca[barcaA].quantita[prodId] = {
-pass: bozzePerBarca[barcaA].quantita[prodId]?.pass || 0,
-pen: bozzePerBarca[barcaA].quantita[prodId]?.pen || 0,
-stock: stockDestinataria + qta
-};
-
-let dataStr = new Date().toLocaleDateString('it-IT');
-let testoSpostamento = `🔄 *TRASFERIMENTO MERCI (€0)* 🔄\n📅 *Data:* ${dataStr}\n🚢 *Da:* ${barcaDa} ➔ *A:* ${barcaA}\n📦 *Articolo:* ${pOrigin.i} ${pOrigin.n}\n📊 *Quantità:* ${qta} pz`;
-
-let recTrasferimento = {
-id: Date.now(), dataStr: dataStr, barcaDa: barcaDa, barcaA: barcaA,
-prodottoId: prodId, prodottoNome: pOrigin.n, prodottoIcona: pOrigin.i, qta: qta, testo: testoSpostamento
-};
-
-storicoTrasferimenti.unshift(recTrasferimento);
-salvaStoricoTrasferimentiLocal();
-renderizzaStoricoTrasferimenti();
-
-salvaBozzaCassaInTempoReale();
-renderizzaTabellaCassa();
+salvaDatiLocali();
+generaListaProdottiCassa();
+renderizzaStorici();
 chiudiModalTrasferimento();
-
-alert(`Spostamento a COSTO 0 completato con successo!\n\n• Sottratti ${qta} pz da ${barcaDa}\n• Aggiunti ${qta} pz a ${barcaA}`);
+alert(`Trasferiti ${qta}x ${p.n} a ${aBarca} a costo €0!`);
 }
 
-function renderizzaStoricoTrasferimenti() {
-const container = document.getElementById("listaStoricoTrasferimenti");
-container.innerHTML = "";
-if (storicoTrasferimenti.length === 0) {
-container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun trasferimento merci registrato.</div>';
-return;
-}
-
-storicoTrasferimenti.forEach(item => {
-let div = document.createElement("div");
-div.className = "storico-card";
-div.innerHTML = `
-<div class="storico-header"><span>🔄 ${item.barcaDa} ➔ ${item.barcaA}</span><span>📅 ${item.dataStr}</span></div>
-<div class="storico-dettaglio"><strong>Prodotto:</strong> ${item.prodottoIcona} ${item.prodottoNome} (${item.qta} pz) • <span style="color:#34d399;">Costo €0,00</span></div>
-<div class="storico-actions">
-<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiTrasferimento(${item.id})">📱 WhatsApp</button>
-<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaTrasferimento(${item.id})">Elimina</button>
-</div>
-`;
-container.appendChild(div);
-});
-}
-
-function condividiTrasferimento(id) {
-let item = storicoTrasferimenti.find(t => t.id === id);
-if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}`, '_blank');
-}
-
-function eliminaTrasferimento(id) {
-if (confirm("Vuoi cancellare questo trasferimento e ripristinare le quantità originarie tra le barche?")) {
-let item = storicoTrasferimenti.find(t => t.id === id);
-
-if (item && item.prodottoId) {
-let qta = item.qta;
-let pId = item.prodottoId;
-
-// 1. Restituisci i pezzi alla barca di ORIGINE
-if (item.barcaDa === document.getElementById("selectBarca").value) {
-let p = prodotti.find(x => x.id === pId);
-if (p) p.stock = (p.stock || 0) + qta;
-} else {
-if (!bozzePerBarca[item.barcaDa]) bozzePerBarca[item.barcaDa] = { quantita: {} };
-if (!bozzePerBarca[item.barcaDa].quantita[pId]) bozzePerBarca[item.barcaDa].quantita[pId] = { pass: 0, pen: 0, stock: prodottiDefault.find(x => x.id === pId)?.stock || 0 };
-bozzePerBarca[item.barcaDa].quantita[pId].stock = (bozzePerBarca[item.barcaDa].quantita[pId].stock || 0) + qta;
-}
-
-// 2. Rimuovi i pezzi dalla barca di DESTINAZIONE
-if (item.barcaA === document.getElementById("selectBarca").value) {
-let p = prodotti.find(x => x.id === pId);
-if (p) p.stock = Math.max(0, (p.stock || 0) - qta);
-} else {
-if (bozzePerBarca[item.barcaA] && bozzePerBarca[item.barcaA].quantita && bozzePerBarca[item.barcaA].quantita[pId]) {
-bozzePerBarca[item.barcaA].quantita[pId].stock = Math.max(0, (bozzePerBarca[item.barcaA].quantita[pId].stock || 0) - qta);
-}
-}
-
-localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca));
-caricaBozzaBarcaCorrente();
-}
-
-storicoTrasferimenti = storicoTrasferimenti.filter(t => t.id !== id);
-salvaStoricoTrasferimentiLocal();
-renderizzaStoricoTrasferimenti();
-
-alert("Trasferimento eliminato e quantità ripristinate con successo!");
-}
-}
-
-function svuotaStoricoTrasferimenti() {
-if (confirm("Svuotare l'intero storico trasferimenti?")) {
-storicoTrasferimenti = [];
-salvaStoricoTrasferimentiLocal();
-renderizzaStoricoTrasferimenti();
-}
-}
-
-function salvaStoricoTrasferimentiLocal() {
-localStorage.setItem("storico_trasferimenti_v1", JSON.stringify(storicoTrasferimenti));
-}
-
-// 3.3 BUONO DI CONSEGNA CON PREZZI MODIFICABILI
 function apriModalBuonoConsegna() {
-itemsBuonoConsegna = [];
-const modal = document.getElementById("modalBuonoConsegna");
-const selectProd = document.getElementById("buonoProdotto");
-
-selectProd.innerHTML = "";
+const selectP = document.getElementById("buonoProdotto");
+selectP.innerHTML = "";
 prodotti.forEach(p => {
-selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n} (Pas €${p.p.toFixed(2)})</option>`;
+selectP.innerHTML += `<option value="${p.id}">${p.n}</option>`;
 });
-
 aggiornaPrezzoStandardBuono();
-renderizzaTabellaBuono();
-modal.style.display = "flex";
+itemsBuonoConsegna = [];
+aggiornaTabellaBuonoItems();
+document.getElementById("modalBuonoConsegna").style.display = "flex";
 }
-
-function chiudiModalBuonoConsegna() {
-document.getElementById("modalBuonoConsegna").style.display = "none";
-}
+function chiudiModalBuonoConsegna() { document.getElementById("modalBuonoConsegna").style.display = "none"; }
 
 function aggiornaPrezzoStandardBuono() {
-const prodId = document.getElementById("buonoProdotto").value;
-let p = prodotti.find(item => item.id === prodId);
+const idP = document.getElementById("buonoProdotto").value;
+const p = prodotti.find(x => x.id === idP);
 if (p) {
 document.getElementById("buonoPrezzoUnitario").value = p.p.toFixed(2);
 }
 }
 
 function aggiungiVoceBuono() {
-const prodId = document.getElementById("buonoProdotto").value;
+const idP = document.getElementById("buonoProdotto").value;
 const qta = parseInt(document.getElementById("buonoQta").value) || 0;
-const prezzo = parseFloat(document.getElementById("buonoPrezzoUnitario").value) || 0;
+const pu = parseFloat(document.getElementById("buonoPrezzoUnitario").value) || 0;
+const p = prodotti.find(x => x.id === idP);
 
-if (qta <= 0) { alert("Quantità non valida."); return; }
-let p = prodotti.find(item => item.id === prodId);
+if (!p || qta <= 0) return;
 
-itemsBuonoConsegna.push({
-id: prodId, nome: p.n, icona: p.i, qta: qta, prezzoUnitario: prezzo, totale: qta * prezzo
-});
-
-renderizzaTabellaBuono();
+itemsBuonoConsegna.push({ id: p.id, nome: p.n, qta: qta, pu: pu, tot: qta * pu });
+aggiornaTabellaBuonoItems();
 }
 
-function rimuoviVoceBuono(idx) {
-itemsBuonoConsegna.splice(idx, 1);
-renderizzaTabellaBuono();
-}
-
-function renderizzaTabellaBuono() {
+function aggiornaTabellaBuonoItems() {
 const tbody = document.querySelector("#tabellaBuonoItems tbody");
 tbody.innerHTML = "";
-let totBuono = 0;
-
-itemsBuonoConsegna.forEach((item, index) => {
-totBuono += item.totale;
-let tr = document.createElement("tr");
-tr.innerHTML = `<td>${item.icona} ${item.nome}</td><td>${item.qta} pz</td><td>€ ${item.prezzoUnitario.toFixed(2)}</td><td><b>€ ${item.totale.toFixed(2)}</b></td><td><button class="del-btn" onclick="rimuoviVoceBuono(${index})">X</button></td>`;
-tbody.appendChild(tr);
+itemsBuonoConsegna.forEach((item, idx) => {
+tbody.innerHTML += `<tr><td>${item.nome}</td><td>${item.qta}</td><td>€${item.pu.toFixed(2)}</td><td>€${item.tot.toFixed(2)}</td><td><button type="button" class="del-btn" onclick="itemsBuonoConsegna.splice(${idx},1); aggiornaTabellaBuonoItems();">X</button></td></tr>`;
 });
 }
 
 function confermaEStampaBuono() {
+const cliente = document.getElementById("buonoCliente").value || "Cliente";
 if (itemsBuonoConsegna.length === 0) {
-alert("Aggiungi almeno un articolo al buono di consegna!");
+alert("Inserisci almeno un articolo nel buono!");
 return;
 }
 
-const cliente = document.getElementById("buonoCliente").value.trim() || "Destinazione Generica";
-const barcaAttuale = document.getElementById("selectBarca").value;
-let dataStr = new Date().toLocaleDateString('it-IT');
-
-let testoReport = `📄 *BUONO DI CONSEGNA / BOLLA* 📄\n`;
-testoReport += `🚢 *Origine:* ${barcaAttuale}\n`;
-testoReport += `👤 *Destinatario:* ${cliente}\n`;
-testoReport += `📅 *Data:* ${dataStr}\n`;
-testoReport += `----------------------------\n`;
-
-let totGenerale = 0;
-
+let totaleBuono = 0;
 itemsBuonoConsegna.forEach(item => {
-let p = prodotti.find(prod => prod.id === item.id);
-if (p) {
-p.stock = Math.max(0, (p.stock || 0) - item.qta);
-}
-totGenerale += item.totale;
-testoReport += `${item.icona} *${item.nome}*: ${item.qta} pz x €${item.prezzoUnitario.toFixed(2)} = €${item.totale.toFixed(2)}\n`;
+totaleBuono += item.tot;
+const p = prodotti.find(x => x.id === item.id);
+if (p) p.stock = Math.max(0, p.stock - item.qta);
 });
 
-testoReport += `----------------------------\n`;
-testoReport += `💰 *TOTALE BUONO:* €${totGenerale.toFixed(2)}`;
+const rec = { id: Date.now(), data: new Date().toLocaleDateString(), cliente, totale: totaleBuono, items: [...itemsBuonoConsegna] };
+storicoBuoni.unshift(rec);
 
-let recBuono = {
-id: Date.now(), dataStr: dataStr, barca: barcaAttuale, cliente: cliente,
-totale: totGenerale, prodotti: JSON.parse(JSON.stringify(itemsBuonoConsegna)), testo: testoReport
-};
-
-storicoBuoni.unshift(recBuono);
-salvaStoricoBuoniLocal();
-renderizzaStoricoBuoni();
-
-let incassoCashInput = document.getElementById("incassoCash");
-let incassoCashVal = parseFloat(incassoCashInput.value) || 0;
-incassoCashInput.value = (incassoCashVal + totGenerale).toFixed(2);
-
-salvaBozzaCassaInTempoReale();
-renderizzaTabellaCassa();
+salvaDatiLocali();
+generaListaProdottiCassa();
+renderizzaStorici();
 chiudiModalBuonoConsegna();
-
-if (confirm(`Buono completato!\n• Rimanenze scaricate\n• Incasso Cash incrementato di €${totGenerale.toFixed(2)}\n\nVuoi inviare la bolla su WhatsApp?`)) {
-window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(testoReport)}`, '_blank');
-}
+alert(`Buono completato! Totale: €${totaleBuono.toFixed(2)}`);
 }
 
-function renderizzaStoricoBuoni() {
-const container = document.getElementById("listaStoricoBuoni");
-container.innerHTML = "";
-if (storicoBuoni.length === 0) {
-container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun buono di consegna emesso.</div>';
-return;
-}
+function svuotaStoricoCarichi() { storicoCarichi = []; salvaDatiLocali(); renderizzaStorici(); }
+function svuotaStoricoTrasferimenti() { storicoTrasferimenti = []; salvaDatiLocali(); renderizzaStorici(); }
+function svuotaStoricoBuoni() { storicoBuoni = []; salvaDatiLocali(); renderizzaStorici(); }
 
-storicoBuoni.forEach(item => {
-let div = document.createElement("div");
-div.className = "storico-card";
-let elencoArticoli = (item.prodotti || []).map(p => `${p.icona} ${p.nome} (${p.qta} pz x €${p.prezzoUnitario.toFixed(2)})`).join(' • ');
-
-div.innerHTML = `
-<div class="storico-header"><span>📄 ${item.cliente} (${item.barca})</span><span>📅 ${item.dataStr}</span></div>
-<div class="storico-dettaglio"><strong>Totale Buono:</strong> €${item.totale.toFixed(2)}<br><strong>Articoli:</strong> ${elencoArticoli}</div>
-<div class="storico-actions">
-<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="condividiBuono(${item.id})">📱 WhatsApp</button>
-<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; min-height: 32px;" onclick="eliminaBuono(${item.id})">Elimina</button>
-</div>
-`;
-container.appendChild(div);
-});
-}
-
-function condividiBuono(id) {
-let item = storicoBuoni.find(b => b.id === id);
-if (item) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(item.testo)}`, '_blank');
-}
-
-function eliminaBuono(id) {
-if (confirm("Vuoi cancellare questo buono dallo storico? L'importo verrà stornato dalla cassa attiva.")) {
-let buonoDaEliminare = storicoBuoni.find(b => b.id === id);
-if (buonoDaEliminare) {
-let incassoCashInput = document.getElementById("incassoCash");
-let incassoCashVal = parseFloat(incassoCashInput.value) || 0;
-let nuovoValore = Math.max(0, incassoCashVal - buonoDaEliminare.totale);
-incassoCashInput.value = nuovoValore > 0 ? nuovoValore.toFixed(2) : "";
-}
-storicoBuoni = storicoBuoni.filter(b => b.id !== id);
-salvaStoricoBuoniLocal();
-renderizzaStoricoBuoni();
-salvaBozzaCassaInTempoReale();
-calcolaTotaleCassa();
-}
-}
-
-function svuotaStoricoBuoni() {
-if (confirm("Svuotare l'intero storico dei buoni emessi?")) {
-storicoBuoni = [];
-salvaStoricoBuoniLocal();
-renderizzaStoricoBuoni();
-}
-}
-
-function salvaStoricoBuoniLocal() {
-localStorage.setItem("storico_buoni_v1", JSON.stringify(storicoBuoni));
-}
-
-// 4. BACKUP JSON
-function esportaDatiJSON() {
-salvaBozzaCassaInTempoReale();
-let backup = { versione: "v22_full_features", timestamp: new Date().toISOString(), bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoBuoni, storicoCarichi, datiIncassi, mesiArchivati };
-let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
-let anchor = document.createElement('a');
-anchor.setAttribute("href", dataStr);
-anchor.setAttribute("download", `backup_gestionale_${new Date().toISOString().slice(0,10)}.json`);
-document.body.appendChild(anchor); anchor.click(); anchor.remove();
-}
-
-function importaDatiJSON(event) {
-let file = event.target.files[0];
-if (!file) return;
-let reader = new FileReader();
-reader.onload = function(e) {
-try {
-let parsed = JSON.parse(e.target.result);
-if (parsed.datiIncassi) { datiIncassi = parsed.datiIncassi; salvaDatiIncassi(); }
-if (parsed.storicoGiornate) { storicoGiornate = parsed.storicoGiornate; salvaStoricoCassaLocal(); }
-if (parsed.storicoTrasferimenti) { storicoTrasferimenti = parsed.storicoTrasferimenti; salvaStoricoTrasferimentiLocal(); }
-if (parsed.storicoBuoni) { storicoBuoni = parsed.storicoBuoni; salvaStoricoBuoniLocal(); }
-if (parsed.storicoCarichi) { storicoCarichi = parsed.storicoCarichi; salvaStoricoCarichiLocal(); }
-if (parsed.mesiArchivati) { mesiArchivati = parsed.mesiArchivati; localStorage.setItem("mesi_archivati_v1", JSON.stringify(mesiArchivati)); }
-if (parsed.bozzePerBarca) { bozzePerBarca = parsed.bozzePerBarca; localStorage.setItem("cassa_bozze_per_barca_v6", JSON.stringify(bozzePerBarca)); }
-caricaBozzaBarcaCorrente(); renderizzaStoricoCassa(); renderizzaStoricoTrasferimenti(); renderizzaStoricoBuoni(); renderizzaStoricoCarichi(); aggiornaTabellaIncassi(); renderizzaMesiArchivati();
-alert("Importazione completata con successo!");
-} catch(err) { alert("Errore nella lettura del file JSON."); }
-};
-reader.readAsText(file);
-}
-
-// 5. REPORT VENDITE PRODOTTO
-function aggiornaReportProdotti() {
-const barcaSelezionata = document.getElementById("filtroBarcaProdotti").value;
-const tbody = document.querySelector("#tabellaReportProdotti tbody");
-tbody.innerHTML = "";
-
-let giornateFiltrate = barcaSelezionata === "TUTTE" ? storicoGiornate : storicoGiornate.filter(g => g.barca === barcaSelezionata);
-let mappaProdotti = {};
-let diffQuadraturaTotale = 0;
-
-giornateFiltrate.forEach(giornata => {
-diffQuadraturaTotale += (giornata.diffQuadratura || 0);
-(giornata.prodotti || []).forEach(p => {
-if (!mappaProdotti[p.id]) {
-mappaProdotti[p.id] = { nome: p.n, icona: p.i, qtaPass: 0, qtaPen: 0, incassoTotale: 0 };
-}
-mappaProdotti[p.id].qtaPass += p.qtaPass;
-mappaProdotti[p.id].qtaPen += p.qtaPen;
-mappaProdotti[p.id].incassoTotale += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
-});
-});
-
-let elencoOrdinato = Object.values(mappaProdotti).sort((a, b) => (b.qtaPass + b.qtaPen) - (a.qtaPass + a.qtaPen));
-let totalePezziComplessivi = 0, totaleIncassoComplessivo = 0;
-
-if (elencoOrdinato.length === 0) {
-tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 12px;">Nessun dato. Salva le giornate in "Cassa".</td></tr>';
-} else {
-elencoOrdinato.forEach(item => {
-let totPezzi = item.qtaPass + item.qtaPen;
-totalePezziComplessivi += totPezzi;
-totaleIncassoComplessivo += item.incassoTotale;
-let tr = document.createElement("tr");
-tr.innerHTML = `<td><strong>${item.icona} ${item.nome}</strong></td><td>${item.qtaPass} pz</td><td>${item.qtaPen} pz</td><td><b>${totPezzi} pz</b></td><td style="color: #34d399; font-weight: bold;">€ ${item.incassoTotale.toFixed(2)}</td>`;
-tbody.appendChild(tr);
-});
-}
-
-document.getElementById("kpiPezziTotali").innerText = `${totalePezziComplessivi} pz`;
-document.getElementById("kpiIncassoProdotti").innerText = `€ ${totaleIncassoComplessivo.toFixed(2)}`;
-let kpiDiff = document.getElementById("kpiDiffQuadratura");
-kpiDiff.innerHTML = diffQuadraturaTotale !== 0 ? `<span style="color:${diffQuadraturaTotale > 0 ? '#34d399' : '#f87171'}">€ ${diffQuadraturaTotale.toFixed(2)}</span>` : '<span style="color:#9ca3af">€ 0,00</span>';
-}
-
-// 6. GESTIONE INCASSI MENSILI, SPESE E ARCHIVIAZIONE
-function caricaDatiIncassi() {
-const salvati = localStorage.getItem('calcolatore_incassi_dati_v7');
-datiIncassi = salvati ? JSON.parse(salvati) : [];
-const salvatiMesi = localStorage.getItem('mesi_archivati_v1');
-mesiArchivati = salvatiMesi ? JSON.parse(salvatiMesi) : [];
-}
-
-function salvaDatiIncassi() {
-localStorage.setItem('calcolatore_incassi_dati_v7', JSON.stringify(datiIncassi));
-mostraNotificaSalvataggio();
-}
-
-function formatValuta(val) {
-return '€ ' + val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function gestisciCambioPostazioneIncassi() {
-let p = document.getElementById('selectPostazioneIncassi').value;
-if (p.toLowerCase().includes("festa")) document.getElementById('chkFesta').checked = true;
-}
-
-function cambiaMeseCorrente() { aggiornaTabellaIncassi(); }
-
-function aggiungiNuovoMeseCustom() {
-let nomeMese = prompt("Inserisci il nome del nuovo mese (es. Dicembre 2026):");
-if (nomeMese && nomeMese.trim() !== "") {
-let select = document.getElementById("selectMeseIncassi");
-let opt = document.createElement("option");
-opt.value = nomeMese.trim(); opt.textContent = nomeMese.trim();
-select.insertBefore(opt, select.firstChild);
-select.value = nomeMese.trim();
+function cambiaMeseCorrente() {
 aggiornaTabellaIncassi();
-}
-}
-
-function estraiNumeroGiorno(giornoStr) {
-if (!giornoStr) return 0;
-let match = giornoStr.match(/\d+/);
-return match ? parseInt(match[0], 10) : 0;
 }
 
 function aggiornaTabellaIncassi() {
-const tbody = document.querySelector('#tabellaIncassi tbody');
-if (!tbody) return;
-tbody.innerHTML = '';
-let meseSelezionato = document.getElementById('selectMeseIncassi').value;
-let filtro = document.getElementById('txtFiltro').value.toLowerCase();
+const meseSelezionato = document.getElementById("selectMeseIncassi").value;
+const filtro = document.getElementById("txtFiltro").value.toLowerCase();
+const tbody = document.querySelector("#tabellaIncassi tbody");
+tbody.innerHTML = "";
 
-let totIncasso = 0, tot5p = 0, totFissa = 0, totSpese = 0, recordVisibili = 0;
+const meseArchiviato = mesiArchivati.find(m => m.mese === meseSelezionato);
 
-datiIncassi.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
+if (meseArchiviato) {
+document.getElementById("lblIncasso").textContent = `€ ${meseArchiviato.incassoTotale.toFixed(2)}`;
+document.getElementById("lbl5p").textContent = `€ ${meseArchiviato.quota5p.toFixed(2)}`;
+document.getElementById("lblFissa").textContent = `€ ${meseArchiviato.quotaFissa.toFixed(2)}`;
+document.getElementById("lblTotSpese").textContent = `€ ${meseArchiviato.speseUscite.toFixed(2)}`;
+document.getElementById("lblTotale").textContent = `€ ${meseArchiviato.nettoSpettante.toFixed(2)}`;
+document.getElementById("lblContatore").textContent = `${meseArchiviato.giornate} giornate (Archiviato)`;
 
-datiIncassi.forEach((item, index) => {
-if ((item.mese || "Novembre 2026") !== meseSelezionato) return;
-let incassoGiorno = (item.cash || 0) + (item.pos || 0);
-let p5 = incassoGiorno * 0.05;
-let isFesta = item.festa || (item.postazione && item.postazione.toLowerCase().includes("festa"));
-let fissa = isFesta ? 0 : 26;
-let spesaGiorno = item.spesa || 0;
-let nettoGiorno = (p5 + fissa) - spesaGiorno;
+tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding:20px; color:var(--text-muted);">Questo mese è stato archiviato. Totale spettante netto: <b>€${meseArchiviato.nettoSpettante.toFixed(2)}</b></td></tr>`;
+return;
+}
 
-totIncasso += incassoGiorno; tot5p += p5; totFissa += fissa; totSpese += spesaGiorno;
+const datiFiltrati = datiIncassi.filter(d => {
+const matchMese = d.mese === meseSelezionato;
+const matchFiltro = d.data.toLowerCase().includes(filtro) || d.postazione.toLowerCase().includes(filtro);
+return matchMese && matchFiltro;
+});
 
-if (filtro && !item.giorno.toLowerCase().includes(filtro) && !item.postazione.toLowerCase().includes(filtro)) return;
-recordVisibili++;
+let totIncasso = 0;
+let tot5p = 0;
+let totFissa = 0;
+let totSpese = 0;
+let totNetto = 0;
 
-let tr = document.createElement('tr');
-let diffVal = item.diff || 0;
-let diffFormatted = diffVal !== 0 ? `<span style="color:${diffVal > 0 ? '#34d399' : '#f87171'}; font-weight:bold;">${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)} €</span>` : "€ 0,00";
+datiFiltrati.forEach((item, index) => {
+const incassoGiorno = item.cash + item.pos;
+const quota5pGiorno = incassoGiorno * 0.05;
+const quotaFissaGiorno = item.festa ? 0 : 26.00;
+// CALCOLO CORRETTO NETTO GIORNO: (5% Incasso) + Paga Base (€26) - Spesa + Plus/Ammanco
+const nettoGiorno = quota5pGiorno + quotaFissaGiorno - item.spesa + item.diff;
 
+totIncasso += incassoGiorno;
+tot5p += quota5pGiorno;
+totFissa += quotaFissaGiorno;
+totSpese += item.spesa;
+totNetto += nettoGiorno;
+
+const tr = document.createElement("tr");
 tr.innerHTML = `
-<td>${item.giorno}</td>
-<td>${item.postazione}</td>
-<td>${formatValuta(item.cash || 0)}</td>
-<td>${formatValuta(item.pos || 0)}</td>
-<td><b>${formatValuta(incassoGiorno)}</b></td>
-<td style="color: #f87171;">${formatValuta(spesaGiorno)}</td>
-<td>${diffFormatted}</td>
-<td>${formatValuta(p5)}</td>
-<td>${isFesta ? '<span style="color:#f59e0b; font-weight:bold;">€ 0,00 (Festa)</span>' : formatValuta(fissa)}</td>
-<td><b>${formatValuta(nettoGiorno)}</b></td>
-<td><button class="del-btn" onclick="eliminaRecordIncasso(${index})">Elimina</button></td>
+<td>${item.data}</td>
+<td><b>${item.postazione}</b></td>
+<td>€${item.cash.toFixed(2)}</td>
+<td>€${item.pos.toFixed(2)}</td>
+<td><b>€${incassoGiorno.toFixed(2)}</b></td>
+<td style="color:#f87171;">€${item.spesa.toFixed(2)}</td>
+<td style="color:${item.diff >= 0 ? '#34d399' : '#f87171'}">${item.diff >= 0 ? '+' : ''}€${item.diff.toFixed(2)}</td>
+<td>€${quota5pGiorno.toFixed(2)}</td>
+<td>€${quotaFissaGiorno.toFixed(2)}</td>
+<td><b style="color:#34d399;">€${nettoGiorno.toFixed(2)}</b></td>
+<td><button type="button" class="del-btn" onclick="eliminaRecordIncasso(${index})">X</button></td>
 `;
 tbody.appendChild(tr);
 });
 
-document.getElementById('lblIncasso').innerText = formatValuta(totIncasso);
-document.getElementById('lbl5p').innerText = formatValuta(tot5p);
-document.getElementById('lblFissa').innerText = formatValuta(totFissa);
-document.getElementById('lblTotSpese').innerText = formatValuta(totSpese);
-document.getElementById('lblTotale').innerText = formatValuta((tot5p + totFissa) - totSpese);
-document.getElementById('lblContatore').innerText = `${recordVisibili} record (${meseSelezionato})`;
+document.getElementById("lblIncasso").textContent = `€ ${totIncasso.toFixed(2)}`;
+document.getElementById("lbl5p").textContent = `€ ${tot5p.toFixed(2)}`;
+document.getElementById("lblFissa").textContent = `€ ${totFissa.toFixed(2)}`;
+document.getElementById("lblTotSpese").textContent = `€ ${totSpese.toFixed(2)}`;
+document.getElementById("lblTotale").textContent = `€ ${totNetto.toFixed(2)}`;
+document.getElementById("lblContatore").textContent = `${datiFiltrati.length} record`;
 }
 
 function aggiungiRecordIncasso() {
-let meseSel = document.getElementById('selectMeseIncassi').value;
-let g = document.getElementById('txtGiorno').value.trim();
-let p = document.getElementById('selectPostazioneIncassi').value;
-let diff = parseFloat(document.getElementById('txtDiff').value) || 0;
-let spesa = parseFloat(document.getElementById('txtSpesa').value) || 0;
-let festa = document.getElementById('chkFesta').checked || p.toLowerCase().includes("festa");
+const mese = document.getElementById("selectMeseIncassi").value;
+const data = document.getElementById("txtGiorno").value || "6 Novembre 2026";
+const postazione = document.getElementById("selectPostazioneIncassi").value;
+const spesa = parseFloat(document.getElementById("txtSpesa").value) || 0;
+const diff = parseFloat(document.getElementById("txtDiff").value) || 0;
+const festa = document.getElementById("chkFesta").checked;
 
-if (!g) { alert('Inserisci un giorno o una data.'); return; }
+datiIncassi.unshift({
+mese, data, postazione, cash: 0, pos: 0, spesa, diff, festa
+});
 
-datiIncassi.push({ mese: meseSel, giorno: g, postazione: p, cash: 0, pos: 0, diff: diff, spesa: spesa, festa: festa });
-salvaDatiIncassi();
-
-document.getElementById('txtGiorno').value = '';
-document.getElementById('txtDiff').value = '0';
-document.getElementById('txtSpesa').value = '0';
-document.getElementById('chkFesta').checked = false;
+salvaDatiLocali();
 aggiornaTabellaIncassi();
+
+document.getElementById("txtSpesa").value = "0";
+document.getElementById("txtDiff").value = "0";
+document.getElementById("chkFesta").checked = false;
 }
 
-function eliminaRecordIncasso(index) {
-if (confirm('Vuoi eliminare questo record?')) {
-datiIncassi.splice(index, 1);
-salvaDatiIncassi();
+function eliminaRecordIncasso(idx) {
+if (confirm("Vuoi eliminare questa voce di incasso/spesa?")) {
+datiIncassi.splice(idx, 1);
+salvaDatiLocali();
 aggiornaTabellaIncassi();
 }
 }
 
 function chiudiEArchiviaMeseCorrente() {
-let meseSel = document.getElementById('selectMeseIncassi').value;
-let datiMese = datiIncassi.filter(item => (item.mese || "Novembre 2026") === meseSel);
-if (datiMese.length === 0) { alert(`Nessun dato registrato per ${meseSel}!`); return; }
+const meseSelezionato = document.getElementById("selectMeseIncassi").value;
 
-let totIncasso = 0, tot5p = 0, totFissa = 0, totDiff = 0, totSpese = 0;
-datiMese.forEach(item => {
-let incasso = (item.cash || 0) + (item.pos || 0);
-totIncasso += incasso;
-tot5p += incasso * 0.05;
-totFissa += (item.festa || item.postazione.toLowerCase().includes("festa")) ? 0 : 26;
-totDiff += (item.diff || 0);
-totSpese += (item.spesa || 0);
-});
-
-let nettoTotale = (tot5p + totFissa) - totSpese;
-
-let archiviazione = {
-id: Date.now(), mese: meseSel, dataArchiviazione: new Date().toLocaleDateString('it-IT'),
-totaleIncassato: totIncasso, totale5percento: tot5p, totaleFissa: totFissa,
-totaleSpese: totSpese, totaleDiff: totDiff, totaleComplessivo: nettoTotale, numeroGiornate: datiMese.length
-};
-
-mesiArchivati = mesiArchivati.filter(m => m.mese !== meseSel);
-mesiArchivati.unshift(archiviazione);
-localStorage.setItem("mesi_archivati_v1", JSON.stringify(mesiArchivati));
-renderizzaMesiArchivati();
-alert(`Mese di ${meseSel} chiuso e archiviato con successo!\nNetto spettante: €${nettoTotale.toFixed(2)}`);
+if (mesiArchivati.some(m => m.mese === meseSelezionato)) {
+alert("Questo mese è già stato archiviato!");
+return;
 }
 
-function renderizzaMesiArchivati() {
-const container = document.getElementById("listaMesiArchivati");
-if (!container) return;
-container.innerHTML = "";
+const datiMese = datiIncassi.filter(d => d.mese === meseSelezionato);
+if (datiMese.length === 0) {
+alert("Nessun dato presente per questo mese da archviare!");
+return;
+}
+
+let totIncasso = 0;
+let tot5p = 0;
+let totFissa = 0;
+let totSpese = 0;
+let totNetto = 0;
+
+datiMese.forEach(item => {
+const inc = item.cash + item.pos;
+const q5 = inc * 0.05;
+const qf = item.festa ? 0 : 26.00;
+totIncasso += inc;
+tot5p += q5;
+totFissa += qf;
+totSpese += item.spesa;
+totNetto += (q5 + qf - item.spesa + item.diff);
+});
+
+const recordArchivio = {
+mese: meseSelezionato,
+dataArchiviazione: new Date().toLocaleDateString(),
+incassoTotale: totIncasso,
+quota5p: tot5p,
+quotaFissa: totFissa,
+speseUscite: totSpese,
+nettoSpettante: totNetto,
+giornate: datiMese.length
+};
+
+mesiArchivati.unshift(recordArchivio);
+salvaDatiLocali();
+aggiornaListaMesiArchivati();
+aggiornaTabellaIncassi();
+alert(`Mese ${meseSelezionato} archiviato con successo! Netto: €${totNetto.toFixed(2)}`);
+}
+
+function aggiornaListaMesiArchivati() {
+const div = document.getElementById("listaMesiArchivati");
+div.innerHTML = "";
+
 if (mesiArchivati.length === 0) {
-container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 8px;">Nessun mese ancora chiuso o archiviato.</div>';
+div.innerHTML = "<p style='font-size:0.8rem; color:var(--text-muted);'>Nessun mese ancora in archivio.</p>";
 return;
 }
 
 mesiArchivati.forEach(m => {
-let div = document.createElement("div");
-div.className = "storico-card";
-div.innerHTML = `
-<div class="storico-header"><span>📅 ${m.mese}</span><span>Archiviato il ${m.dataArchiviazione}</span></div>
+div.innerHTML += `
+<div class="storico-card">
+<div class="storico-header">
+<span>📅 ${m.mese}</span>
+<span style="color:#a7f3d0;">Archiviato il ${m.dataArchiviazione}</span>
+</div>
 <div class="storico-dettaglio">
-<strong>Incasso Totale:</strong> €${m.totaleIncassato.toFixed(2)} | <strong>5%:</strong> €${m.totale5percento.toFixed(2)} | <strong>Quota Fissa:</strong> €${m.totaleFissa.toFixed(2)}<br>
-<strong>Spese Uscite:</strong> €${(m.totaleSpese || 0).toFixed(2)}<br>
-<span style="color: #34d399; font-size: 0.9rem; font-weight: bold;">Netto Spettante: €${m.totaleComplessivo.toFixed(2)}</span> (${m.numeroGiornate} giornate)
+<b>Incasso Totale:</b> €${m.incassoTotale.toFixed(2)} | <b>5%:</b> €${m.quota5p.toFixed(2)} | <b>Quota Fissa:</b> €${m.quotaFissa.toFixed(2)}<br>
+<b>Spese Uscite:</b> €${m.speseUscite.toFixed(2)}<br>
+<b style="font-size:1rem; color:#34d399;">Netto Spettante: €${m.nettoSpettante.toFixed(2)}</b> (${m.giornate} giornate)
+</div>
 </div>
 `;
-container.appendChild(div);
 });
 }
 
-function ripristinaDefaultIncassi() {
-if (confirm('Ripristinare i dati iniziali di test?')) {
-datiIncassi = [];
-salvaDatiIncassi();
+function aggiungiNuovoMeseCustom() {
+const nome = prompt("Inserisci il nome del nuovo mese (es. Dicembre 2026):");
+if (nome) {
+const select = document.getElementById("selectMeseIncassi");
+const opt = document.createElement("option");
+opt.value = nome;
+opt.textContent = nome;
+select.appendChild(opt);
+select.value = nome;
 aggiornaTabellaIncassi();
 }
 }
 
-// 7. GRAFICI & ANALISI (CHART.JS)
+function ripristinaDefaultIncassi() {
+if (confirm("Vuoi ripristinare i dati incassi predefiniti?")) {
+datiIncassi = [...datiPrecaricatiDefault];
+mesiArchivati = [...mesiArchivatiDefault];
+salvaDatiLocali();
+aggiornaTabellaIncassi();
+aggiornaListaMesiArchivati();
+}
+}
+
+function aggiornaReportProdotti() {
+const barcaSel = document.getElementById("filtroBarcaProdotti").value;
+const tbody = document.querySelector("#tabellaReportProdotti tbody");
+tbody.innerHTML = "";
+
+let pezziTotali = 0;
+let incassoTotale = 0;
+let diffTotale = 0;
+
+prodotti.forEach(p => {
+let passTot = 0;
+let penTot = 0;
+
+storicoGiornate.forEach(g => {
+if (barcaSel === "TUTTE" || g.barca === barcaSel) {
+const itemP = g.dettaglioPezzi.find(x => x.id === p.id);
+if (itemP) {
+passTot += itemP.pass;
+penTot += itemP.pen;
+}
+}
+});
+
+const sumPezzi = passTot + penTot;
+const incassoGenerato = (passTot * p.p) + (penTot * p.pen);
+
+pezziTotali += sumPezzi;
+incassoTotale += incassoGenerato;
+
+const tr = document.createElement("tr");
+tr.innerHTML = `
+<td><span>${p.i}</span> <b>${p.n}</b></td>
+<td>${passTot} pz</td>
+<td>${penTot} pz</td>
+<td><b>${sumPezzi} pz</b></td>
+<td><b style="color:#34d399;">€ ${incassoGenerato.toFixed(2)}</b></td>
+`;
+tbody.appendChild(tr);
+});
+
+storicoGiornate.forEach(g => {
+if (barcaSel === "TUTTE" || g.barca === barcaSel) {
+diffTotale += g.diff;
+}
+});
+
+document.getElementById("kpiPezziTotali").textContent = `${pezziTotali} pz`;
+document.getElementById("kpiIncassoProdotti").textContent = `€ ${incassoTotale.toFixed(2)}`;
+document.getElementById("kpiDiffQuadratura").textContent = `€ ${diffTotale.toFixed(2)}`;
+document.getElementById("kpiDiffQuadratura").style.color = diffTotale >= 0 ? "#34d399" : "#f87171";
+}
+
 function renderizzaGrafici() {
-const meseSelezionato = document.getElementById('selectMeseIncassi').value;
-const datiFiltrati = datiIncassi.filter(item => (item.mese || "Novembre 2026") === meseSelezionato);
+const ctx1 = document.getElementById('chartAndamentoIncassi').getContext('2d');
+const ctx2 = document.getElementById('chartTopProdotti').getContext('2d');
 
-datiFiltrati.sort((a, b) => estraiNumeroGiorno(a.giorno) - estraiNumeroGiorno(b.giorno));
-const labelsGiorno = datiFiltrati.map(d => d.giorno);
-const dataValoriIncasso = datiFiltrati.map(d => (d.cash || 0) + (d.pos || 0));
-
-const ctxAndamento = document.getElementById('chartAndamentoIncassi').getContext('2d');
 if (chartAndamentoInstance) chartAndamentoInstance.destroy();
+if (chartTopProdottiInstance) chartTopProdottiInstance.destroy();
 
-chartAndamentoInstance = new Chart(ctxAndamento, {
+const etichetteGiorni = [];
+const valoriIncassi = [];
+
+const giornateInvertite = [...datiIncassi].reverse();
+giornateInvertite.forEach(d => {
+etichetteGiorni.push(d.data.replace(' 2026', ''));
+valoriIncassi.push(d.cash + d.pos);
+});
+
+chartAndamentoInstance = new Chart(ctx1, {
 type: 'line',
 data: {
-labels: labelsGiorno,
+labels: etichetteGiorni.length ? etichetteGiorni : ['Nessun dato'],
 datasets: [{
-label: `Incasso Giornaliero (€) - ${meseSelezionato}`,
-data: dataValoriIncasso,
-borderColor: '#10b981',
-backgroundColor: 'rgba(16, 185, 129, 0.1)',
-borderWidth: 3,
+label: 'Incasso Giornaliero (€)',
+data: valoriIncassi.length ? valoriIncassi : [0],
+borderColor: '#818cf8',
+backgroundColor: 'rgba(129, 140, 248, 0.15)',
 fill: true,
 tension: 0.3
 }]
@@ -2441,75 +2109,89 @@ tension: 0.3
 options: {
 responsive: true,
 maintainAspectRatio: false,
-plugins: { legend: { labels: { color: '#f9fafb' } } },
+plugins: { legend: { labels: { color: 'white' } } },
 scales: {
-x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+x: { ticks: { color: '#9ca3af' } },
+y: { ticks: { color: '#9ca3af' } }
 }
 }
 });
 
-let mappaTop = {};
-storicoGiornate.forEach(giornata => {
-(giornata.prodotti || []).forEach(p => {
-let totPz = p.qtaPass + p.qtaPen;
-mappaTop[p.n] = (mappaTop[p.n] || 0) + totPz;
+const nomiProd = [];
+const qtaProd = [];
+
+prodotti.forEach(p => {
+let tot = 0;
+storicoGiornate.forEach(g => {
+const item = g.dettaglioPezzi.find(x => x.id === p.id);
+if (item) tot += item.tot;
 });
+if (tot > 0) {
+nomiProd.push(p.n);
+qtaProd.push(tot);
+}
 });
 
-let top5Prodotti = Object.entries(mappaTop)
-.sort((a, b) => b[1] - a[1])
-.slice(0, 5);
-
-const ctxTop = document.getElementById('chartTopProdotti').getContext('2d');
-if (chartTopProdottiInstance) chartTopProdottiInstance.destroy();
-
-chartTopProdottiInstance = new Chart(ctxTop, {
+chartTopProdottiInstance = new Chart(ctx2, {
 type: 'bar',
 data: {
-labels: top5Prodotti.map(item => item[0]),
+labels: nomiProd.length ? nomiProd : ['Nessun dato'],
 datasets: [{
-label: 'Top 5 Articoli Più Venduti (Quantità Totale)',
-data: top5Prodotti.map(item => item[1]),
-backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ec4899'],
-borderRadius: 8
+label: 'Quantità Venduta (pz)',
+data: qtaProd.length ? qtaProd : [0],
+backgroundColor: '#34d399'
 }]
 },
 options: {
 responsive: true,
 maintainAspectRatio: false,
-plugins: { legend: { labels: { color: '#f9fafb' } } },
+plugins: { legend: { labels: { color: 'white' } } },
 scales: {
-x: { ticks: { color: '#9ca3af' }, grid: { display: false } },
-y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+x: { ticks: { color: '#9ca3af' } },
+y: { ticks: { color: '#9ca3af' } }
 }
 }
 });
 }
 
-// 8. INIZIALIZZAZIONE AUTOMATICA ALL'AVVIO
-window.onload = function() {
-const bozzeSalvate = localStorage.getItem("cassa_bozze_per_barca_v6");
-if (bozzeSalvate) {
-try { bozzePerBarca = JSON.parse(bozzeSalvate); } catch(e) { bozzePerBarca = {}; }
+function esportaDatiJSON() {
+const backupData = {
+bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoBuoni, storicoCarichi, datiIncassi, mesiArchivati, prodotti
+};
+const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = `backup_gestionale_barche_${new Date().toISOString().slice(0,10)}.json`;
+a.click();
 }
 
-popolaSelectBarche();
+function importaDatiJSON(event) {
+const file = event.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onload = function(e) {
+try {
+const data = JSON.parse(e.target.result);
+if (data.bozzePerBarca) bozzePerBarca = data.bozzePerBarca;
+if (data.storicoGiornate) storicoGiornate = data.storicoGiornate;
+if (data.storicoTrasferimenti) storicoTrasferimenti = data.storicoTrasferimenti;
+if (data.storicoBuoni) storicoBuoni = data.storicoBuoni;
+if (data.storicoCarichi) storicoCarichi = data.storicoCarichi;
+if (data.datiIncassi) datiIncassi = data.datiIncassi;
+if (data.mesiArchivati) mesiArchivati = data.mesiArchivati;
+if (data.prodotti) prodotti = data.prodotti;
 
-dataTracciata = new Date();
-impostaDataInInput(dataTracciata);
-
+salvaDatiLocali();
 caricaBozzaBarcaCorrente();
-caricaStoricoCassaLocal();
-renderizzaStoricoCassa();
-renderizzaStoricoTrasferimenti();
-renderizzaStoricoBuoni();
-renderizzaStoricoCarichi();
-caricaDatiIncassi();
+renderizzaStorici();
 aggiornaTabellaIncassi();
-renderizzaMesiArchivati();
+aggiornaListaMesiArchivati();
+alert("Dati importati con successo!");
+} catch (err) { alert("File JSON non valido!"); }
 };
+reader.readAsText(file);
+}
 </script>
-
 </body>
 </html>
