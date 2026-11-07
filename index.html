@@ -574,3 +574,1827 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.75rem;
+  min-width: 550px;
+}
+th, td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+th {
+  background: rgba(0,0,0,0.25);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+}
+.del-btn {
+  background: var(--danger);
+  color: white;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  touch-action: manipulation;
+}
+.kpi-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.kpi-box {
+  background: var(--subcard-bg);
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.kpi-box span {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 700;
+}
+.kpi-box strong {
+  font-size: 0.95rem;
+  color: white;
+}
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 220px;
+  width: 100%;
+  margin-bottom: 12px;
+  background: var(--subcard-bg);
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.backup-section {
+  background: var(--subcard-bg);
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.backup-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.backup-buttons {
+  display: flex;
+  gap: 6px;
+}
+.info-box-inventario {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid #38bdf8;
+  padding: 8px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+  color: #bae6fd;
+}
+@media print {
+  body { background: white; color: black; }
+  .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar { display: none !important; }
+  .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div id="saveIndicator" class="save-indicator">✓ Salvato</div>
+
+<!-- SETTORE 1: GESTIONE CASSA VELOCE -->
+<div id="app-cassa" class="app-view active">
+<div class="container">
+<h2 class="title-centered">Controllo Cassa & Vendite Barca</h2>
+
+<div class="settings-grid">
+<div class="settings-field">
+<label for="selectBarca">Barca Attiva:</label>
+<select id="selectBarca" onchange="cambiaBarcaCorrente()"></select>
+</div>
+<div class="settings-field">
+<label for="txtOperatore">Addetto:</label>
+<input type="text" id="txtOperatore" placeholder="es. Marco" oninput="salvaBozzaCassaInTempoReale()">
+</div>
+<div class="settings-field">
+<label for="txtDataCassa">Data:</label>
+<input type="text" id="txtDataCassa" placeholder="es. 6 Nov 2026" oninput="salvaBozzaCassaInTempoReale()">
+</div>
+<div class="settings-field">
+<label for="selectMeteo">Meteo & Mare:</label>
+<select id="selectMeteo" onchange="salvaBozzaCassaInTempoReale()">
+<option value="☀️ Sole / Mare Calmo">☀️ Sole</option>
+<option value="⛅ Nuvoloso">⛅ Nuvoloso</option>
+<option value="🌊 Mare Mosso">🌊 Mosso</option>
+<option value="🌧️ Pioggia / Vento">🌧️ Pioggia</option>
+</select>
+</div>
+<div class="settings-field">
+<label for="incassoCash">Cash (€):</label>
+<input type="number" id="incassoCash" value="" placeholder="120.00" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
+</div>
+<div class="settings-field">
+<label for="incassoPos">POS (€):</label>
+<input type="number" id="incassoPos" value="" placeholder="85.50" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
+</div>
+</div>
+
+<div class="card-totale">
+<div class="label">Totale Cassa (Vendita Clienti + Buoni)</div>
+<div class="amount" id="totaleCassa">0.00 €</div>
+<div class="details" id="dettaglioIncasso">Venduto: 0.00 € | Buoni Eq: 0.00 €</div>
+<div style="margin-top: 2px;" id="boxPlusAmmanco"></div>
+</div>
+
+<div id="alertBoxScorte" class="alert-box-scorte"></div>
+
+<div class="quick-actions-bar">
+<span style="font-size: 0.7rem; font-weight: bold; color: var(--text-muted); display: flex; align-items: center;">⚡:</span>
+<button type="button" class="btn-quick" onclick="venditaRapida('cia', 'Pass')">☕ +1 Cialda</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('acq', 'Pass')">💧 +1 Acqua Pass</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('acq', 'Pen')">💧 +1 Acqua Pen</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('ltn', 'Pass')">🥤 +1 Lattina</button>
+<button type="button" class="btn-quick" onclick="venditaRapida('per', 'Pass')">🍺 +1 Birra</button>
+</div>
+
+<div style="margin-bottom: 8px;">
+<input type="text" id="cercaProdottoCassa" placeholder="🔍 Cerca prodotto..." oninput="filtraProdottiCassa()">
+</div>
+
+<div class="prodotti-lista" id="listaProdotti"></div>
+
+<div class="actions-box">
+<button type="button" class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
+<button type="button" class="btn btn-success btn-full" onclick="inviaWhatsApp()">📱 Invia WhatsApp</button>
+<button type="button" class="btn btn-success" onclick="apriModalCaricoMerce()">📦 Carico Bolla</button>
+<button type="button" class="btn btn-primary" onclick="apriModalTrasferimento()">🔄 Sposta Barca</button>
+<button type="button" class="btn btn-secondary btn-full" onclick="window.print()">🖨️ Stampa Report</button>
+<button type="button" class="btn btn-danger btn-full" onclick="azzeraQuantitaCassa()">Azzera Vendite</button>
+</div>
+
+<div class="storico-section">
+<h3 style="font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+<span>📦 Registro Carichi Merci</span>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoCarichi()" style="font-size: 0.65rem; padding: 2px 6px; min-height: 24px; width: auto;">Svuota</button>
+</h3>
+<div id="listaStoricoCarichi"></div>
+</div>
+
+<div class="storico-section">
+<h3 style="font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+<span>🔄 Spostamenti Merci</span>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoTrasferimenti()" style="font-size: 0.65rem; padding: 2px 6px; min-height: 24px; width: auto;">Svuota</button>
+</h3>
+<div id="listaStoricoTrasferimenti"></div>
+</div>
+
+<div class="storico-section">
+<h3 style="font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+<span>📜 Storico Giornate Salvate</span>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoCassa()" style="font-size: 0.65rem; padding: 2px 6px; min-height: 24px; width: auto;">Svuota Storico</button>
+</h3>
+<div id="listaStoricoCassa"></div>
+</div>
+
+<div class="backup-section">
+<div class="backup-title">📁 Gestione Dati e Backup JSON</div>
+<div class="backup-buttons">
+<button type="button" class="btn btn-secondary" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;" onclick="esportaDatiJSON()">📥 Export JSON</button>
+<button type="button" class="btn btn-secondary" style="font-size: 0.72rem; padding: 4px 8px; min-height: 32px;" onclick="document.getElementById('inputImportJSON').click()">📤 Import JSON</button>
+<input type="file" id="inputImportJSON" accept=".json" style="display: none;" onchange="importaDatiJSON(event)">
+</div>
+</div>
+</div>
+</div>
+
+<!-- SETTORE 2: CALCOLATORE INCASSI & ARCHIVIO -->
+<div id="app-incassi" class="app-view">
+<div class="container">
+<h1>
+<span>Gestione Incassi</span>
+<div style="display: flex; gap: 4px;">
+<button type="button" class="btn btn-secondary" onclick="aggiungiNuovoMeseCustom()" style="font-size: 0.68rem; padding: 2px 6px; min-height: 26px; width: auto;">+ Mese</button>
+<button type="button" class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.68rem; padding: 2px 6px; min-height: 26px; width: auto;">Reset</button>
+</div>
+</h1>
+
+<div class="month-selector-bar">
+<label for="selectMeseIncassi">📅 Mese:</label>
+<select id="selectMeseIncassi" onchange="cambiaMeseCorrente()">
+<option value="Novembre 2026">Novembre 2026</option>
+<option value="Ottobre 2026">Ottobre 2026</option>
+<option value="Settembre 2026">Settembre 2026</option>
+<option value="Agosto 2026">Agosto 2026</option>
+</select>
+</div>
+
+<div class="cards-incassi">
+<div class="card-incassi">
+<h3>Totale Incassato</h3>
+<p id="lblIncasso">€ 0,00</p>
+</div>
+<div class="card-incassi">
+<h3>5% sugli Incassi</h3>
+<p id="lbl5p">€ 0,00</p>
+</div>
+<div class="card-incassi">
+<h3>Quota Fissa (€26)</h3>
+<p id="lblFissa">€ 0,00</p>
+</div>
+<div class="card-incassi">
+<h3>Plus / Ammanco</h3>
+<p id="lblTotDiff">€ 0,00</p>
+</div>
+<div class="card-incassi highlight">
+<h3>Netto Spettante Mese</h3>
+<p id="lblTotale">€ 0,00</p>
+</div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;">
+<div style="flex: 1; min-width: 120px;">
+<input type="text" id="txtFiltro" placeholder="Cerca giorno/barca..." oninput="aggiornaTabellaIncassi()">
+</div>
+<div style="font-size: 0.75rem; color: var(--text-muted);" id="lblContatore">0 record</div>
+</div>
+
+<div class="table-responsive">
+<table id="tabellaIncassi">
+<thead>
+<tr>
+<th>Giorno</th>
+<th>Postazione</th>
+<th>Cash</th>
+<th>POS</th>
+<th>Tot. Incasso</th>
+<th>Diff. (+/-)</th>
+<th>5%</th>
+<th>Fissa</th>
+<th>Netto</th>
+<th>Azioni</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div style="margin-top: 10px;">
+<button type="button" class="btn btn-warning btn-full" onclick="chiudiEArchiviaMeseCorrente()">🔒 Chiudi & Archivia Mese</button>
+</div>
+
+<div class="storico-section">
+<h3 style="font-size: 0.85rem; margin-bottom: 6px;">📂 Mesi Archivati & Salvati</h3>
+<div id="listaMesiArchivati"></div>
+</div>
+</div>
+</div>
+
+<!-- SETTORE 3: INVENTARIO FISICO & CONTA RIMANENZE -->
+<div id="app-report-prodotti" class="app-view">
+<div class="container">
+<h2 class="title-centered">📋 Conteggio Fisico Inventario</h2>
+
+<div class="info-box-inventario">
+📌 <b>Come fare la conta del magazzino:</b><br>
+1. Seleziona la <b>Barca</b>.<br>
+2. Inserisci in <b>Conta Reale (Fisica)</b> i pezzi effettivi a bordo.<br>
+3. Premi <b>"💾 Salva Conta Inventario & Allinea Magazzino"</b> per registrare la rettifica e azzerare l'Incasso Generato.
+</div>
+
+<div class="settings-grid" style="margin-bottom: 8px;">
+<div class="settings-field" style="grid-column: span 2;">
+<label for="filtroBarcaProdotti">Seleziona Barca da Contare:</label>
+<select id="filtroBarcaProdotti" onchange="aggiornaReportProdotti()"></select>
+</div>
+</div>
+
+<div class="kpi-container">
+<div class="kpi-box">
+<span>Tot. Pezzi Venduti</span>
+<strong id="kpiPezziTotali">0 pz</strong>
+</div>
+<div class="kpi-box">
+<span>Incasso Generato</span>
+<strong id="kpiIncassoProdotti">€ 0,00</strong>
+</div>
+<div class="kpi-box">
+<span>Plus / Ammanco</span>
+<strong id="kpiDiffQuadratura">€ 0,00</strong>
+</div>
+<div class="kpi-box" style="background: rgba(16, 185, 129, 0.15); border-color: #10b981;">
+<span>Rimanenza a Bordo</span>
+<strong id="kpiValoreMagazzino" style="color: #34d399;">€ 0,00</strong>
+</div>
+</div>
+
+<div class="table-responsive">
+<table id="tabellaReportProdotti">
+<thead>
+<tr>
+<th>Prodotto</th>
+<th>Prezzo</th>
+<th>Giacenza Teorica</th>
+<th>Conta Reale</th>
+<th>Diff. (pz)</th>
+<th>Ammanco/Plus</th>
+<th>Valore Stock</th>
+<th>Incasso Gen.</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div style="margin-top: 8px;">
+<button type="button" class="btn btn-primary btn-full" onclick="applicaContaFisicaInventario()">💾 Salva Conta Inventario & Allinea Magazzino</button>
+</div>
+
+<!-- QUADRATURA CONTABILE INVENTARIO DEFALCATO -->
+<div class="storico-section" style="margin-top: 12px; background: rgba(30, 41, 59, 0.9);">
+<h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato</h3>
+<div class="table-responsive">
+<table style="min-width: 100%;">
+<thead>
+<tr>
+<th>Valore Caricato (€)</th>
+<th>- Incasso Realizzato (€)</th>
+<th>= Merce Rimanente (€)</th>
+<th>Stato</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td id="cellValoreCaricatoTotale" style="font-weight:bold; color:white;">€ 0.00</td>
+<td id="cellIncassoDefalcato" style="font-weight:bold; color:#f87171;">€ 0.00</td>
+<td id="cellRimanenzaTeorica" style="font-weight:bold; color:#34d399;">€ 0.00</td>
+<td id="cellStatoQuadratura"><span class="badge-diff badge-ok">Allineato</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="storico-section">
+<h3 style="font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+<span>📋 Registro Conteggi Fisici</span>
+<button type="button" class="btn btn-secondary" onclick="svuotaStoricoConteggi()" style="font-size: 0.65rem; padding: 2px 6px; min-height: 24px; width: auto;">Svuota</button>
+</h3>
+<div id="listaStoricoConteggi"></div>
+</div>
+</div>
+</div>
+
+<!-- SETTORE 4: GRAFICI & STATISTICHE -->
+<div id="app-grafici" class="app-view">
+<div class="container">
+<h2 class="title-centered">📊 Grafici Performance</h2>
+
+<div class="chart-container">
+<canvas id="chartAndamentoIncassi"></canvas>
+</div>
+
+<div class="chart-container" style="height: 220px;">
+<canvas id="chartTopProdotti"></canvas>
+</div>
+</div>
+</div>
+
+<!-- MODALI -->
+<div id="modalCaricoMerce" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:6px;">
+<div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
+<h3>📦 Carico Merce con Bolla</h3>
+<div class="settings-grid">
+<div class="settings-field">
+<label>Barca Destinataria:</label>
+<input type="text" id="caricoBarcaDest" disabled>
+</div>
+<div class="settings-field">
+<label>Numero Bolla:</label>
+<input type="text" id="caricoNumBolla" placeholder="es. BOL-10492">
+</div>
+<div class="settings-field">
+<label>Fornitore:</label>
+<input type="text" id="caricoFornitore" placeholder="es. Deposito">
+</div>
+<div class="settings-field">
+<label>Prodotto:</label>
+<select id="caricoProdotto"></select>
+</div>
+<div class="settings-field" style="grid-column: span 2;">
+<label>Quantità (+):</label>
+<input type="number" id="caricoQta" value="10" min="1">
+</div>
+</div>
+<button type="button" class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="aggiungiVoceCarico()">+ Aggiungi alla Bolla</button>
+
+<div class="table-responsive" style="margin-bottom:8px;">
+<table id="tabellaCaricoItems">
+<thead><tr><th>Prodotto</th><th>Qta</th><th>Azioni</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div style="display:flex; gap:6px;">
+<button type="button" class="btn btn-success" style="flex:1;" onclick="confermaEStampaCarico()">📦 Conferma</button>
+<button type="button" class="btn btn-secondary" onclick="chiudiModalCaricoMerce()" style="width:auto;">Annulla</button>
+</div>
+</div>
+</div>
+
+<div id="modalTrasferimento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:6px;">
+<div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
+<h3>🔄 Spostamento Merci</h3>
+<div class="settings-grid">
+<div class="settings-field">
+<label>Da Barca:</label>
+<select id="transfDaBarca" onchange="aggiornaBarcheDestinazioneModal()"></select>
+</div>
+<div class="settings-field">
+<label>A Barca:</label>
+<select id="transfABarca"></select>
+</div>
+<div class="settings-field">
+<label>Prodotto:</label>
+<select id="transfProdotto"></select>
+</div>
+<div class="settings-field">
+<label>Quantità pz:</label>
+<input type="number" id="transfQta" value="1" min="1">
+</div>
+</div>
+<div style="display:flex; gap:6px; margin-top:8px;">
+<button type="button" class="btn btn-success" style="flex:1;" onclick="confermaTrasferimentoMerci()">Conferma</button>
+<button type="button" class="btn btn-secondary" onclick="chiudiModalTrasferimento()" style="width:auto;">Annulla</button>
+</div>
+</div>
+</div>
+
+<!-- BARRA NAVIGAZIONE INFERIORE -->
+<nav class="bottom-nav" id="mainBottomNav">
+<button type="button" class="nav-item active" data-app="app-cassa">
+<span class="nav-icon">💶</span>
+<span>Cassa</span>
+</button>
+<button type="button" class="nav-item" data-app="app-incassi">
+<span class="nav-icon">📊</span>
+<span>Incassi</span>
+</button>
+<button type="button" class="nav-item" data-app="app-report-prodotti">
+<span class="nav-icon">📦</span>
+<span>Report</span>
+</button>
+<button type="button" class="nav-item" data-app="app-grafici">
+<span class="nav-icon">📈</span>
+<span>Grafici</span>
+</button>
+</nav>
+
+<script>
+const listaBarche = [
+  "NAPOLI JET", "SALERNO JET", "AMALFI JET", "SUPER JET", "CAPRI JET",
+  "ISCHIA JET", "SUPER FLYTE", "TREMITI JET", "VESUVIO JET", "JUMBO JET", "SORRENTO JET",
+  "GIUNONE JET", "EUROPA JET", "CITTÀ DI SORRENTO", "PICASSO", "FRECCIA D ARGENTO",
+  "BLIZ", "DELFINO", "URAGANO", "ACQUARIUS", "RAID", "Standard", "Festa"
+];
+
+const prodottiDefault = [
+  {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 50},
+  {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
+  {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 3.0, stock: 15},
+  {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 5.0, stock: 10},
+  {id:'bue', n:"Bueno/B-Ready", i:"🍫", p:3, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 24},
+  {id:'cap', n:"Cappelli", i:"🧢", p:5, pen:5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.5, stock: 20},
+  {id:'car', n:"Caramelle / Gomme", i:"🍬", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 0.5, stock: 40},
+  {id:'cia', n:"Cialde", i:"☕", p:2, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 100},
+  {id:'die', n:"Dietor", i:"🍬", p:0, pen:0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 0, stock: 100},
+  {id:'fit', n:"Fitness / Cereal", i:"🌾", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
+  {id:'fon', n:"Fonzies / Patatine", i:"🍟", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
+  {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.0, stock: 50},
+  {id:'kin', n:"Kinder Cards", i:"🃏", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
+  {id:'lat', n:"Latte", i:"🥛", p:0.5, pen:0.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 0.25, stock: 10},
+  {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 48},
+  {id:'mag', n:"Maglie", i:"👕", p:5, pen:5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.5, stock: 15},
+  {id:'mik', n:"Mikado", i:"🥖", p:3, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
+  {id:'muf', n:"Muffin", i:"🧁", p:3, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 15},
+  {id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 25},
+  {id:'pav', n:"Pavesini", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
+  {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 36},
+  {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 3.5, stock: 24},
+  {id:'pri', n:"Pringles", i:"🥔", p:3.5, pen:2, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 24},
+  {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 3.0, stock: 12},
+  {id:'red', n:"Red Bull / Gatorade", i:"⚡", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.0, stock: 24},
+  {id:'rin', n:"Ringo / Oreo", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 24},
+  {id:'rit', n:"Ritz / Cipster", i:"🍪", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 20},
+  {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 4.0, stock: 24},
+  {id:'suc', n:"Succo", i:"🧃", p:3.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 24},
+  {id:'the', n:"The Camomilla", i:"🍵", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
+  {id:'tuc', n:"Tuc", i:"🍪", p:4, pen:2, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 20},
+  {id:'twi', n:"Twix/KitKat/M&M", i:"🍫", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
+  {id:'clm', n:"Calamite", i:"🧲", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 50},
+  {id:'ptc', n:"Portachiavi", i:"🔑", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 50},
+  {id:'cuc', n:"Cucchiaio", i:"🥄", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 50},
+  {id:'cos', n:"Costumi", i:"🩳", p:5.0, pen:5.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.5, stock: 10},
+  {id:'dec', n:"Decaffeinato", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
+  {id:'gin', n:"Ginseng", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
+  {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30}
+];
+
+const datiPrecaricatiDefault = [
+  { mese: "Novembre 2026", data: "1 novembre 2026", postazione: "VESUVIO JET", cash: 125.00, pos: 29.50, diff: 0, festa: false },
+  { mese: "Novembre 2026", data: "2 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, diff: 0, festa: false },
+  { mese: "Novembre 2026", data: "3 novembre 2026", postazione: "VESUVIO JET", cash: 3.50, pos: 0.00, diff: 0, festa: false },
+  { mese: "Novembre 2026", data: "4 novembre 2026", postazione: "VESUVIO JET", cash: 115.00, pos: 124.00, diff: 0, festa: false },
+  { mese: "Novembre 2026", data: "5 novembre 2026", postazione: "VESUVIO JET", cash: 290.00, pos: 91.00, diff: 0, festa: false },
+  { mese: "Novembre 2026", data: "6 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, diff: 0, festa: false }
+];
+
+const mesiArchivatiDefault = [
+  { mese: "Ottobre 2026", dataArchiviazione: "31/10/2026", incassoTotale: 9981.00, quota5p: 499.05, quotaFissa: 754.00, diffTotale: 0.00, nettoSpettante: 1253.05, giornate: 29 },
+  { mese: "Settembre 2026", dataArchiviazione: "01/10/2026", incassoTotale: 18320.50, quota5p: 916.02, quotaFissa: 754.00, diffTotale: 0.00, nettoSpettante: 1670.02, giornate: 29 },
+  { mese: "Agosto 2026", dataArchiviazione: "31/10/2026", incassoTotale: 15185.50, quota5p: 759.27, quotaFissa: 728.00, diffTotale: 0.00, nettoSpettante: 1487.27, giornate: 31 }
+];
+
+let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
+let bozzePerBarca = {};
+let storicoGiornate = [];
+let storicoTrasferimenti = [];
+let storicoCarichi = [];
+let storicoConteggi = [];
+let datiIncassi = [...datiPrecaricatiDefault];
+let mesiArchivati = [...mesiArchivatiDefault];
+let timerSalvataggioToast = null;
+let chartAndamentoInstance = null;
+let chartTopProdottiInstance = null;
+let itemsCaricoMerce = [];
+
+function popolaSelectBarche() {
+  const selectCassa = document.getElementById("selectBarca");
+  const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
+
+  if(!selectCassa) return;
+  selectCassa.innerHTML = "";
+  selectFiltroProdotti.innerHTML = "";
+
+  listaBarche.forEach(barca => {
+    let opt1 = document.createElement("option");
+    opt1.value = barca; opt1.textContent = barca;
+    selectCassa.appendChild(opt1);
+
+    let opt3 = document.createElement("option");
+    opt3.value = barca; opt3.textContent = barca;
+    selectFiltroProdotti.appendChild(opt3);
+  });
+
+  selectCassa.value = "VESUVIO JET";
+  selectFiltroProdotti.value = "VESUVIO JET";
+}
+
+function cambiaTab(idApp) {
+  document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+  const target = document.getElementById(idApp);
+  if (target) target.classList.add('active');
+
+  const btn = document.querySelector(`.nav-item[data-app="${idApp}"]`);
+  if (btn) btn.classList.add('active');
+
+  window.scrollTo(0, 0);
+
+  if (idApp === 'app-report-prodotti') {
+    aggiornaReportProdotti();
+  } else if (idApp === 'app-grafici') {
+    renderizzaGrafici();
+  } else if (idApp === 'app-incassi') {
+    aggiornaTabellaIncassi();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  popolaSelectBarche();
+  caricaDatiLocali();
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  aggiornaTabellaIncassi();
+  aggiornaListaMesiArchivati();
+  aggiornaReportProdotti();
+  renderizzaGrafici();
+
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetApp = this.getAttribute('data-app');
+      cambiaTab(targetApp);
+    });
+    item.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      const targetApp = this.getAttribute('data-app');
+      cambiaTab(targetApp);
+    }, {passive: false});
+  });
+});
+
+function mostraNotificaSalvataggio() {
+  const el = document.getElementById("saveIndicator");
+  if(!el) return;
+  el.style.display = "flex";
+  clearTimeout(timerSalvataggioToast);
+  timerSalvataggioToast = setTimeout(() => { el.style.display = "none"; }, 1500);
+}
+
+function salvaDatiLocali() {
+  try {
+    localStorage.setItem("cassa_bozze_barche", JSON.stringify(bozzePerBarca));
+    localStorage.setItem("cassa_storico_giornate", JSON.stringify(storicoGiornate));
+    localStorage.setItem("cassa_storico_trasferimenti", JSON.stringify(storicoTrasferimenti));
+    localStorage.setItem("cassa_storico_carichi", JSON.stringify(storicoCarichi));
+    localStorage.setItem("cassa_storico_conteggi", JSON.stringify(storicoConteggi));
+    localStorage.setItem("cassa_dati_incassi", JSON.stringify(datiIncassi));
+    localStorage.setItem("cassa_mesi_archivati", JSON.stringify(mesiArchivati));
+    localStorage.setItem("cassa_prodotti_master", JSON.stringify(prodotti));
+    mostraNotificaSalvataggio();
+  } catch (e) { console.error("Errore salvataggio localStorage", e); }
+}
+
+function caricaDatiLocali() {
+  try {
+    const b = localStorage.getItem("cassa_bozze_barche");
+    if (b) bozzePerBarca = JSON.parse(b);
+
+    const s = localStorage.getItem("cassa_storico_giornate");
+    if (s) storicoGiornate = JSON.parse(s);
+
+    const t = localStorage.getItem("cassa_storico_trasferimenti");
+    if (t) storicoTrasferimenti = JSON.parse(t);
+
+    const c = localStorage.getItem("cassa_storico_carichi");
+    if (c) storicoCarichi = JSON.parse(c);
+
+    const cont = localStorage.getItem("cassa_storico_conteggi");
+    if (cont) storicoConteggi = JSON.parse(cont);
+
+    const inc = localStorage.getItem("cassa_dati_incassi");
+    if (inc) datiIncassi = JSON.parse(inc);
+
+    const arch = localStorage.getItem("cassa_mesi_archivati");
+    if (arch) mesiArchivati = JSON.parse(arch);
+
+    const p = localStorage.getItem("cassa_prodotti_master");
+    if (p) prodotti = JSON.parse(p);
+  } catch (e) { console.error("Errore caricamento localStorage", e); }
+
+  caricaBozzaBarcaCorrente();
+  renderizzaStorici();
+}
+
+function cambiaBarcaCorrente() {
+  const b = document.getElementById("selectBarca").value;
+  document.getElementById("filtroBarcaProdotti").value = b;
+  caricaBozzaBarcaCorrente();
+  aggiornaReportProdotti();
+}
+
+function caricaBozzaBarcaCorrente() {
+  const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
+  const bozza = bozzePerBarca[barca] || {};
+
+  document.getElementById("txtOperatore").value = bozza.operatore || "";
+  document.getElementById("txtDataCassa").value = bozza.data || "6 Novembre 2026";
+  document.getElementById("selectMeteo").value = bozza.meteo || "☀️ Sole / Mare Calmo";
+  document.getElementById("incassoCash").value = bozza.cash || "";
+  document.getElementById("incassoPos").value = bozza.pos || "";
+
+  const qtaSaved = bozza.quantita || {};
+  const prezziBuoSaved = bozza.prezziBuo || {};
+  const stockSaved = bozza.stock || {};
+
+  prodotti.forEach(p => {
+    p.qtaPass = qtaSaved[p.id + '_pass'] || 0;
+    p.qtaPen = qtaSaved[p.id + '_pen'] || 0;
+    p.qtaBuo = qtaSaved[p.id + '_buo'] || 0;
+    p.prezzoBuo = prezziBuoSaved[p.id] !== undefined ? parseFloat(prezziBuoSaved[p.id]) : (p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) : (prodottiDefault.find(d=>d.id===p.id)?.prezzoBuo || 1.0));
+
+    if (stockSaved[p.id] !== undefined) {
+      p.stock = stockSaved[p.id];
+    } else {
+      const defP = prodottiDefault.find(d => d.id === p.id);
+      p.stock = defP ? defP.stock : 50;
+    }
+  });
+
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+}
+
+function salvaBozzaCassaInTempoReale() {
+  const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
+  const quantitaObj = {};
+  const prezziBuoObj = {};
+  const stockObj = {};
+
+  prodotti.forEach(p => {
+    quantitaObj[p.id + '_pass'] = p.qtaPass || 0;
+    quantitaObj[p.id + '_pen'] = p.qtaPen || 0;
+    quantitaObj[p.id + '_buo'] = p.qtaBuo || 0;
+    prezziBuoObj[p.id] = p.prezzoBuo !== undefined ? p.prezzoBuo : 1.0;
+    stockObj[p.id] = p.stock !== undefined ? p.stock : 50;
+  });
+
+  if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
+  bozzePerBarca[barca].operatore = document.getElementById("txtOperatore").value;
+  bozzePerBarca[barca].data = document.getElementById("txtDataCassa").value;
+  bozzePerBarca[barca].meteo = document.getElementById("selectMeteo").value;
+  bozzePerBarca[barca].cash = document.getElementById("incassoCash").value;
+  bozzePerBarca[barca].pos = document.getElementById("incassoPos").value;
+  bozzePerBarca[barca].quantita = quantitaObj;
+  bozzePerBarca[barca].prezziBuo = prezziBuoObj;
+  bozzePerBarca[barca].stock = stockObj;
+
+  salvaDatiLocali();
+}
+
+function generaListaProdottiCassa() {
+  const lista = document.getElementById("listaProdotti");
+  if(!lista) return;
+  lista.innerHTML = "";
+  let alertScorteHTML = "";
+
+  prodotti.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "prodotto-card";
+    card.id = "card_prod_" + p.id;
+
+    // Giacenza a bordo = stock iniziale salvato - vendite correnti inserite
+    const giacenzaEffettiva = p.stock - (p.qtaPass + p.qtaPen + p.qtaBuo);
+    let badgeStockClass = "stock-ok";
+    if (giacenzaEffettiva <= 5) badgeStockClass = "stock-low";
+
+    if (giacenzaEffettiva <= 5) {
+      alertScorteHTML += `⚠️ <b>${p.n}</b>: Solo ${giacenzaEffettiva} unità rimaste!<br>`;
+    }
+
+    const przBuoVal = p.prezzoBuo !== undefined ? p.prezzoBuo : 1.0;
+
+    card.innerHTML = `
+      <div class="prodotto-header">
+        <div class="prodotto-nome"><span>${p.i}</span> <span>${p.n}</span></div>
+        <div class="prezzi-info">Pass: €${p.p.toFixed(2)} | Pen: €${p.pen.toFixed(2)}</div>
+      </div>
+      <div class="magazzino-bar">
+        <div class="magazzino-item">Giacenza: <span class="stock-badge ${badgeStockClass}">${giacenzaEffettiva} pz</span></div>
+        <div class="magazzino-item" style="color: #34d399; font-weight: bold;">Valore Stock: €${(giacenzaEffettiva * p.p).toFixed(2)}</div>
+      </div>
+      <div class="categorie-grid-vertical">
+        <div class="categoria-box-row">
+          <div class="categoria-box-header">
+            <span class="categoria-titolo-row pass">Passeggeri</span>
+            <span style="font-size:0.68rem; color:var(--text-muted);">€${p.p.toFixed(2)}</span>
+          </div>
+          <div class="controlli-qta-inline">
+            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pass', -1)">-</button>
+            <input type="number" class="input-qta-wide" id="qta_pass_${p.id}" value="${p.qtaPass}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pass', this.value)">
+            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pass', 1)">+</button>
+          </div>
+        </div>
+        <div class="categoria-box-row">
+          <div class="categoria-box-header">
+            <span class="categoria-titolo-row pen">Pendolari</span>
+            <span style="font-size:0.68rem; color:var(--text-muted);">€${p.pen.toFixed(2)}</span>
+          </div>
+          <div class="controlli-qta-inline">
+            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pen', -1)">-</button>
+            <input type="number" class="input-qta-wide" id="qta_pen_${p.id}" value="${p.qtaPen}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pen', this.value)">
+            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pen', 1)">+</button>
+          </div>
+        </div>
+        <div class="categoria-box-row">
+          <div class="categoria-box-header">
+            <span class="categoria-titolo-row buono">Buono Eq.</span>
+            <input type="number" class="input-prezzo-buono-row" id="prezzo_buo_${p.id}" value="${przBuoVal.toFixed(2)}" step="0.25" min="0" oninput="aggiornaPrezzoBuono('${p.id}', this.value)" placeholder="€">
+          </div>
+          <div class="controlli-qta-inline">
+            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Buo', -1)">-</button>
+            <input type="number" class="input-qta-wide" id="qta_buo_${p.id}" value="${p.qtaBuo || 0}" min="0" onchange="impostaQtaManuale('${p.id}', 'Buo', this.value)">
+            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Buo', 1)">+</button>
+          </div>
+        </div>
+      </div>
+    `;
+    lista.appendChild(card);
+  });
+
+  const alertBox = document.getElementById("alertBoxScorte");
+  if (alertBox) {
+    if (alertScorteHTML !== "") {
+      alertBox.innerHTML = alertScorteHTML;
+      alertBox.style.display = "block";
+    } else {
+      alertBox.style.display = "none";
+    }
+  }
+}
+
+function modificaQta(idProd, tipo, delta) {
+  const prod = prodotti.find(p => p.id === idProd);
+  if (!prod) return;
+
+  if (tipo === 'Pass') prod.qtaPass = Math.max(0, prod.qtaPass + delta);
+  else if (tipo === 'Pen') prod.qtaPen = Math.max(0, prod.qtaPen + delta);
+  else if (tipo === 'Buo') prod.qtaBuo = Math.max(0, (prod.qtaBuo || 0) + delta);
+
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  salvaBozzaCassaInTempoReale();
+}
+
+function impostaQtaManuale(idProd, tipo, val) {
+  const prod = prodotti.find(p => p.id === idProd);
+  if (!prod) return;
+  const qta = Math.max(0, parseInt(val) || 0);
+
+  if (tipo === 'Pass') prod.qtaPass = qta;
+  if (tipo === 'Pen') prod.qtaPen = qta;
+  if (tipo === 'Buo') prod.qtaBuo = qta;
+
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  salvaBozzaCassaInTempoReale();
+}
+
+function aggiornaPrezzoBuono(idProd, val) {
+  const prod = prodotti.find(p => p.id === idProd);
+  if (!prod) return;
+  prod.prezzoBuo = Math.max(0, parseFloat(val) || 0);
+  calcolaTotaleCassa();
+  salvaBozzaCassaInTempoReale();
+}
+
+function venditaRapida(idProd, tipo) {
+  modificaQta(idProd, tipo, 1);
+}
+
+function calcolaTotaleCassa() {
+  let totaleVendutoClienti = 0;
+  let totaleBuoniEqEur = 0;
+  let pzBuoniTot = 0;
+
+  prodotti.forEach(p => {
+    totaleVendutoClienti += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+    const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
+    totaleBuoniEqEur += ((p.qtaBuo || 0) * przB);
+    pzBuoniTot += (p.qtaBuo || 0);
+  });
+
+  const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
+  const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
+
+  const totaleVendutoComplessivo = totaleVendutoClienti + totaleBuoniEqEur;
+  const incassoRealeDichiarato = cash + pos;
+  const diff = incassoRealeDichiarato - totaleVendutoComplessivo;
+
+  document.getElementById("totaleCassa").textContent = `${totaleVendutoComplessivo.toFixed(2)} €`;
+  document.getElementById("dettaglioIncasso").textContent = `Venduto: €${totaleVendutoClienti.toFixed(2)} | Buoni: €${totaleBuoniEqEur.toFixed(2)} (${pzBuoniTot} pz)`;
+
+  const boxDiff = document.getElementById("boxPlusAmmanco");
+  if (incassoRealeDichiarato > 0 || cash > 0 || pos > 0) {
+    if (Math.abs(diff) < 0.01) {
+      boxDiff.innerHTML = `<span class="badge-diff badge-ok">Quadratura Perfetta (€0.00)</span>`;
+    } else if (diff > 0) {
+      boxDiff.innerHTML = `<span class="badge-diff badge-plus">Plusvalenza: +€${diff.toFixed(2)}</span>`;
+    } else {
+      boxDiff.innerHTML = `<span class="badge-diff badge-ammanco">Ammanco: -€${Math.abs(diff).toFixed(2)}</span>`;
+    }
+  } else {
+    boxDiff.innerHTML = "";
+  }
+}
+
+function filtraProdottiCassa() {
+  const q = document.getElementById("cercaProdottoCassa").value.toLowerCase();
+  prodotti.forEach(p => {
+    const card = document.getElementById("card_prod_" + p.id);
+    if (card) {
+      card.style.display = p.n.toLowerCase().includes(q) ? "block" : "none";
+    }
+  });
+}
+
+function azzeraQuantitaCassa() {
+  if (confirm("Sei sicuro di voler azzerare le quantità di vendita Correnti?")) {
+    prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; });
+    document.getElementById("incassoCash").value = "";
+    document.getElementById("incassoPos").value = "";
+    generaListaProdottiCassa();
+    calcolaTotaleCassa();
+    salvaBozzaCassaInTempoReale();
+  }
+}
+
+function salvaGiornataInStorico() {
+  const barca = document.getElementById("selectBarca").value;
+  const data = document.getElementById("txtDataCassa").value || "6 Novembre 2026";
+  const op = document.getElementById("txtOperatore").value || "Anonimo";
+  const meteo = document.getElementById("selectMeteo").value;
+  const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
+  const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
+
+  let totaleVendutoComplessivo = 0;
+  const dettaglioPezzi = [];
+
+  if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
+  if (!bozzePerBarca[barca].stock) bozzePerBarca[barca].stock = {};
+
+  prodotti.forEach(p => {
+    const qBuo = p.qtaBuo || 0;
+    if (p.qtaPass > 0 || p.qtaPen > 0 || qBuo > 0) {
+      const totPz = p.qtaPass + p.qtaPen + qBuo;
+      const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
+      const incProd = (p.qtaPass * p.p) + (p.qtaPen * p.pen) + (qBuo * przB);
+      totaleVendutoComplessivo += incProd;
+
+      dettaglioPezzi.push({
+        id: p.id,
+        nome: p.n,
+        pass: p.qtaPass,
+        pen: p.qtaPen,
+        buo: qBuo,
+        prezzoBuo: przB,
+        tot: totPz,
+        incasso: incProd
+      });
+    }
+  });
+
+  const diff = (cash + pos) - totaleVendutoComplessivo;
+
+  const record = {
+    id: Date.now(),
+    barca, data, op, meteo, cash, pos,
+    totaleVenduto: totaleVendutoComplessivo, diff, dettaglioPezzi
+  };
+
+  storicoGiornate.unshift(record);
+
+  const recordIncasso = {
+    mese: "Novembre 2026",
+    data: data,
+    postazione: barca,
+    cash: cash,
+    pos: pos,
+    diff: diff,
+    festa: false
+  };
+  datiIncassi.unshift(recordIncasso);
+
+  prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; });
+  document.getElementById("incassoCash").value = "";
+  document.getElementById("incassoPos").value = "";
+
+  salvaBozzaCassaInTempoReale();
+  salvaDatiLocali();
+  renderizzaStorici();
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  aggiornaTabellaIncassi();
+  aggiornaReportProdotti();
+  renderizzaGrafici();
+
+  alert("Giornata salvata con successo e sincronizzata nell'archivio incassi!");
+}
+
+function renderizzaStorici() {
+  const container = document.getElementById("listaStoricoCassa");
+  if(!container) return;
+  container.innerHTML = "";
+
+  if (storicoGiornate.length === 0) {
+    container.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessuna giornata ancora salvata.</p>";
+  } else {
+    storicoGiornate.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "storico-card";
+      div.innerHTML = `
+        <div class="storico-header">
+          <span>${item.barca} - ${item.data}</span>
+          <span>${(item.cash + item.pos).toFixed(2)} €</span>
+        </div>
+        <div class="storico-dettaglio">
+          Addetto: <b>${item.op}</b> | Meteo: ${item.meteo}<br>
+          Cash: €${item.cash.toFixed(2)} | POS: €${item.pos.toFixed(2)} | Venduto: €${item.totaleVenduto.toFixed(2)}<br>
+          Quadratura: <b style="color:${item.diff >= 0 ? '#34d399' : '#f87171'}">${item.diff >= 0 ? '+' : ''}${item.diff.toFixed(2)} €</b>
+        </div>
+        <div class="storico-actions">
+          <button type="button" class="del-btn" onclick="eliminaStoricoCassa(${item.id})">Elimina</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  const containerTransf = document.getElementById("listaStoricoTrasferimenti");
+  if (containerTransf) {
+    containerTransf.innerHTML = "";
+    if (storicoTrasferimenti.length === 0) {
+      containerTransf.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessun trasferimento effettuato.</p>";
+    } else {
+      storicoTrasferimenti.forEach(t => {
+        containerTransf.innerHTML += `
+          <div class="storico-card">
+            <div class="storico-header">
+              <span>🔄 ${t.prodotto} (${t.qta} pz)</span>
+              <span style="color:#a7f3d0;">${t.data}</span>
+            </div>
+            <div class="storico-dettaglio">
+              Da: <b style="color:#f87171;">${t.daBarca}</b> ➔ A: <b style="color:#34d399;">${t.aBarca}</b>
+            </div>
+          </div>
+        `;
+      });
+    }
+  }
+
+  renderizzaStoricoConteggi();
+}
+
+function renderizzaStoricoConteggi() {
+  const div = document.getElementById("listaStoricoConteggi");
+  if (!div) return;
+  div.innerHTML = "";
+
+  if (storicoConteggi.length === 0) {
+    div.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessun conteggio inventario salvato.</p>";
+    return;
+  }
+
+  storicoConteggi.forEach(c => {
+    div.innerHTML += `
+      <div class="storico-card">
+        <div class="storico-header">
+          <span>📋 Inventario ${c.barca}</span>
+          <span style="color:#38bdf8;">${c.data}</span>
+        </div>
+        <div class="storico-dettaglio">
+          Valore Merce Rimanente a Bordo: <b style="color:#34d399;">€${c.valoreTotale.toFixed(2)}</b><br>
+          Pezzi Totali Contati: <b>${c.pezziTotali} pz</b>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function svuotaStoricoConteggi() {
+  if (confirm("Cancellare il registro dei conteggi inventario?")) {
+    storicoConteggi = [];
+    salvaDatiLocali();
+    renderizzaStoricoConteggi();
+  }
+}
+
+function eliminaStoricoCassa(id) {
+  if (confirm("Vuoi davvero eliminare questa giornata dallo storico?")) {
+    storicoGiornate = storicoGiornate.filter(i => i.id !== id);
+    salvaDatiLocali();
+    renderizzaStorici();
+  }
+}
+
+function svuotaStoricoCassa() {
+  if (confirm("Vuoi cancellare l'intero storico delle giornate salvate?")) {
+    storicoGiornate = [];
+    salvaDatiLocali();
+    renderizzaStorici();
+  }
+}
+
+function inviaWhatsApp() {
+  const barca = document.getElementById("selectBarca").value;
+  const data = document.getElementById("txtDataCassa").value || "6 Novembre 2026";
+  const op = document.getElementById("txtOperatore").value || "N.D.";
+  const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
+  const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
+
+  let totaleVenduto = 0;
+  let testoProdotti = "";
+
+  prodotti.forEach(p => {
+    const qBuo = p.qtaBuo || 0;
+    if (p.qtaPass > 0 || p.qtaPen > 0 || qBuo > 0) {
+      const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
+      const inc = (p.qtaPass * p.p) + (p.qtaPen * p.pen) + (qBuo * przB);
+      totaleVenduto += inc;
+      testoProdotti += `• ${p.n}: Pass ${p.qtaPass} | Pen ${p.qtaPen} | BuoEq ${qBuo} (€${przB.toFixed(2)})\n`;
+    }
+  });
+
+  const diff = (cash + pos) - totaleVenduto;
+
+  let msg = `📊 *REPORT CASSA - ${barca}*\n`;
+  msg += `📅 Data: ${data}\n👤 Addetto: ${op}\n\n`;
+  msg += `💰 *INCASSI:*\n- Cash: €${cash.toFixed(2)}\n- POS: €${pos.toFixed(2)}\n- Tot. Incassato: €${(cash+pos).toFixed(2)}\n\n`;
+  msg += `🛒 *VENDITE TEORICHE TOTALI:* €${totaleVenduto.toFixed(2)}\n`;
+  msg += `${testoProdotti}\n`;
+  msg += `⚖️ *QUADRATURA:* ${diff >= 0 ? '+' : ''}€${diff.toFixed(2)}\n`;
+
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function apriModalCaricoMerce() {
+  document.getElementById("caricoBarcaDest").value = document.getElementById("selectBarca").value;
+  const selectProd = document.getElementById("caricoProdotto");
+  selectProd.innerHTML = "";
+  prodotti.forEach(p => {
+    selectProd.innerHTML += `<option value="${p.id}">${p.n}</option>`;
+  });
+  itemsCaricoMerce = [];
+  aggiornaTabellaCaricoItems();
+  document.getElementById("modalCaricoMerce").style.display = "flex";
+}
+function chiudiModalCaricoMerce() { document.getElementById("modalCaricoMerce").style.display = "none"; }
+
+function aggiungiVoceCarico() {
+  const idP = document.getElementById("caricoProdotto").value;
+  const qta = parseInt(document.getElementById("caricoQta").value) || 0;
+  const p = prodotti.find(x => x.id === idP);
+  if (!p || qta <= 0) return;
+  itemsCaricoMerce.push({ id: p.id, nome: p.n, qta: qta });
+  aggiornaTabellaCaricoItems();
+}
+
+function aggiornaTabellaCaricoItems() {
+  const tbody = document.querySelector("#tabellaCaricoItems tbody");
+  tbody.innerHTML = "";
+  itemsCaricoMerce.forEach((item, index) => {
+    tbody.innerHTML += `<tr><td>${item.nome}</td><td>+${item.qta}</td><td><button type="button" class="del-btn" onclick="itemsCaricoMerce.splice(${index},1); aggiornaTabellaCaricoItems();">X</button></td></tr>`;
+  });
+}
+
+function confermaEStampaCarico() {
+  const barca = document.getElementById("caricoBarcaDest").value;
+  const numBolla = document.getElementById("caricoNumBolla").value || "N.D.";
+  const fornitore = document.getElementById("caricoFornitore").value || "N.D.";
+
+  if (itemsCaricoMerce.length === 0) {
+    alert("Aggiungi almeno un prodotto alla bolla!");
+    return;
+  }
+
+  if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
+  if (!bozzePerBarca[barca].stock) bozzePerBarca[barca].stock = {};
+
+  itemsCaricoMerce.forEach(item => {
+    const p = prodotti.find(x => x.id === item.id);
+    if (p) {
+      const stockAtt = bozzePerBarca[barca].stock[p.id] !== undefined ? bozzePerBarca[barca].stock[p.id] : p.stock;
+      bozzePerBarca[barca].stock[p.id] = stockAtt + item.qta;
+      if (document.getElementById("selectBarca").value === barca) {
+        p.stock = bozzePerBarca[barca].stock[p.id];
+      }
+    }
+  });
+
+  const rec = { id: Date.now(), data: new Date().toLocaleDateString('it-IT'), barca, numBolla, fornitore, items: [...itemsCaricoMerce] };
+  storicoCarichi.unshift(rec);
+
+  salvaDatiLocali();
+  caricaBozzaBarcaCorrente();
+  renderizzaStorici();
+  chiudiModalCaricoMerce();
+  alert("Carico registrato e magazzino aggiornato!");
+}
+
+function apriModalTrasferimento() {
+  const selectDa = document.getElementById("transfDaBarca");
+  selectDa.innerHTML = "";
+  listaBarche.forEach(b => {
+    selectDa.innerHTML += `<option value="${b}">${b}</option>`;
+  });
+
+  const barcaAttiva = document.getElementById("selectBarca").value || "VESUVIO JET";
+  selectDa.value = barcaAttiva;
+
+  aggiornaBarcheDestinazioneModal();
+  document.getElementById("modalTrasferimento").style.display = "flex";
+}
+
+function aggiornaBarcheDestinazioneModal() {
+  const daBarca = document.getElementById("transfDaBarca").value;
+  const selectA = document.getElementById("transfABarca");
+  selectA.innerHTML = "";
+  listaBarche.filter(b => b !== daBarca).forEach(b => {
+    selectA.innerHTML += `<option value="${b}">${b}</option>`;
+  });
+  aggiornaSelectProdottoTrasferimento();
+}
+
+function aggiornaSelectProdottoTrasferimento() {
+  const daBarca = document.getElementById("transfDaBarca").value;
+  const selectP = document.getElementById("transfProdotto");
+  selectP.innerHTML = "";
+
+  const stockMap = (bozzePerBarca[daBarca] && bozzePerBarca[daBarca].stock) ? bozzePerBarca[daBarca].stock : {};
+
+  prodotti.forEach(p => {
+    const st = stockMap[p.id] !== undefined ? stockMap[p.id] : p.stock;
+    selectP.innerHTML += `<option value="${p.id}">${p.n} (${st} pz)</option>`;
+  });
+}
+
+function chiudiModalTrasferimento() { document.getElementById("modalTrasferimento").style.display = "none"; }
+
+function confermaTrasferimentoMerci() {
+  const daBarca = document.getElementById("transfDaBarca").value;
+  const aBarca = document.getElementById("transfABarca").value;
+  const idP = document.getElementById("transfProdotto").value;
+  const qta = parseInt(document.getElementById("transfQta").value) || 0;
+
+  if (daBarca === aBarca) {
+    alert("Seleziona due barche diverse!");
+    return;
+  }
+
+  const p = prodotti.find(x => x.id === idP);
+  if (!p || qta <= 0) {
+    alert("Quantità non valida!");
+    return;
+  }
+
+  if (!bozzePerBarca[daBarca]) bozzePerBarca[daBarca] = {};
+  if (!bozzePerBarca[daBarca].stock) {
+    bozzePerBarca[daBarca].stock = {};
+    prodotti.forEach(prod => { bozzePerBarca[daBarca].stock[prod.id] = prod.stock; });
+  }
+
+  if (!bozzePerBarca[aBarca]) bozzePerBarca[aBarca] = {};
+  if (!bozzePerBarca[aBarca].stock) {
+    bozzePerBarca[aBarca].stock = {};
+    prodotti.forEach(prod => { bozzePerBarca[aBarca].stock[prod.id] = prod.stock; });
+  }
+
+  const stockDa = bozzePerBarca[daBarca].stock[idP] !== undefined ? bozzePerBarca[daBarca].stock[idP] : p.stock;
+  const stockA = bozzePerBarca[aBarca].stock[idP] !== undefined ? bozzePerBarca[aBarca].stock[idP] : p.stock;
+
+  if (stockDa < qta) {
+    if (!confirm(`La barca d'origine (${daBarca}) ha solo ${stockDa} pezzi. Procedere comunque?`)) {
+      return;
+    }
+  }
+
+  const nuovoStockDa = Math.max(0, stockDa - qta);
+  const nuovoStockA = stockA + qta;
+
+  bozzePerBarca[daBarca].stock[idP] = nuovoStockDa;
+  bozzePerBarca[aBarca].stock[idP] = nuovoStockA;
+
+  const barcaCorrente = document.getElementById("selectBarca").value;
+  if (barcaCorrente === daBarca) {
+    p.stock = nuovoStockDa;
+  } else if (barcaCorrente === aBarca) {
+    p.stock = nuovoStockA;
+  }
+
+  const rec = { 
+    id: Date.now(), 
+    data: new Date().toLocaleDateString('it-IT'), 
+    daBarca, 
+    aBarca, 
+    prodotto: p.n, 
+    qta 
+  };
+  storicoTrasferimenti.unshift(rec);
+
+  salvaDatiLocali();
+  caricaBozzaBarcaCorrente();
+  renderizzaStorici();
+  chiudiModalTrasferimento();
+  alert("Spostamento completato!");
+}
+
+function svuotaStoricoCarichi() { storicoCarichi = []; salvaDatiLocali(); renderizzaStorici(); }
+function svuotaStoricoTrasferimenti() { storicoTrasferimenti = []; salvaDatiLocali(); renderizzaStorici(); }
+
+function cambiaMeseCorrente() {
+  aggiornaTabellaIncassi();
+}
+
+function aggiornaTabellaIncassi() {
+  const meseSelezionato = document.getElementById("selectMeseIncassi").value;
+  const filtro = document.getElementById("txtFiltro").value.toLowerCase();
+  const tbody = document.querySelector("#tabellaIncassi tbody");
+  if(!tbody) return;
+  tbody.innerHTML = "";
+
+  const meseArchiviato = mesiArchivati.find(m => m.mese === meseSelezionato);
+
+  if (meseArchiviato) {
+    document.getElementById("lblIncasso").textContent = `€ ${meseArchiviato.incassoTotale.toFixed(2)}`;
+    document.getElementById("lbl5p").textContent = `€ ${meseArchiviato.quota5p.toFixed(2)}`;
+    document.getElementById("lblFissa").textContent = `€ ${meseArchiviato.quotaFissa.toFixed(2)}`;
+    document.getElementById("lblTotDiff").textContent = `€ ${(meseArchiviato.diffTotale || 0).toFixed(2)}`;
+    document.getElementById("lblTotale").textContent = `€ ${meseArchiviato.nettoSpettante.toFixed(2)}`;
+    document.getElementById("lblContatore").textContent = `${meseArchiviato.giornate} giornate (Archiviato)`;
+
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:15px; color:var(--text-muted);">Mese archiviato. Netto: <b>€${meseArchiviato.nettoSpettante.toFixed(2)}</b></td></tr>`;
+    return;
+  }
+
+  const datiFiltrati = datiIncassi.filter(d => {
+    const matchMese = d.mese === meseSelezionato;
+    const matchFiltro = d.data.toLowerCase().includes(filtro) || d.postazione.toLowerCase().includes(filtro);
+    return matchMese && matchFiltro;
+  });
+
+  let totIncasso = 0;
+  let tot5p = 0;
+  let totFissa = 0;
+  let totDiff = 0;
+  let totNetto = 0;
+
+  datiFiltrati.forEach((item, index) => {
+    const incassoGiorno = (item.cash || 0) + (item.pos || 0);
+    const quota5pGiorno = incassoGiorno * 0.05;
+    const quotaFissaGiorno = item.festa ? 0 : 26.00;
+    const diffGiorno = item.diff || 0;
+
+    const nettoGiorno = quota5pGiorno + quotaFissaGiorno + diffGiorno;
+
+    totIncasso += incassoGiorno;
+    tot5p += quota5pGiorno;
+    totFissa += quotaFissaGiorno;
+    totDiff += diffGiorno;
+    totNetto += nettoGiorno;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${item.data}</td>
+      <td><b>${item.postazione}</b></td>
+      <td>€${(item.cash || 0).toFixed(2)}</td>
+      <td>€${(item.pos || 0).toFixed(2)}</td>
+      <td><b>€${incassoGiorno.toFixed(2)}</b></td>
+      <td style="color:${diffGiorno >= 0 ? '#34d399' : '#f87171'}">${diffGiorno >= 0 ? '+' : ''}€${diffGiorno.toFixed(2)}</td>
+      <td>€${quota5pGiorno.toFixed(2)}</td>
+      <td>€${quotaFissaGiorno.toFixed(2)}</td>
+      <td><b style="color:#34d399;">€${nettoGiorno.toFixed(2)}</b></td>
+      <td><button type="button" class="del-btn" onclick="eliminaRecordIncasso(${index})">X</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("lblIncasso").textContent = `€ ${totIncasso.toFixed(2)}`;
+  document.getElementById("lbl5p").textContent = `€ ${tot5p.toFixed(2)}`;
+  document.getElementById("lblFissa").textContent = `€ ${totFissa.toFixed(2)}`;
+  document.getElementById("lblTotDiff").textContent = `€ ${totDiff.toFixed(2)}`;
+  document.getElementById("lblTotale").textContent = `€ ${totNetto.toFixed(2)}`;
+  document.getElementById("lblContatore").textContent = `${datiFiltrati.length} record`;
+}
+
+function eliminaRecordIncasso(idx) {
+  if (confirm("Vuoi eliminare questa voce?")) {
+    datiIncassi.splice(idx, 1);
+    salvaDatiLocali();
+    aggiornaTabellaIncassi();
+  }
+}
+
+function chiudiEArchiviaMeseCorrente() {
+  const meseSelezionato = document.getElementById("selectMeseIncassi").value;
+
+  if (mesiArchivati.some(m => m.mese === meseSelezionato)) {
+    alert("Mese già archiviato!");
+    return;
+  }
+
+  const datiMese = datiIncassi.filter(d => d.mese === meseSelezionato);
+  if (datiMese.length === 0) {
+    alert("Nessun dato presente!");
+    return;
+  }
+
+  let totIncasso = 0;
+  let tot5p = 0;
+  let totFissa = 0;
+  let totDiff = 0;
+  let totNetto = 0;
+
+  datiMese.forEach(item => {
+    const inc = (item.cash || 0) + (item.pos || 0);
+    const q5 = inc * 0.05;
+    const qf = item.festa ? 0 : 26.00;
+    const diffG = item.diff || 0;
+    totIncasso += inc;
+    tot5p += q5;
+    totFissa += qf;
+    totDiff += diffG;
+    totNetto += (q5 + qf + diffG);
+  });
+
+  const recordArchivio = {
+    mese: meseSelezionato,
+    dataArchiviazione: new Date().toLocaleDateString('it-IT'),
+    incassoTotale: totIncasso,
+    quota5p: tot5p,
+    quotaFissa: totFissa,
+    diffTotale: totDiff,
+    nettoSpettante: totNetto,
+    giornate: datiMese.length
+  };
+
+  mesiArchivati.unshift(recordArchivio);
+  salvaDatiLocali();
+  aggiornaListaMesiArchivati();
+  aggiornaTabellaIncassi();
+  alert(`Mese archiviato! Netto: €${totNetto.toFixed(2)}`);
+}
+
+function aggiornaListaMesiArchivati() {
+  const div = document.getElementById("listaMesiArchivati");
+  if(!div) return;
+  div.innerHTML = "";
+
+  if (mesiArchivati.length === 0) {
+    div.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessun mese in archivio.</p>";
+    return;
+  }
+
+  mesiArchivati.forEach(m => {
+    div.innerHTML += `
+      <div class="storico-card">
+        <div class="storico-header">
+          <span>📅 ${m.mese}</span>
+          <span style="color:#a7f3d0;">${m.dataArchiviazione}</span>
+        </div>
+        <div class="storico-dettaglio">
+          <b>Incasso:</b> €${m.incassoTotale.toFixed(2)} | <b>Diff:</b> €${(m.diffTotale || 0).toFixed(2)}<br>
+          <b style="color:#34d399;">Netto Spettante: €${m.nettoSpettante.toFixed(2)}</b> (${m.giornate} giornate)
+        </div>
+      </div>
+    `;
+  });
+}
+
+function aggiungiNuovoMeseCustom() {
+  const nome = prompt("Nome del nuovo mese (es. Dicembre 2026):");
+  if (nome) {
+    const select = document.getElementById("selectMeseIncassi");
+    const opt = document.createElement("option");
+    opt.value = nome;
+    opt.textContent = nome;
+    select.appendChild(opt);
+    select.value = nome;
+    aggiornaTabellaIncassi();
+  }
+}
+
+function ripristinaDefaultIncassi() {
+  if (confirm("Ripristinare i dati predefiniti?")) {
+    datiIncassi = [...datiPrecaricatiDefault];
+    mesiArchivati = [...mesiArchivatiDefault];
+    salvaDatiLocali();
+    aggiornaTabellaIncassi();
+    aggiornaListaMesiArchivati();
+  }
+}
+
+function aggiornaReportProdotti() {
+  const barcaSel = document.getElementById("filtroBarcaProdotti").value || "VESUVIO JET";
+  const tbody = document.querySelector("#tabellaReportProdotti tbody");
+  if(!tbody) return;
+  tbody.innerHTML = "";
+
+  let pezziTotali = 0;
+  let incassoTotale = 0;
+  let diffTotale = 0;
+  let valoreMagazzinoTotale = 0;
+  let valoreCaricatoTotale = 0;
+
+  prodotti.forEach(p => {
+    let passTot = 0;
+    let penTot = 0;
+    let buoTot = 0;
+    let incassoBuo = 0;
+
+    storicoGiornate.forEach(g => {
+      if (g.barca === barcaSel) {
+        const itemP = g.dettaglioPezzi.find(x => x.id === p.id);
+        if (itemP) {
+          passTot += (itemP.pass || 0);
+          penTot += (itemP.pen || 0);
+          buoTot += (itemP.buo || 0);
+          incassoBuo += ((itemP.buo || 0) * (itemP.prezzoBuo !== undefined ? parseFloat(itemP.prezzoBuo) || 0 : 0));
+        }
+      }
+    });
+
+    const qPassCurrent = p.qtaPass || 0;
+    const qPenCurrent = p.qtaPen || 0;
+    const qBuoCurrent = p.qtaBuo || 0;
+    const przBuoCurrent = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
+
+    const totalPassVenduti = passTot + qPassCurrent;
+    const totalPenVenduti = penTot + qPenCurrent;
+    const totalBuoVenduti = buoTot + qBuoCurrent;
+    const sumPezziVenduti = totalPassVenduti + totalPenVenduti + totalBuoVenduti;
+
+    const incassoGenerato = (totalPassVenduti * p.p) + (totalPenVenduti * p.pen) + (incassoBuo + (qBuoCurrent * przBuoCurrent));
+
+    // Stock Iniziale di Partenza
+    let stockIniziale = p.stock;
+    const bStock = bozzePerBarca[barcaSel] && bozzePerBarca[barcaSel].stock ? bozzePerBarca[barcaSel].stock[p.id] : undefined;
+    if (bStock !== undefined) stockIniziale = bStock;
+
+    // Giacenza Teorica = Stock Iniziale - Pezzi totali venduti nel ciclo
+    const giacenzaTeoricaAggiornata = Math.max(0, stockIniziale - sumPezziVenduti);
+
+    const valoreGiacenza = giacenzaTeoricaAggiornata * p.p;
+    valoreMagazzinoTotale += valoreGiacenza;
+    valoreCaricatoTotale += (stockIniziale * p.p);
+
+    pezziTotali += sumPezziVenduti;
+    incassoTotale += incassoGenerato;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span>${p.i}</span> <b>${p.n}</b></td>
+      <td style="color:#c084fc; font-weight:bold;">€ ${p.p.toFixed(2)}</td>
+      <td><span style="color:#94a3b8; font-size:0.7rem;">Init: ${stockIniziale}</span> <br><b style="color:#38bdf8;">${giacenzaTeoricaAggiornata} pz</b></td>
+      <td><input type="number" class="input-inventario-reale" id="conta_reale_${p.id}" value="${giacenzaTeoricaAggiornata}" min="0" oninput="ricalcolaAmmancoSingolo('${p.id}', ${giacenzaTeoricaAggiornata}, ${p.p})"></td>
+      <td id="diff_pz_${p.id}" style="font-weight:bold; color:#94a3b8;">0 pz</td>
+      <td id="ammanco_eur_${p.id}" style="font-weight:bold; color:#94a3b8;">€ 0.00</td>
+      <td style="color:#34d399; font-weight:bold;" id="val_reale_${p.id}">€ ${valoreGiacenza.toFixed(2)}</td>
+      <td><b style="color:#34d399;">€ ${incassoGenerato.toFixed(2)}</b></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  storicoGiornate.forEach(g => {
+    if (g.barca === barcaSel) {
+      diffTotale += g.diff;
+    }
+  });
+
+  const kpiPezzi = document.getElementById("kpiPezziTotali");
+  if(kpiPezzi) kpiPezzi.textContent = `${pezziTotali} pz`;
+  const kpiInc = document.getElementById("kpiIncassoProdotti");
+  if(kpiInc) kpiInc.textContent = `€ ${incassoTotale.toFixed(2)}`;
+  const kpiDiff = document.getElementById("kpiDiffQuadratura");
+  if(kpiDiff) {
+    kpiDiff.textContent = `€ ${diffTotale.toFixed(2)}`;
+    kpiDiff.style.color = diffTotale >= 0 ? "#34d399" : "#f87171";
+  }
+  const kpiMag = document.getElementById("kpiValoreMagazzino");
+  if(kpiMag) kpiMag.textContent = `€ ${valoreMagazzinoTotale.toFixed(2)}`;
+
+  const cellCaricato = document.getElementById("cellValoreCaricatoTotale");
+  if(cellCaricato) cellCaricato.textContent = `€ ${valoreCaricatoTotale.toFixed(2)}`;
+  const cellInc = document.getElementById("cellIncassoDefalcato");
+  if(cellInc) cellInc.textContent = `- € ${incassoTotale.toFixed(2)}`;
+  const cellRim = document.getElementById("cellRimanenzaTeorica");
+  if(cellRim) cellRim.textContent = `= € ${valoreMagazzinoTotale.toFixed(2)}`;
+
+  const cellStato = document.getElementById("cellStatoQuadratura");
+  if(cellStato) {
+    const scartoQuadratura = (valoreCaricatoTotale - incassoTotale) - valoreMagazzinoTotale;
+    if (Math.abs(scartoQuadratura) < 0.01) {
+      cellStato.innerHTML = `<span class="badge-diff badge-ok">Allineato (€0.00)</span>`;
+    } else if (scartoQuadratura > 0) {
+      cellStato.innerHTML = `<span class="badge-diff badge-ammanco">Ammanco €${scartoQuadratura.toFixed(2)}</span>`;
+    } else {
+      cellStato.innerHTML = `<span class="badge-diff badge-plus">Plusvalenza €${Math.abs(scartoQuadratura).toFixed(2)}</span>`;
+    }
+  }
+}
+
+function ricalcolaAmmancoSingolo(idProd, stockTeorico, prezzoUnitario) {
+  const inputReale = document.getElementById(`conta_reale_${idProd}`);
+  if (!inputReale) return;
+
+  const reale = parseInt(inputReale.value) || 0;
+  const diff = reale - stockTeorico;
+  const diffEur = diff * prezzoUnitario;
+  const tdDiff = document.getElementById(`diff_pz_${idProd}`);
+  const tdAmmEur = document.getElementById(`ammanco_eur_${idProd}`);
+  const tdVal = document.getElementById(`val_reale_${idProd}`);
+
+  if (tdDiff) {
+    tdDiff.textContent = (diff >= 0 ? '+' : '') + diff + ' pz';
+    tdDiff.style.color = diff === 0 ? '#94a3b8' : (diff > 0 ? '#34d399' : '#f87171');
+  }
+
+  if (tdAmmEur) {
+    tdAmmEur.textContent = (diffEur >= 0 ? '+' : '') + '€ ' + diffEur.toFixed(2);
+    tdAmmEur.style.color = diffEur === 0 ? '#94a3b8' : (diffEur > 0 ? '#34d399' : '#f87171');
+  }
+
+  if (tdVal) {
+    tdVal.textContent = '€ ' + (reale * prezzoUnitario).toFixed(2);
+  }
+}
+
+function applicaContaFisicaInventario() {
+  const barcaSel = document.getElementById("filtroBarcaProdotti").value;
+  if (!barcaSel) {
+    alert("Seleziona prima una barca valida!");
+    return;
+  }
+
+  if (!confirm(`Vuoi aggiornare ufficialmente lo stock della barca ${barcaSel} con i valori inseriti, azzerare l'Incasso Generato e ripartire da un ciclo pulito?`)) {
+    return;
+  }
+
+  if (!bozzePerBarca[barcaSel]) bozzePerBarca[barcaSel] = {};
+  if (!bozzePerBarca[barcaSel].stock) bozzePerBarca[barcaSel].stock = {};
+
+  let valoreMerceTotale = 0;
+  let pezziTotaliContati = 0;
+
+  prodotti.forEach(p => {
+    const inputReale = document.getElementById(`conta_reale_${p.id}`);
+    if (inputReale) {
+      const qtaReale = Math.max(0, parseInt(inputReale.value) || 0);
+      bozzePerBarca[barcaSel].stock[p.id] = qtaReale;
+      valoreMerceTotale += (qtaReale * p.p);
+      pezziTotaliContati += qtaReale;
+
+      if (document.getElementById("selectBarca").value === barcaSel) {
+        p.stock = qtaReale;
+      }
+    }
+  });
+
+  // 1. Azzeramento quantita correnti
+  prodotti.forEach(p => {
+    p.qtaPass = 0;
+    p.qtaPen = 0;
+    p.qtaBuo = 0;
+  });
+
+  const inputCash = document.getElementById("incassoCash");
+  const inputPos = document.getElementById("incassoPos");
+  if (inputCash) inputCash.value = "";
+  if (inputPos) inputPos.value = "";
+
+  // 2. Pulizia bozza barca
+  if (bozzePerBarca[barcaSel]) {
+    bozzePerBarca[barcaSel].cash = "";
+    bozzePerBarca[barcaSel].pos = "";
+    bozzePerBarca[barcaSel].quantita = {};
+  }
+
+  // 3. Reset dello storico per azzerare l'Incasso Generato nel nuovo ciclo
+  storicoGiornate = storicoGiornate.filter(g => g.barca !== barcaSel);
+
+  const logRec = {
+    id: Date.now(),
+    data: new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}),
+    barca: barcaSel,
+    valoreTotale: valoreMerceTotale,
+    pezziTotali: pezziTotaliContati
+  };
+  storicoConteggi.unshift(logRec);
+
+  salvaBozzaCassaInTempoReale();
+  salvaDatiLocali();
+  caricaBozzaBarcaCorrente();
+  aggiornaReportProdotti();
+  renderizzaStoricoConteggi();
+  calcolaTotaleCassa();
+
+  alert(`✅ Inventario per ${barcaSel} salvato con successo!\nLo stock è stato allineato e l'Incasso Generato azzerato per il nuovo ciclo.`);
+}
+
+function renderizzaGrafici() {
+  const el1 = document.getElementById('chartAndamentoIncassi');
+  const el2 = document.getElementById('chartTopProdotti');
+  if(!el1 || !el2) return;
+
+  const ctx1 = el1.getContext('2d');
+  const ctx2 = el2.getContext('2d');
+
+  if (chartAndamentoInstance) chartAndamentoInstance.destroy();
+  if (chartTopProdottiInstance) chartTopProdottiInstance.destroy();
+
+  const etichetteGiorni = [];
+  const valoriIncassi = [];
+
+  const giornateInvertite = [...datiIncassi].reverse();
+  giornateInvertite.forEach(d => {
+    etichetteGiorni.push(d.data.replace(' 2026', ''));
+    valoriIncassi.push((d.cash || 0) + (d.pos || 0));
+  });
+
+  chartAndamentoInstance = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: etichetteGiorni.length ? etichetteGiorni : ['Nessun dato'],
+      datasets: [{
+        label: 'Incasso Giornaliero (€)',
+        data: valoriIncassi.length ? valoriIncassi : [0],
+        borderColor: '#818cf8',
+        backgroundColor: 'rgba(129, 140, 248, 0.15)',
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: 'white' } } },
+      scales: {
+        x: { ticks: { color: '#9ca3af' } },
+        y: { ticks: { color: '#9ca3af' } }
+      }
+    }
+  });
+
+  const nomiProd = [];
+  const qtaProd = [];
+
+  prodotti.forEach(p => {
+    let tot = 0;
+    storicoGiornate.forEach(g => {
+      const item = g.dettaglioPezzi.find(x => x.id === p.id);
+      if (item) tot += item.tot;
+    });
+    if (tot > 0) {
+      nomiProd.push(p.n);
+      qtaProd.push(tot);
+    }
+  });
+
+  chartTopProdottiInstance = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: nomiProd.length ? nomiProd : ['Nessun dato'],
+      datasets: [{
+        label: 'Quantità Venduta (pz)',
+        data: qtaProd.length ? qtaProd : [0],
+        backgroundColor: '#34d399'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: 'white' } } },
+      scales: {
+        x: { ticks: { color: '#9ca3af' } },
+        y: { ticks: { color: '#9ca3af' } }
+      }
+    }
+  });
+}
+
+function esportaDatiJSON() {
+  const backupData = {
+    bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoCarichi, storicoConteggi, datiIncassi, mesiArchivati, prodotti
+  };
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backup_gestionale_barche_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importaDatiJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.bozzePerBarca) bozzePerBarca = data.bozzePerBarca;
+      if (data.storicoGiornate) storicoGiornate = data.storicoGiornate;
+      if (data.storicoTrasferimenti) storicoTrasferimenti = data.storicoTrasferimenti;
+      if (data.storicoCarichi) storicoCarichi = data.storicoCarichi;
+      if (data.storicoConteggi) storicoConteggi = data.storicoConteggi;
+      if (data.datiIncassi) datiIncassi = data.datiIncassi;
+      if (data.mesiArchivati) mesiArchivati = data.mesiArchivati;
+      if (data.prodotti) prodotti = data.prodotti;
+
+      salvaDatiLocali();
+      caricaBozzaBarcaCorrente();
+      renderizzaStorici();
+      aggiornaTabellaIncassi();
+      aggiornaListaMesiArchivati();
+      aggiornaReportProdotti();
+      renderizzaGrafici();
+      alert("Dati importati con successo!");
+    } catch (err) { alert("File JSON non valido!"); }
+  };
+  reader.readAsText(file);
+}
+</script>
+</body>
+</html>
