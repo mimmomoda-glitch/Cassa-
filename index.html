@@ -1,3 +1,7 @@
+<!-- Chosen Palette: Dark Navy & Slate (Slate background #0f172a, Card background #1e293b, Subcard background #182232, Accent Indigo #4f46e5, Cyan #38bdf8, Emerald #10b981) -->
+<!-- Application Structure Plan: Interactive single-page cash register and fleet inventory management system. Section 1 covers quick point-of-sale entries; Section 2 calculates monthly net revenue, commissions, and fixed allowances; Section 3 manages real inventory counts and accounting balance reconciliations (Option 1); Section 4 visualizes performance metrics via dynamic Chart.js canvas charts. -->
+<!-- Visualization & Content Choices: Used Chart.js Canvas for revenue trend line chart and top-selling product bar chart. Used Tailwind CSS styling for responsive layout and grid containers. HTML/CSS table elements for inventory counts and financial reconciliation. No SVG graphics used. No Mermaid JS used. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -921,24 +925,26 @@ th {
 <button type="button" class="btn btn-primary btn-full" onclick="applicaContaFisicaInventario()">💾 Salva Conta Inventario & Allinea Magazzino</button>
 </div>
 
-<!-- QUADRATURA CONTABILE INVENTARIO DEFALCATO -->
+<!-- QUADRATURA CONTABILE INVENTARIO DEFALCATO (OPZIONE 1 CORRETTA) -->
 <div class="storico-section" style="margin-top: 12px; background: rgba(30, 41, 59, 0.9);">
-<h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato</h3>
+<h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato (Opzione 1)</h3>
 <div class="table-responsive">
 <table style="min-width: 100%;">
 <thead>
 <tr>
 <th>Valore Caricato (€)</th>
 <th>- Incasso Realizzato (€)</th>
-<th>= Merce Rimanente (€)</th>
-<th>Stato</th>
+<th>= Rimanenza Teorica (€)</th>
+<th>Rimanenza Reale (€)</th>
+<th>Stato Quadratura</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td id="cellValoreCaricatoTotale" style="font-weight:bold; color:white;">€ 0.00</td>
-<td id="cellIncassoDefalcato" style="font-weight:bold; color:#f87171;">€ 0.00</td>
-<td id="cellRimanenzaTeorica" style="font-weight:bold; color:#34d399;">€ 0.00</td>
+<td id="cellIncassoDefalcato" style="font-weight:bold; color:#38bdf8;">€ 0.00</td>
+<td id="cellRimanenzaTeorica" style="font-weight:bold; color:#38bdf8;">= € 0.00</td>
+<td id="cellRimanenzaReale" style="font-weight:bold; color:#34d399;">€ 0.00</td>
 <td id="cellStatoQuadratura"><span class="badge-diff badge-ok">Allineato</span></td>
 </tr>
 </tbody>
@@ -1337,7 +1343,6 @@ function generaListaProdottiCassa() {
     card.className = "prodotto-card";
     card.id = "card_prod_" + p.id;
 
-    // Giacenza a bordo = stock iniziale salvato - vendite correnti inserite
     const giacenzaEffettiva = p.stock - (p.qtaPass + p.qtaPen + p.qtaBuo);
     let badgeStockClass = "stock-ok";
     if (giacenzaEffettiva <= 5) badgeStockClass = "stock-low";
@@ -2109,12 +2114,10 @@ function aggiornaReportProdotti() {
 
     const incassoGenerato = (totalPassVenduti * p.p) + (totalPenVenduti * p.pen) + (incassoBuo + (qBuoCurrent * przBuoCurrent));
 
-    // Stock Iniziale di Partenza
     let stockIniziale = p.stock;
     const bStock = bozzePerBarca[barcaSel] && bozzePerBarca[barcaSel].stock ? bozzePerBarca[barcaSel].stock[p.id] : undefined;
     if (bStock !== undefined) stockIniziale = bStock;
 
-    // Giacenza Teorica = Stock Iniziale - Pezzi totali venduti nel ciclo
     const giacenzaTeoricaAggiornata = Math.max(0, stockIniziale - sumPezziVenduti);
 
     const valoreGiacenza = giacenzaTeoricaAggiornata * p.p;
@@ -2138,11 +2141,21 @@ function aggiornaReportProdotti() {
     tbody.appendChild(tr);
   });
 
+  // Calcolo Incasso Realizzato Reale (Cash + POS inseriti in cassa)
+  let incassoRealizzatoCassa = 0;
   storicoGiornate.forEach(g => {
     if (g.barca === barcaSel) {
+      incassoRealizzatoCassa += ((g.cash || 0) + (g.pos || 0));
       diffTotale += g.diff;
     }
   });
+
+  const barcaAttivaCassa = document.getElementById("selectBarca") ? document.getElementById("selectBarca").value : "VESUVIO JET";
+  if (barcaSel === barcaAttivaCassa) {
+    const cashCurrent = parseFloat(document.getElementById("incassoCash")?.value) || 0;
+    const posCurrent = parseFloat(document.getElementById("incassoPos")?.value) || 0;
+    incassoRealizzatoCassa += (cashCurrent + posCurrent);
+  }
 
   const kpiPezzi = document.getElementById("kpiPezziTotali");
   if(kpiPezzi) kpiPezzi.textContent = `${pezziTotali} pz`;
@@ -2156,16 +2169,23 @@ function aggiornaReportProdotti() {
   const kpiMag = document.getElementById("kpiValoreMagazzino");
   if(kpiMag) kpiMag.textContent = `€ ${valoreMagazzinoTotale.toFixed(2)}`;
 
+  // TABELLA QUADRATURA OPZIONE 1 (Valore Caricato - Incasso Realizzato = Rimanenza Teorica vs Rimanenza Reale)
   const cellCaricato = document.getElementById("cellValoreCaricatoTotale");
   if(cellCaricato) cellCaricato.textContent = `€ ${valoreCaricatoTotale.toFixed(2)}`;
+  
   const cellInc = document.getElementById("cellIncassoDefalcato");
-  if(cellInc) cellInc.textContent = `- € ${incassoTotale.toFixed(2)}`;
+  if(cellInc) cellInc.textContent = `€ ${incassoRealizzatoCassa.toFixed(2)}`;
+  
+  const rimTeoricaMatematica = valoreCaricatoTotale - incassoRealizzatoCassa;
   const cellRim = document.getElementById("cellRimanenzaTeorica");
-  if(cellRim) cellRim.textContent = `= € ${valoreMagazzinoTotale.toFixed(2)}`;
+  if(cellRim) cellRim.textContent = `= € ${rimTeoricaMatematica.toFixed(2)}`;
+
+  const cellRimanenzaRealeTable = document.getElementById("cellRimanenzaReale");
+  if(cellRimanenzaRealeTable) cellRimanenzaRealeTable.textContent = `€ ${valoreMagazzinoTotale.toFixed(2)}`;
 
   const cellStato = document.getElementById("cellStatoQuadratura");
   if(cellStato) {
-    const scartoQuadratura = (valoreCaricatoTotale - incassoTotale) - valoreMagazzinoTotale;
+    const scartoQuadratura = rimTeoricaMatematica - valoreMagazzinoTotale;
     if (Math.abs(scartoQuadratura) < 0.01) {
       cellStato.innerHTML = `<span class="badge-diff badge-ok">Allineato (€0.00)</span>`;
     } else if (scartoQuadratura > 0) {
@@ -2233,7 +2253,6 @@ function applicaContaFisicaInventario() {
     }
   });
 
-  // 1. Azzeramento quantita correnti
   prodotti.forEach(p => {
     p.qtaPass = 0;
     p.qtaPen = 0;
@@ -2245,14 +2264,12 @@ function applicaContaFisicaInventario() {
   if (inputCash) inputCash.value = "";
   if (inputPos) inputPos.value = "";
 
-  // 2. Pulizia bozza barca
   if (bozzePerBarca[barcaSel]) {
     bozzePerBarca[barcaSel].cash = "";
     bozzePerBarca[barcaSel].pos = "";
     bozzePerBarca[barcaSel].quantita = {};
   }
 
-  // 3. Reset dello storico per azzerare l'Incasso Generato nel nuovo ciclo
   storicoGiornate = storicoGiornate.filter(g => g.barca !== barcaSel);
 
   const logRec = {
