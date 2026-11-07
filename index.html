@@ -2261,7 +2261,7 @@ alert("Seleziona prima una barca valida!");
 return;
 }
 
-if (!confirm(`Vuoi aggiornare ufficialmente lo stock della barca ${barcaSel} con i valori della conta fisica inseriti?`)) {
+if (!confirm(`Vuoi aggiornare ufficialmente lo stock della barca ${barcaSel} con i valori della conta fisica inseriti e iniziare un nuovo ciclo contabile di vendite?`)) {
 return;
 }
 
@@ -2285,6 +2285,15 @@ p.stock = qtaReale;
 }
 });
 
+// Resettiamo le quantità di vendita correnti a bordo per iniziare il nuovo ciclo di conteggio
+prodotti.forEach(p => {
+p.qtaPass = 0;
+p.qtaPen = 0;
+p.qtaBuo = 0;
+});
+document.getElementById("incassoCash").value = "";
+document.getElementById("incassoPos").value = "";
+
 const logRec = {
 id: Date.now(),
 data: new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}),
@@ -2294,11 +2303,13 @@ pezziTotali: pezziTotaliContati
 };
 storicoConteggi.unshift(logRec);
 
+salvaBozzaCassaInTempoReale();
 salvaDatiLocali();
 caricaBozzaBarcaCorrente();
 aggiornaReportProdotti();
 renderizzaStoricoConteggi();
-alert(`✅ Inventario per ${barcaSel} aggiornato con successo!\nValore magazzino rimasto a bordo: €${valoreMerceTotale.toFixed(2)}`);
+calcolaTotaleCassa();
+alert(`✅ Inventario per ${barcaSel} salvato!\nI contatori di vendita a bordo sono stati azzerati per iniziare il nuovo ciclo (lo storico mensile degli incassi rimane intatto per il calcolo della tua paga).`);
 }
 
 function renderizzaGrafici() {
