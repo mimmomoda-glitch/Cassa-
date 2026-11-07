@@ -706,11 +706,6 @@ body { background: white; color: black; }
 </head>
 <body>
 
-<!-- Chosen Palette: Slate & Emerald Dark Theme -->
-<!-- Application Structure Plan: SPA divisa in 4 sezioni principali: 1) Cassa & Controllo Vendite, 2) Incassi & Archivi Mese, 3) Report Inventario Fisica e Valutazione Merce, 4) Grafici e Statistiche. L'importo unitario dei Buoni Equipaggio è modificabile in tempo reale per ciascun prodotto. La cassa calcola e separa in modo cristallino le entrate dei clienti (Pass/Pen) dai consumi con buono equipaggio. -->
-<!-- Visualization & Content Choices: UI ad alta reattività touch, Chart.js per le tendenze. Nessun grafico SVG o Mermaid JS utilizzato. -->
-<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
 <div id="saveIndicator" class="save-indicator">✓ Salvato</div>
 
 <!-- SETTORE 1: GESTIONE CASSA VELOCE -->
@@ -1328,7 +1323,7 @@ prodotti.forEach(p => {
 p.qtaPass = qtaSaved[p.id + '_pass'] || 0;
 p.qtaPen = qtaSaved[p.id + '_pen'] || 0;
 p.qtaBuo = qtaSaved[p.id + '_buo'] || 0;
-p.prezzoBuo = prezziBuoSaved[p.id] !== undefined ? prezziBuoSaved[p.id] : (p.prezzoBuo !== undefined ? p.prezzoBuo : 0);
+p.prezzoBuo = prezziBuoSaved[p.id] !== undefined ? parseFloat(prezziBuoSaved[p.id]) : (p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) : 0);
 
 if (stockSaved[p.id] !== undefined) {
 p.stock = stockSaved[p.id];
@@ -1426,7 +1421,7 @@ card.innerHTML = `
 <input type="number" class="input-qta" id="qta_buo_${p.id}" value="${p.qtaBuo || 0}" min="0" onchange="impostaQtaManuale('${p.id}', 'Buo', this.value)">
 <button type="button" class="btn-qta" onclick="modificaQta('${p.id}', 'Buo', 1)">+</button>
 </div>
-<input type="number" class="input-prezzo-buono" id="prezzo_buo_${p.id}" value="${przBuoVal.toFixed(2)}" step="0.25" min="0" title="Inserisci qui l'importo personalizzato del Buono Equipaggio" oninput="aggiornaPrezzoBuono('${p.id}', this.value)" placeholder="Prezzo €">
+<input type="number" class="input-prezzo-buono" id="prezzo_buo_${p.id}" value="${przBuoVal}" step="0.25" min="0" title="Inserisci qui l'importo personalizzato del Buono Equipaggio" oninput="aggiornaPrezzoBuono('${p.id}', this.value)" placeholder="Prezzo €">
 </div>
 </div>
 `;
@@ -1494,7 +1489,7 @@ let pzBuoniTot = 0;
 
 prodotti.forEach(p => {
 totaleVendutoClienti += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
-const przB = p.prezzoBuo !== undefined ? p.prezzoBuo : 0;
+const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
 totaleBuoniEqEur += ((p.qtaBuo || 0) * przB);
 pzBuoniTot += (p.qtaBuo || 0);
 });
@@ -1566,7 +1561,7 @@ prodotti.forEach(p => {
 const qBuo = p.qtaBuo || 0;
 if (p.qtaPass > 0 || p.qtaPen > 0 || qBuo > 0) {
 const totPz = p.qtaPass + p.qtaPen + qBuo;
-const przB = p.prezzoBuo !== undefined ? p.prezzoBuo : 0;
+const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
 const incProd = (p.qtaPass * p.p) + (p.qtaPen * p.pen) + (qBuo * przB);
 totaleVendutoComplessivo += incProd;
 
@@ -1740,9 +1735,10 @@ let testoProdotti = "";
 prodotti.forEach(p => {
 const qBuo = p.qtaBuo || 0;
 if (p.qtaPass > 0 || p.qtaPen > 0 || qBuo > 0) {
-const inc = (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
+const inc = (p.qtaPass * p.p) + (p.qtaPen * p.pen) + (qBuo * przB);
 totaleVenduto += inc;
-testoProdotti += `• ${p.n}: Pass ${p.qtaPass} | Pen ${p.qtaPen} | BuoEq ${qBuo} (€${(p.prezzoBuo||0).toFixed(2)})\n`;
+testoProdotti += `• ${p.n}: Pass ${p.qtaPass} | Pen ${p.qtaPen} | BuoEq ${qBuo} (€${przB.toFixed(2)})\n`;
 }
 });
 
@@ -1751,7 +1747,7 @@ const diff = (cash + pos) - totaleVenduto;
 let msg = `📊 *REPORT CASSA - ${barca}*\n`;
 msg += `📅 Data: ${data}\n👤 Addetto: ${op}\n\n`;
 msg += `💰 *INCASSI:*\n- Cash: €${cash.toFixed(2)}\n- POS: €${pos.toFixed(2)}\n- Tot. Incassato: €${(cash+pos).toFixed(2)}\n\n`;
-msg += `🛒 *VENDITE CLIENTE:* €${totaleVenduto.toFixed(2)}\n`;
+msg += `🛒 *VENDITE TEORICHE TOTALI:* €${totaleVenduto.toFixed(2)}\n`;
 msg += `${testoProdotti}\n`;
 msg += `⚖️ *QUADRATURA:* ${diff >= 0 ? '+' : ''}€${diff.toFixed(2)}\n`;
 
@@ -2130,6 +2126,7 @@ prodotti.forEach(p => {
 let passTot = 0;
 let penTot = 0;
 let buoTot = 0;
+let incassoBuo = 0;
 
 storicoGiornate.forEach(g => {
 if (g.barca === barcaSel) {
@@ -2138,12 +2135,13 @@ if (itemP) {
 passTot += (itemP.pass || 0);
 penTot += (itemP.pen || 0);
 buoTot += (itemP.buo || 0);
+incassoBuo += ((itemP.buo || 0) * (itemP.prezzoBuo !== undefined ? parseFloat(itemP.prezzoBuo) || 0 : 0));
 }
 }
 });
 
 const sumPezzi = passTot + penTot + buoTot;
-const incassoGenerato = (passTot * p.p) + (penTot * p.pen);
+const incassoGenerato = (passTot * p.p) + (penTot * p.pen) + incassoBuo;
 
 let stockCorrente = p.stock;
 const bStock = bozzePerBarca[barcaSel] && bozzePerBarca[barcaSel].stock ? bozzePerBarca[barcaSel].stock[p.id] : undefined;
