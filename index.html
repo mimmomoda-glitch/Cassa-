@@ -1,7 +1,3 @@
-<!-- Chosen Palette: Dark Navy & Slate (Slate background #0f172a, Card background #1e293b, Subcard background #182232, Accent Indigo #4f46e5, Cyan #38bdf8, Emerald #10b981) -->
-<!-- Application Structure Plan: Interactive single-page cash register and fleet inventory management system. Section 1 covers quick point-of-sale entries; Section 2 calculates monthly net revenue, commissions, and fixed allowances; Section 3 manages real inventory counts and accounting balance reconciliations (Option 1); Section 4 visualizes performance metrics via dynamic Chart.js canvas charts. -->
-<!-- Visualization & Content Choices: Used Chart.js Canvas for revenue trend line chart and top-selling product bar chart. Used Tailwind CSS styling for responsive layout and grid containers. HTML/CSS table elements for inventory counts and financial reconciliation. No SVG graphics used. No Mermaid JS used. -->
-<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -492,32 +488,52 @@ input:focus, select:focus {
 .storico-card {
   background: var(--input-bg);
   border: 1px solid var(--border);
-  padding: 6px 8px;
+  padding: 8px;
   border-radius: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .storico-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   border-bottom: 1px solid var(--border);
   padding-bottom: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   color: #818cf8;
   flex-wrap: wrap;
 }
 .storico-dettaglio {
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin-bottom: 4px;
-  line-height: 1.3;
+  margin-bottom: 6px;
+  line-height: 1.4;
 }
 .storico-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   justify-content: flex-end;
+  margin-top: 6px;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  padding-top: 6px;
+}
+.btn-edit-item {
+  background: #d97706;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-edit-item:active {
+  background: #b45309;
+  transform: scale(0.95);
 }
 .cards-incassi {
   display: grid;
@@ -595,8 +611,8 @@ th {
 .del-btn {
   background: var(--danger);
   color: white;
-  padding: 4px 8px;
-  font-size: 0.72rem;
+  padding: 6px 12px;
+  font-size: 0.75rem;
   border-radius: 6px;
   border: none;
   cursor: pointer;
@@ -925,9 +941,9 @@ th {
 <button type="button" class="btn btn-primary btn-full" onclick="applicaContaFisicaInventario()">💾 Salva Conta Inventario & Allinea Magazzino</button>
 </div>
 
-<!-- QUADRATURA CONTABILE INVENTARIO DEFALCATO (OPZIONE 1 CORRETTA) -->
+<!-- QUADRATURA CONTABILE INVENTARIO DEFALCATO (MODO B) -->
 <div class="storico-section" style="margin-top: 12px; background: rgba(30, 41, 59, 0.9);">
-<h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato (Opzione 1)</h3>
+<h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato</h3>
 <div class="table-responsive">
 <table style="min-width: 100%;">
 <thead>
@@ -1586,7 +1602,7 @@ function renderizzaStorici() {
   container.innerHTML = "";
 
   if (storicoGiornate.length === 0) {
-    container.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessuna giornata ancora salvata.</p>";
+    container.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessuna giornata ancora salvata. Fai una vendita e premi '🔒 Chiudi & Salva Giornata'.</p>";
   } else {
     storicoGiornate.forEach(item => {
       const div = document.createElement("div");
@@ -1602,6 +1618,7 @@ function renderizzaStorici() {
           Quadratura: <b style="color:${item.diff >= 0 ? '#34d399' : '#f87171'}">${item.diff >= 0 ? '+' : ''}${item.diff.toFixed(2)} €</b>
         </div>
         <div class="storico-actions">
+          <button type="button" class="btn-edit-item" onclick="riapriEModificaGiornata(${item.id})">✏️ Modifica Giornata</button>
           <button type="button" class="del-btn" onclick="eliminaStoricoCassa(${item.id})">Elimina</button>
         </div>
       `;
@@ -1666,6 +1683,63 @@ function svuotaStoricoConteggi() {
     salvaDatiLocali();
     renderizzaStoricoConteggi();
   }
+}
+
+function riapriEModificaGiornata(id) {
+  const record = storicoGiornate.find(g => g.id === id);
+  if (!record) return;
+
+  if (!confirm(`Vuoi caricare la giornata del ${record.data} (${record.barca}) in Cassa per modificarla?`)) {
+    return;
+  }
+
+  // 1. Seleziona la barca corrispondente
+  document.getElementById("selectBarca").value = record.barca;
+  cambiaBarcaCorrente();
+
+  // 2. Ripristina i campi di intestazione
+  document.getElementById("txtOperatore").value = record.op || "";
+  document.getElementById("txtDataCassa").value = record.data || "";
+  document.getElementById("selectMeteo").value = record.meteo || "☀️ Sole / Mare Calmo";
+  document.getElementById("incassoCash").value = record.cash !== undefined ? record.cash : "";
+  document.getElementById("incassoPos").value = record.pos !== undefined ? record.pos : "";
+
+  // 3. Reset delle quantità correnti prima del caricamento
+  prodotti.forEach(p => {
+    p.qtaPass = 0;
+    p.qtaPen = 0;
+    p.qtaBuo = 0;
+  });
+
+  // 4. Ripristina le quantità vendute dal dettaglio del record
+  if (record.dettaglioPezzi && Array.isArray(record.dettaglioPezzi)) {
+    record.dettaglioPezzi.forEach(item => {
+      const p = prodotti.find(prod => prod.id === item.id);
+      if (p) {
+        p.qtaPass = item.pass || 0;
+        p.qtaPen = item.pen || 0;
+        p.qtaBuo = item.buo || 0;
+        if (item.prezzoBuo !== undefined) p.prezzoBuo = parseFloat(item.prezzoBuo);
+      }
+    });
+  }
+
+  // 5. Rimuove temporaneamente il vecchio record dallo storico per evitare duplicati
+  storicoGiornate = storicoGiornate.filter(g => g.id !== id);
+  datiIncassi = datiIncassi.filter(d => !(d.data === record.data && d.postazione === record.barca));
+
+  // 6. Aggiorna l'interfaccia e salva la bozza
+  salvaBozzaCassaInTempoReale();
+  salvaDatiLocali();
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  aggiornaTabellaIncassi();
+  aggiornaReportProdotti();
+  renderizzaStorici();
+
+  // Torna alla scheda Cassa
+  cambiaTab('app-cassa');
+  alert(`Giornata del ${record.data} caricata in Cassa! Apporta le modifiche desiderate e premi "🔒 Chiudi & Salva Giornata".`);
 }
 
 function eliminaStoricoCassa(id) {
@@ -1933,7 +2007,8 @@ function aggiornaTabellaIncassi() {
     const quotaFissaGiorno = item.festa ? 0 : 26.00;
     const diffGiorno = item.diff || 0;
 
-    const nettoGiorno = quota5pGiorno + quotaFissaGiorno + diffGiorno;
+    // FORMULA RIGIDA NETTO SPETTANTE: (Incasso * 5%) + 26,00€ fissa
+    const nettoGiorno = quota5pGiorno + quotaFissaGiorno;
 
     totIncasso += incassoGiorno;
     tot5p += quota5pGiorno;
@@ -2002,7 +2077,7 @@ function chiudiEArchiviaMeseCorrente() {
     tot5p += q5;
     totFissa += qf;
     totDiff += diffG;
-    totNetto += (q5 + qf + diffG);
+    totNetto += (q5 + qf);
   });
 
   const recordArchivio = {
@@ -2141,7 +2216,6 @@ function aggiornaReportProdotti() {
     tbody.appendChild(tr);
   });
 
-  // Calcolo Incasso Realizzato Reale (Cash + POS inseriti in cassa)
   let incassoRealizzatoCassa = 0;
   storicoGiornate.forEach(g => {
     if (g.barca === barcaSel) {
@@ -2169,7 +2243,6 @@ function aggiornaReportProdotti() {
   const kpiMag = document.getElementById("kpiValoreMagazzino");
   if(kpiMag) kpiMag.textContent = `€ ${valoreMagazzinoTotale.toFixed(2)}`;
 
-  // TABELLA QUADRATURA OPZIONE 1 (Valore Caricato - Incasso Realizzato = Rimanenza Teorica vs Rimanenza Reale)
   const cellCaricato = document.getElementById("cellValoreCaricatoTotale");
   if(cellCaricato) cellCaricato.textContent = `€ ${valoreCaricatoTotale.toFixed(2)}`;
   
