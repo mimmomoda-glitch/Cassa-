@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Hub Gestionale Cassa & Flotta</title>
 
-<!-- Libreria Chart.js per i grafici -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Tailwind CSS per grafica moderna -->
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -29,6 +27,7 @@
   --pass-color: #38bdf8;
   --pen-color: #fb923c;
   --buono-color: #c084fc;
+  --comando-color: #f43f5e;
 }
 * {
   box-sizing: border-box;
@@ -39,7 +38,7 @@ body {
   background-color: var(--bg);
   margin: 0;
   padding: 6px;
-  padding-bottom: 80px;
+  padding-bottom: 84px;
   color: var(--text);
   line-height: 1.4;
   overflow-x: hidden;
@@ -58,7 +57,6 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Navigazione Inferiore Mobile */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -197,34 +195,42 @@ input:focus, select:focus {
   align-items: center;
   gap: 4px;
 }
+
+.sticky-cassa-header {
+  position: sticky;
+  top: 2px;
+  z-index: 30;
+  background: var(--card-bg);
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 8px;
+}
+
 .card-totale {
   background: linear-gradient(135deg, #065f46 0%, #047857 100%);
   border: 1px solid #34d399;
-  padding: 10px;
+  padding: 8px 10px;
   border-radius: 10px;
   text-align: center;
-  margin-bottom: 10px;
-  position: sticky;
-  top: 4px;
-  z-index: 20;
+  margin-bottom: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 .card-totale .label {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: #a7f3d0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;
 }
 .card-totale .amount {
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.1;
   margin-top: 2px;
 }
 .card-totale .details {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #d1fae5;
   margin-top: 2px;
   opacity: 0.95;
@@ -241,12 +247,42 @@ input:focus, select:focus {
 .badge-ammanco { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
 .badge-ok { background: rgba(156, 163, 175, 0.2); color: #d1d5db; border: 1px solid #6b7280; }
 
+.tariffa-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.btn-tariffa {
+  background: var(--subcard-bg);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 2px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 42px;
+  transition: all 0.15s ease;
+  user-select: none;
+  touch-action: manipulation;
+}
+.btn-tariffa.active-Pass { background: rgba(56, 189, 248, 0.2); border-color: var(--pass-color); color: #ffffff; }
+.btn-tariffa.active-Pen { background: rgba(251, 146, 60, 0.22); border-color: var(--pen-color); color: #ffffff; }
+.btn-tariffa.active-Buo { background: rgba(192, 132, 252, 0.22); border-color: var(--buono-color); color: #ffffff; }
+.btn-tariffa.active-Comando { background: rgba(244, 63, 94, 0.22); border-color: var(--comando-color); color: #ffffff; }
+
 .quick-actions-bar {
   display: flex;
   gap: 6px;
   overflow-x: auto;
   padding-bottom: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   -webkit-overflow-scrolling: touch;
 }
 .btn-quick {
@@ -277,11 +313,6 @@ input:focus, select:focus {
   margin-bottom: 10px;
   border: 1px solid var(--border);
 }
-@media(max-width: 420px) {
-  .settings-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 .settings-field {
   display: flex;
   flex-direction: column;
@@ -303,13 +334,128 @@ input:focus, select:focus {
   color: #fca5a5;
   display: none;
 }
-.prodotti-lista {
+
+.prodotti-lista-touch {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+@media(min-width: 640px) {
+  .prodotti-lista-touch {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.prodotti-lista-dettaglio {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 12px;
   width: 100%;
 }
+
+.touch-tile {
+  background: var(--subcard-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, border-color 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+}
+.touch-tile:active {
+  transform: scale(0.96);
+  background: #26354d;
+}
+.touch-tile.has-sales {
+  border-color: #10b981;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.12) 0%, var(--subcard-bg) 100%);
+}
+.touch-tile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.touch-tile-icon {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+.touch-tile-price {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.touch-tile-name {
+  font-weight: 800;
+  font-size: 0.86rem;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.touch-tile-stock {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.touch-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 6px;
+  min-height: 20px;
+}
+.t-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+.t-pill-pass { background: rgba(56, 189, 248, 0.22); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.5); }
+.t-pill-pen { background: rgba(251, 146, 60, 0.22); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.5); }
+.t-pill-buo { background: rgba(192, 132, 252, 0.22); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.5); }
+.t-pill-cmd { background: rgba(244, 63, 94, 0.22); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.5); }
+
+.touch-tile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 6px;
+}
+.btn-tile-minus {
+  background: #374151;
+  color: #f87171;
+  border: 1px solid #4b5563;
+  border-radius: 8px;
+  width: 36px;
+  height: 32px;
+  font-size: 1rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.touch-tap-hint {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #a5b4fc;
+  text-transform: uppercase;
+}
+
 .prodotto-card {
   background: var(--subcard-bg);
   border: 1px solid var(--border);
@@ -401,6 +547,7 @@ input:focus, select:focus {
 .categoria-titolo-row.pass { color: var(--pass-color); }
 .categoria-titolo-row.pen { color: var(--pen-color); }
 .categoria-titolo-row.buono { color: var(--buono-color); }
+.categoria-titolo-row.comando { color: var(--comando-color); }
 
 .controlli-qta-inline {
   display: flex;
@@ -422,10 +569,6 @@ input:focus, select:focus {
   justify-content: center;
   color: white;
   touch-action: manipulation;
-}
-.btn-qta-wide:active {
-  background: #6b7280;
-  transform: scale(0.93);
 }
 .input-qta-wide {
   width: 46px !important;
@@ -530,10 +673,6 @@ input:focus, select:focus {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-}
-.btn-edit-item:active {
-  background: #b45309;
-  transform: scale(0.95);
 }
 .cards-incassi {
   display: grid;
@@ -683,9 +822,10 @@ th {
   font-size: 0.75rem;
   color: #bae6fd;
 }
+
 @media print {
   body { background: white; color: black; }
-  .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar { display: none !important; }
+  .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar, .tariffa-selector-grid { display: none !important; }
   .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
 }
 </style>
@@ -694,10 +834,13 @@ th {
 
 <div id="saveIndicator" class="save-indicator">✓ Salvato</div>
 
-<!-- SETTORE 1: GESTIONE CASSA VELOCE -->
+<!-- SETTORE 1: GESTIONE CASSA TOUCH & VELOCE -->
 <div id="app-cassa" class="app-view active">
 <div class="container">
-<h2 class="title-centered">Controllo Cassa & Vendite Barca</h2>
+<h2 class="title-centered">
+  <span>Controllo Cassa Touch</span>
+  <button type="button" class="btn btn-secondary" id="btnToggleVistaCassa" onclick="toggleVistaCassa()" style="font-size: 0.7rem; padding: 4px 8px; min-height: 30px; width: auto; background: #4f46e5; color: white;">🎛️ Vista Dettaglio</button>
+</h2>
 
 <div class="settings-grid">
 <div class="settings-field">
@@ -710,7 +853,7 @@ th {
 </div>
 <div class="settings-field">
 <label for="txtDataCassa">Data:</label>
-<input type="text" id="txtDataCassa" placeholder="es. 6 Nov 2026" oninput="salvaBozzaCassaInTempoReale()">
+<input type="text" id="txtDataCassa" placeholder="es. 12 Novembre 2026" oninput="salvaBozzaCassaInTempoReale()">
 </div>
 <div class="settings-field">
 <label for="selectMeteo">Meteo & Mare:</label>
@@ -729,19 +872,44 @@ th {
 <label for="incassoPos">POS (€):</label>
 <input type="number" id="incassoPos" value="" placeholder="85.50" step="0.50" min="0" oninput="calcolaTotaleCassa(); salvaBozzaCassaInTempoReale()">
 </div>
+<div class="settings-field" style="grid-column: span 2; display: flex; flex-direction: row; align-items: center; gap: 8px; background: rgba(192, 132, 252, 0.1); padding: 6px 10px; border-radius: 8px; border: 1px solid #c084fc;">
+<input type="checkbox" id="chkGiornoFesta" style="width: 20px; height: 20px; accent-color: #c084fc; cursor: pointer;" onchange="salvaBozzaCassaInTempoReale()">
+<label for="chkGiornoFesta" style="font-weight: bold; color: #c084fc; cursor: pointer; font-size: 0.8rem; margin: 0;">🎉 Giorno di Festa (Quota fissa azzerata a €0,00)</label>
+</div>
 </div>
 
-<div class="card-totale">
-<div class="label">Totale Cassa (Vendita Clienti + Buoni)</div>
-<div class="amount" id="totaleCassa">0.00 €</div>
-<div class="details" id="dettaglioIncasso">Venduto: 0.00 € | Buoni Eq: 0.00 €</div>
-<div style="margin-top: 2px;" id="boxPlusAmmanco"></div>
+<!-- BLOCCO STICKY: TOTALE + SELETTORE TARIFFA -->
+<div class="sticky-cassa-header">
+  <div class="card-totale">
+    <div class="label">Totale Cassa (Clienti + Buoni Equipaggio)</div>
+    <div class="amount" id="totaleCassa">0.00 €</div>
+    <div class="details" id="dettaglioIncasso">Venduto: 0.00 € | B.Equip: 0.00 € | Comando: 0 pz</div>
+    <div style="margin-top: 2px;" id="boxPlusAmmanco"></div>
+  </div>
+
+  <div>
+    <div style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Seleziona Tariffa per il click:</div>
+    <div class="tariffa-selector-grid">
+      <button type="button" class="btn-tariffa active-Pass" id="btnTariffa_Pass" onclick="selezionaTariffaTouch('Pass')">
+        <span>🔵 Pass</span>
+      </button>
+      <button type="button" class="btn-tariffa" id="btnTariffa_Pen" onclick="selezionaTariffaTouch('Pen')">
+        <span>🟠 Pend</span>
+      </button>
+      <button type="button" class="btn-tariffa" id="btnTariffa_Buo" onclick="selezionaTariffaTouch('Buo')">
+        <span>🟣 Equip</span>
+      </button>
+      <button type="button" class="btn-tariffa" id="btnTariffa_Comando" onclick="selezionaTariffaTouch('Comando')">
+        <span>🔴 Cmd</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <div id="alertBoxScorte" class="alert-box-scorte"></div>
 
 <div class="quick-actions-bar">
-<span style="font-size: 0.7rem; font-weight: bold; color: var(--text-muted); display: flex; align-items: center;">⚡:</span>
+<span style="font-size: 0.7rem; font-weight: bold; color: var(--text-muted); display: flex; align-items: center;">⚡ Rapidi:</span>
 <button type="button" class="btn-quick" onclick="venditaRapida('cia', 'Pass')">☕ +1 Cialda</button>
 <button type="button" class="btn-quick" onclick="venditaRapida('acq', 'Pass')">💧 +1 Acqua Pass</button>
 <button type="button" class="btn-quick" onclick="venditaRapida('acq', 'Pen')">💧 +1 Acqua Pen</button>
@@ -753,7 +921,7 @@ th {
 <input type="text" id="cercaProdottoCassa" placeholder="🔍 Cerca prodotto..." oninput="filtraProdottiCassa()">
 </div>
 
-<div class="prodotti-lista" id="listaProdotti"></div>
+<div class="prodotti-lista-touch" id="listaProdotti"></div>
 
 <div class="actions-box">
 <button type="button" class="btn btn-warning btn-full" onclick="salvaGiornataInStorico()">🔒 Chiudi & Salva Giornata</button>
@@ -859,7 +1027,7 @@ th {
 <th>Cash</th>
 <th>POS</th>
 <th>Tot. Incasso</th>
-<th>Diff. (+/-)</th>
+<th>Stringa WhatsApp</th>
 <th>5%</th>
 <th>Fissa</th>
 <th>Netto</th>
@@ -902,7 +1070,7 @@ th {
 
 <div class="kpi-container">
 <div class="kpi-box">
-<span>Tot. Pezzi Venduti</span>
+<span>Tot. Pezzi Scaricati</span>
 <strong id="kpiPezziTotali">0 pz</strong>
 </div>
 <div class="kpi-box">
@@ -941,7 +1109,6 @@ th {
 <button type="button" class="btn btn-primary btn-full" onclick="applicaContaFisicaInventario()">💾 Salva Conta Inventario & Allinea Magazzino</button>
 </div>
 
-<!-- QUADRATURA CONTABILE INVENTARIO DEFALCATO (MODO B) -->
 <div class="storico-section" style="margin-top: 12px; background: rgba(30, 41, 59, 0.9);">
 <h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato</h3>
 <div class="table-responsive">
@@ -993,7 +1160,7 @@ th {
 </div>
 </div>
 
-<!-- MODALI -->
+<!-- MODALI CARICO E TRASFERIMENTO -->
 <div id="modalCaricoMerce" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:6px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>📦 Carico Merce con Bolla</h3>
@@ -1092,60 +1259,54 @@ const listaBarche = [
 ];
 
 const prodottiDefault = [
-  {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 50},
-  {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
-  {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 3.0, stock: 15},
-  {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 5.0, stock: 10},
-  {id:'bue', n:"Bueno/B-Ready", i:"🍫", p:3, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 24},
-  {id:'cap', n:"Cappelli", i:"🧢", p:5, pen:5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.5, stock: 20},
-  {id:'car', n:"Caramelle / Gomme", i:"🍬", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 0.5, stock: 40},
-  {id:'cia', n:"Cialde", i:"☕", p:2, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 100},
-  {id:'die', n:"Dietor", i:"🍬", p:0, pen:0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 0, stock: 100},
-  {id:'fit', n:"Fitness / Cereal", i:"🌾", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
-  {id:'fon', n:"Fonzies / Patatine", i:"🍟", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
-  {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.0, stock: 50},
-  {id:'kin', n:"Kinder Cards", i:"🃏", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
-  {id:'lat', n:"Latte", i:"🥛", p:0.5, pen:0.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 0.25, stock: 10},
-  {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 48},
-  {id:'mag', n:"Maglie", i:"👕", p:5, pen:5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.5, stock: 15},
-  {id:'mik', n:"Mikado", i:"🥖", p:3, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
-  {id:'muf', n:"Muffin", i:"🧁", p:3, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 15},
-  {id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 25},
-  {id:'pav', n:"Pavesini", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 20},
-  {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 36},
-  {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 3.5, stock: 24},
-  {id:'pri', n:"Pringles", i:"🥔", p:3.5, pen:2, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 24},
-  {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 3.0, stock: 12},
-  {id:'red', n:"Red Bull / Gatorade", i:"⚡", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.0, stock: 24},
-  {id:'rin', n:"Ringo / Oreo", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 24},
-  {id:'rit', n:"Ritz / Cipster", i:"🍪", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 20},
-  {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 4.0, stock: 24},
-  {id:'suc', n:"Succo", i:"🧃", p:3.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 24},
-  {id:'the', n:"The Camomilla", i:"🍵", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
-  {id:'tuc', n:"Tuc", i:"🍪", p:4, pen:2, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 20},
-  {id:'twi', n:"Twix/KitKat/M&M", i:"🍫", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
-  {id:'clm', n:"Calamite", i:"🧲", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 50},
-  {id:'ptc', n:"Portachiavi", i:"🔑", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 50},
-  {id:'cuc', n:"Cucchiaio", i:"🥄", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.5, stock: 50},
-  {id:'cos', n:"Costumi", i:"🩳", p:5.0, pen:5.0, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 2.5, stock: 10},
-  {id:'dec', n:"Decaffeinato", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
-  {id:'gin', n:"Ginseng", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30},
-  {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, prezzoBuo: 1.0, stock: 30}
+  {id:'acq', n:"Acqua", i:"💧", p:2, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 50},
+  {id:'ara', n:"Arachidi / Frutta S.", i:"🥜", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30},
+  {id:'bp', n:"Borse Piccole", i:"👜", p:6, pen:6, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 3.0, stock: 15},
+  {id:'bg', n:"Borse Grandi", i:"👜", p:10, pen:10, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 5.0, stock: 10},
+  {id:'bue', n:"Bueno/B-Ready", i:"🍫", p:3, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 24},
+  {id:'cap', n:"Cappelli", i:"🧢", p:5, pen:5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 2.5, stock: 20},
+  {id:'car', n:"Caramelle / Gomme", i:"🍬", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 0.5, stock: 40},
+  {id:'cia', n:"Cialde", i:"☕", p:2, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 100},
+  {id:'die', n:"Dietor", i:"🍬", p:0, pen:0, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 0, stock: 100},
+  {id:'fit', n:"Fitness / Cereal", i:"🌾", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 20},
+  {id:'fon', n:"Fonzies / Patatine", i:"🍟", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30},
+  {id:'imp', n:"Impermeabili", i:"🧥", p:3.5, pen:3.25, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 2.0, stock: 50},
+  {id:'kin', n:"Kinder Cards", i:"🃏", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 20},
+  {id:'lat', n:"Latte", i:"🥛", p:0.5, pen:0.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 0.25, stock: 10},
+  {id:'ltn', n:"Lattine", i:"🥤", p:3.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 48},
+  {id:'mag', n:"Maglie", i:"👕", p:5, pen:5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 2.5, stock: 15},
+  {id:'mik', n:"Mikado", i:"🥖", p:3, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 20},
+  {id:'muf', n:"Muffin", i:"🧁", p:3, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 15},
+  {id:'nik', n:"Nik Nok", i:"🥜", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 25},
+  {id:'pav', n:"Pavesini", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 20},
+  {id:'per', n:"Peroni", i:"🍺", p:4.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 36},
+  {id:'pec', n:"Peroni Capri", i:"🍋", p:7.5, pen:7.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 3.5, stock: 24},
+  {id:'pri', n:"Pringles", i:"🥔", p:3.5, pen:2, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 24},
+  {id:'vin', n:"Prosecco / Vino", i:"🍷", p:6, pen:3, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 3.0, stock: 12},
+  {id:'red', n:"Red Bull / Gatorade", i:"⚡", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 2.0, stock: 24},
+  {id:'rin', n:"Ringo / Oreo", i:"🍪", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 24},
+  {id:'rit', n:"Ritz / Cipster", i:"🍪", p:4.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 20},
+  {id:'spr', n:"Spritz", i:"🍹", p:8, pen:8, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 4.0, stock: 24},
+  {id:'suc', n:"Succo", i:"🧃", p:3.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 24},
+  {id:'the', n:"The Camomilla", i:"🍵", p:2.5, pen:1.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30},
+  {id:'tuc', n:"Tuc", i:"🍪", p:4, pen:2, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 20},
+  {id:'twi', n:"Twix/KitKat/M&M", i:"🍫", p:2.5, pen:1, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30},
+  {id:'clm', n:"Calamite", i:"🧲", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 50},
+  {id:'ptc', n:"Portachiavi", i:"🔑", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 50},
+  {id:'cuc', n:"Cucchiaio", i:"🥄", p:3.0, pen:3.0, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.5, stock: 50},
+  {id:'cos', n:"Costumi", i:"🩳", p:5.0, pen:5.0, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 2.5, stock: 10},
+  {id:'dec', n:"Decaffeinato", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30},
+  {id:'gin', n:"Ginseng", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30},
+  {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30}
 ];
 
 const datiPrecaricatiDefault = [
   { mese: "Novembre 2026", data: "1 novembre 2026", postazione: "VESUVIO JET", cash: 125.00, pos: 29.50, diff: 0, festa: false },
-  { mese: "Novembre 2026", data: "2 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, diff: 0, festa: false },
-  { mese: "Novembre 2026", data: "3 novembre 2026", postazione: "VESUVIO JET", cash: 3.50, pos: 0.00, diff: 0, festa: false },
-  { mese: "Novembre 2026", data: "4 novembre 2026", postazione: "VESUVIO JET", cash: 115.00, pos: 124.00, diff: 0, festa: false },
-  { mese: "Novembre 2026", data: "5 novembre 2026", postazione: "VESUVIO JET", cash: 290.00, pos: 91.00, diff: 0, festa: false },
-  { mese: "Novembre 2026", data: "6 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, diff: 0, festa: false }
+  { mese: "Novembre 2026", data: "2 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, diff: 0, festa: false }
 ];
 
 const mesiArchivatiDefault = [
-  { mese: "Ottobre 2026", dataArchiviazione: "31/10/2026", incassoTotale: 9981.00, quota5p: 499.05, quotaFissa: 754.00, diffTotale: 0.00, nettoSpettante: 1253.05, giornate: 29 },
-  { mese: "Settembre 2026", dataArchiviazione: "01/10/2026", incassoTotale: 18320.50, quota5p: 916.02, quotaFissa: 754.00, diffTotale: 0.00, nettoSpettante: 1670.02, giornate: 29 },
-  { mese: "Agosto 2026", dataArchiviazione: "31/10/2026", incassoTotale: 15185.50, quota5p: 759.27, quotaFissa: 728.00, diffTotale: 0.00, nettoSpettante: 1487.27, giornate: 31 }
+  { mese: "Ottobre 2026", dataArchiviazione: "31/10/2026", incassoTotale: 9981.00, quota5p: 499.05, quotaFissa: 754.00, diffTotale: 0.00, nettoSpettante: 1253.05, giornate: 29 }
 ];
 
 let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
@@ -1160,6 +1321,8 @@ let timerSalvataggioToast = null;
 let chartAndamentoInstance = null;
 let chartTopProdottiInstance = null;
 let itemsCaricoMerce = [];
+let vistaTouchRapida = true;
+let tariffaTouchAttiva = 'Pass';
 
 function popolaSelectBarche() {
   const selectCassa = document.getElementById("selectBarca");
@@ -1237,6 +1400,37 @@ function mostraNotificaSalvataggio() {
   timerSalvataggioToast = setTimeout(() => { el.style.display = "none"; }, 1500);
 }
 
+function vibraFeedback() {
+  if (navigator && typeof navigator.vibrate === "function") {
+    try { navigator.vibrate(35); } catch(e){}
+  }
+}
+
+function selezionaTariffaTouch(tipo) {
+  tariffaTouchAttiva = tipo;
+  vibraFeedback();
+  ['Pass', 'Pen', 'Buo', 'Comando'].forEach(t => {
+    const btn = document.getElementById('btnTariffa_' + t);
+    if (btn) {
+      btn.className = 'btn-tariffa' + (t === tipo ? ' active-' + t : '');
+    }
+  });
+  generaListaProdottiCassa();
+  filtraProdottiCassa();
+}
+
+function toggleVistaCassa() {
+  vistaTouchRapida = !vistaTouchRapida;
+  vibraFeedback();
+  const btn = document.getElementById("btnToggleVistaCassa");
+  if (btn) {
+    btn.textContent = vistaTouchRapida ? "🎛️ Vista Dettaglio" : "👆 Cassa Touch";
+    btn.style.background = vistaTouchRapida ? "#4f46e5" : "#059669";
+  }
+  generaListaProdottiCassa();
+  filtraProdottiCassa();
+}
+
 function salvaDatiLocali() {
   try {
     localStorage.setItem("cassa_bozze_barche", JSON.stringify(bozzePerBarca));
@@ -1294,10 +1488,11 @@ function caricaBozzaBarcaCorrente() {
   const bozza = bozzePerBarca[barca] || {};
 
   document.getElementById("txtOperatore").value = bozza.operatore || "";
-  document.getElementById("txtDataCassa").value = bozza.data || "6 Novembre 2026";
+  document.getElementById("txtDataCassa").value = bozza.data || "12 Novembre 2026";
   document.getElementById("selectMeteo").value = bozza.meteo || "☀️ Sole / Mare Calmo";
   document.getElementById("incassoCash").value = bozza.cash || "";
   document.getElementById("incassoPos").value = bozza.pos || "";
+  document.getElementById("chkGiornoFesta").checked = bozza.festa || false;
 
   const qtaSaved = bozza.quantita || {};
   const prezziBuoSaved = bozza.prezziBuo || {};
@@ -1307,6 +1502,7 @@ function caricaBozzaBarcaCorrente() {
     p.qtaPass = qtaSaved[p.id + '_pass'] || 0;
     p.qtaPen = qtaSaved[p.id + '_pen'] || 0;
     p.qtaBuo = qtaSaved[p.id + '_buo'] || 0;
+    p.qtaComando = qtaSaved[p.id + '_comando'] || 0;
     p.prezzoBuo = prezziBuoSaved[p.id] !== undefined ? parseFloat(prezziBuoSaved[p.id]) : (p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) : (prodottiDefault.find(d=>d.id===p.id)?.prezzoBuo || 1.0));
 
     if (stockSaved[p.id] !== undefined) {
@@ -1331,6 +1527,7 @@ function salvaBozzaCassaInTempoReale() {
     quantitaObj[p.id + '_pass'] = p.qtaPass || 0;
     quantitaObj[p.id + '_pen'] = p.qtaPen || 0;
     quantitaObj[p.id + '_buo'] = p.qtaBuo || 0;
+    quantitaObj[p.id + '_comando'] = p.qtaComando || 0;
     prezziBuoObj[p.id] = p.prezzoBuo !== undefined ? p.prezzoBuo : 1.0;
     stockObj[p.id] = p.stock !== undefined ? p.stock : 50;
   });
@@ -1341,6 +1538,7 @@ function salvaBozzaCassaInTempoReale() {
   bozzePerBarca[barca].meteo = document.getElementById("selectMeteo").value;
   bozzePerBarca[barca].cash = document.getElementById("incassoCash").value;
   bozzePerBarca[barca].pos = document.getElementById("incassoPos").value;
+  bozzePerBarca[barca].festa = document.getElementById("chkGiornoFesta").checked;
   bozzePerBarca[barca].quantita = quantitaObj;
   bozzePerBarca[barca].prezziBuo = prezziBuoObj;
   bozzePerBarca[barca].stock = stockObj;
@@ -1348,20 +1546,35 @@ function salvaBozzaCassaInTempoReale() {
   salvaDatiLocali();
 }
 
+function getPrezzoTariffaAttiva(p) {
+  if (tariffaTouchAttiva === 'Pass') return `€${p.p.toFixed(2)}`;
+  if (tariffaTouchAttiva === 'Pen') return `€${p.pen.toFixed(2)}`;
+  if (tariffaTouchAttiva === 'Buo') return `€${(p.prezzoBuo !== undefined ? p.prezzoBuo : 1.0).toFixed(2)}`;
+  return `€0.00`;
+}
+
+function getLabelTariffaAttiva() {
+  let nomeT = 'Pass';
+  if(tariffaTouchAttiva==='Pen') nomeT='Pend';
+  if(tariffaTouchAttiva==='Buo') nomeT='Equip';
+  if(tariffaTouchAttiva==='Comando') nomeT='Cmd';
+  return `+1 ${nomeT}`;
+}
+
 function generaListaProdottiCassa() {
   const lista = document.getElementById("listaProdotti");
   if(!lista) return;
   lista.innerHTML = "";
+  lista.className = vistaTouchRapida ? "prodotti-lista-touch" : "prodotti-lista-dettaglio";
   let alertScorteHTML = "";
 
   prodotti.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "prodotto-card";
-    card.id = "card_prod_" + p.id;
-
-    const giacenzaEffettiva = p.stock - (p.qtaPass + p.qtaPen + p.qtaBuo);
-    let badgeStockClass = "stock-ok";
-    if (giacenzaEffettiva <= 5) badgeStockClass = "stock-low";
+    const qPass = p.qtaPass || 0;
+    const qPen = p.qtaPen || 0;
+    const qBuo = p.qtaBuo || 0;
+    const qCmd = p.qtaComando || 0;
+    const totVendutiCard = qPass + qPen + qBuo + qCmd;
+    const giacenzaEffettiva = p.stock - totVendutiCard;
 
     if (giacenzaEffettiva <= 5) {
       alertScorteHTML += `⚠️ <b>${p.n}</b>: Solo ${giacenzaEffettiva} unità rimaste!<br>`;
@@ -1369,52 +1582,111 @@ function generaListaProdottiCassa() {
 
     const przBuoVal = p.prezzoBuo !== undefined ? p.prezzoBuo : 1.0;
 
-    card.innerHTML = `
-      <div class="prodotto-header">
-        <div class="prodotto-nome"><span>${p.i}</span> <span>${p.n}</span></div>
-        <div class="prezzi-info">Pass: €${p.p.toFixed(2)} | Pen: €${p.pen.toFixed(2)}</div>
-      </div>
-      <div class="magazzino-bar">
-        <div class="magazzino-item">Giacenza: <span class="stock-badge ${badgeStockClass}">${giacenzaEffettiva} pz</span></div>
-        <div class="magazzino-item" style="color: #34d399; font-weight: bold;">Valore Stock: €${(giacenzaEffettiva * p.p).toFixed(2)}</div>
-      </div>
-      <div class="categorie-grid-vertical">
-        <div class="categoria-box-row">
-          <div class="categoria-box-header">
-            <span class="categoria-titolo-row pass">Passeggeri</span>
-            <span style="font-size:0.68rem; color:var(--text-muted);">€${p.p.toFixed(2)}</span>
+    if (vistaTouchRapida) {
+      const tile = document.createElement("div");
+      tile.className = "touch-tile" + (totVendutiCard > 0 ? " has-sales" : "");
+      tile.id = "card_prod_" + p.id;
+      tile.onclick = function() {
+        modificaQta(p.id, tariffaTouchAttiva, 1);
+      };
+
+      let badgesHTML = "";
+      if (qPass > 0) badgesHTML += `<span class="t-pill t-pill-pass">Pass: ${qPass}</span>`;
+      if (qPen > 0) badgesHTML += `<span class="t-pill t-pill-pen">Pen: ${qPen}</span>`;
+      if (qBuo > 0) badgesHTML += `<span class="t-pill t-pill-buo">Equip: ${qBuo}</span>`;
+      if (qCmd > 0) badgesHTML += `<span class="t-pill t-pill-cmd">Cmd: ${qCmd}</span>`;
+      if (badgesHTML === "") badgesHTML = `<span style="font-size:0.65rem; color:#64748b;">0 battuti</span>`;
+
+      let prezzoBuoInputHTML = "";
+      if (tariffaTouchAttiva === 'Buo') {
+        prezzoBuoInputHTML = `<div style="margin-bottom:4px; display:flex; align-items:center; gap:4px;" onclick="event.stopPropagation()">
+          <span style="font-size:0.65rem; color:#c084fc; font-weight:bold;">€ Equip:</span>
+          <input type="number" class="input-prezzo-buono-row" style="width:58px !important; height:26px !important;" value="${przBuoVal.toFixed(2)}" step="0.25" min="0" oninput="aggiornaPrezzoBuono('${p.id}', this.value)">
+        </div>`;
+      }
+
+      tile.innerHTML = `
+        <div>
+          <div class="touch-tile-top">
+            <span class="touch-tile-icon">${p.i}</span>
+            <span class="touch-tile-price">${getPrezzoTariffaAttiva(p)}</span>
           </div>
-          <div class="controlli-qta-inline">
-            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pass', -1)">-</button>
-            <input type="number" class="input-qta-wide" id="qta_pass_${p.id}" value="${p.qtaPass}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pass', this.value)">
-            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pass', 1)">+</button>
+          <div class="touch-tile-name">${p.n}</div>
+          <div class="touch-tile-stock" style="color:${giacenzaEffettiva <= 5 ? '#f87171' : '#94a3b8'};">Stock: <b>${giacenzaEffettiva}</b> pz</div>
+          ${prezzoBuoInputHTML}
+          <div class="touch-badges-row">${badgesHTML}</div>
+        </div>
+        <div class="touch-tile-footer">
+          <button type="button" class="btn-tile-minus" onclick="event.stopPropagation(); modificaQta('${p.id}', '${tariffaTouchAttiva}', -1)" title="Rimuovi quantità">-</button>
+          <span class="touch-tap-hint">${getLabelTariffaAttiva()}</span>
+        </div>
+      `;
+      lista.appendChild(tile);
+    } else {
+      const card = document.createElement("div");
+      card.className = "prodotto-card";
+      card.id = "card_prod_" + p.id;
+
+      let badgeStockClass = giacenzaEffettiva <= 5 ? "stock-low" : "stock-ok";
+
+      card.innerHTML = `
+        <div class="prodotto-header">
+          <div class="prodotto-nome"><span>${p.i}</span> <span>${p.n}</span></div>
+          <div class="prezzi-info">Pass: €${p.p.toFixed(2)} | Pen: €${p.pen.toFixed(2)}</div>
+        </div>
+        <div class="magazzino-bar">
+          <div class="magazzino-item">Giacenza: <span class="stock-badge ${badgeStockClass}">${giacenzaEffettiva} pz</span></div>
+          <div class="magazzino-item" style="color: #34d399; font-weight: bold;">Valore Stock: €${(giacenzaEffettiva * p.p).toFixed(2)}</div>
+        </div>
+        <div class="categorie-grid-vertical">
+          <div class="categoria-box-row">
+            <div class="categoria-box-header">
+              <span class="categoria-titolo-row pass">Passeggeri</span>
+              <span style="font-size:0.68rem; color:var(--text-muted);">€${p.p.toFixed(2)}</span>
+            </div>
+            <div class="controlli-qta-inline">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pass', -1)">-</button>
+              <input type="number" class="input-qta-wide" id="qta_pass_${p.id}" value="${qPass}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pass', this.value)">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pass', 1)">+</button>
+            </div>
+          </div>
+          <div class="categoria-box-row">
+            <div class="categoria-box-header">
+              <span class="categoria-titolo-row pen">Pendolari</span>
+              <span style="font-size:0.68rem; color:var(--text-muted);">€${p.pen.toFixed(2)}</span>
+            </div>
+            <div class="controlli-qta-inline">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pen', -1)">-</button>
+              <input type="number" class="input-qta-wide" id="qta_pen_${p.id}" value="${qPen}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pen', this.value)">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pen', 1)">+</button>
+            </div>
+          </div>
+          <div class="categoria-box-row">
+            <div class="categoria-box-header">
+              <span class="categoria-titolo-row buono">Buono Equipaggio</span>
+              <input type="number" class="input-prezzo-buono-row" id="prezzo_buo_${p.id}" value="${przBuoVal.toFixed(2)}" step="0.25" min="0" oninput="aggiornaPrezzoBuono('${p.id}', this.value)" placeholder="€">
+            </div>
+            <div class="controlli-qta-inline">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Buo', -1)">-</button>
+              <input type="number" class="input-qta-wide" id="qta_buo_${p.id}" value="${qBuo}" min="0" onchange="impostaQtaManuale('${p.id}', 'Buo', this.value)">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Buo', 1)">+</button>
+            </div>
+          </div>
+          <div class="categoria-box-row">
+            <div class="categoria-box-header">
+              <span class="categoria-titolo-row comando">Buono Comando</span>
+              <span style="font-size:0.68rem; color:var(--text-muted);">€0.00</span>
+            </div>
+            <div class="controlli-qta-inline">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Comando', -1)">-</button>
+              <input type="number" class="input-qta-wide" id="qta_comando_${p.id}" value="${qCmd}" min="0" onchange="impostaQtaManuale('${p.id}', 'Comando', this.value)">
+              <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Comando', 1)">+</button>
+            </div>
           </div>
         </div>
-        <div class="categoria-box-row">
-          <div class="categoria-box-header">
-            <span class="categoria-titolo-row pen">Pendolari</span>
-            <span style="font-size:0.68rem; color:var(--text-muted);">€${p.pen.toFixed(2)}</span>
-          </div>
-          <div class="controlli-qta-inline">
-            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pen', -1)">-</button>
-            <input type="number" class="input-qta-wide" id="qta_pen_${p.id}" value="${p.qtaPen}" min="0" onchange="impostaQtaManuale('${p.id}', 'Pen', this.value)">
-            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Pen', 1)">+</button>
-          </div>
-        </div>
-        <div class="categoria-box-row">
-          <div class="categoria-box-header">
-            <span class="categoria-titolo-row buono">Buono Eq.</span>
-            <input type="number" class="input-prezzo-buono-row" id="prezzo_buo_${p.id}" value="${przBuoVal.toFixed(2)}" step="0.25" min="0" oninput="aggiornaPrezzoBuono('${p.id}', this.value)" placeholder="€">
-          </div>
-          <div class="controlli-qta-inline">
-            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Buo', -1)">-</button>
-            <input type="number" class="input-qta-wide" id="qta_buo_${p.id}" value="${p.qtaBuo || 0}" min="0" onchange="impostaQtaManuale('${p.id}', 'Buo', this.value)">
-            <button type="button" class="btn-qta-wide" onclick="modificaQta('${p.id}', 'Buo', 1)">+</button>
-          </div>
-        </div>
-      </div>
-    `;
-    lista.appendChild(card);
+      `;
+      lista.appendChild(card);
+    }
   });
 
   const alertBox = document.getElementById("alertBoxScorte");
@@ -1432,11 +1704,14 @@ function modificaQta(idProd, tipo, delta) {
   const prod = prodotti.find(p => p.id === idProd);
   if (!prod) return;
 
-  if (tipo === 'Pass') prod.qtaPass = Math.max(0, prod.qtaPass + delta);
-  else if (tipo === 'Pen') prod.qtaPen = Math.max(0, prod.qtaPen + delta);
+  if (tipo === 'Pass') prod.qtaPass = Math.max(0, (prod.qtaPass || 0) + delta);
+  else if (tipo === 'Pen') prod.qtaPen = Math.max(0, (prod.qtaPen || 0) + delta);
   else if (tipo === 'Buo') prod.qtaBuo = Math.max(0, (prod.qtaBuo || 0) + delta);
+  else if (tipo === 'Comando') prod.qtaComando = Math.max(0, (prod.qtaComando || 0) + delta);
 
+  vibraFeedback();
   generaListaProdottiCassa();
+  filtraProdottiCassa();
   calcolaTotaleCassa();
   salvaBozzaCassaInTempoReale();
 }
@@ -1449,8 +1724,11 @@ function impostaQtaManuale(idProd, tipo, val) {
   if (tipo === 'Pass') prod.qtaPass = qta;
   if (tipo === 'Pen') prod.qtaPen = qta;
   if (tipo === 'Buo') prod.qtaBuo = qta;
+  if (tipo === 'Comando') prod.qtaComando = qta;
 
+  vibraFeedback();
   generaListaProdottiCassa();
+  filtraProdottiCassa();
   calcolaTotaleCassa();
   salvaBozzaCassaInTempoReale();
 }
@@ -1471,12 +1749,14 @@ function calcolaTotaleCassa() {
   let totaleVendutoClienti = 0;
   let totaleBuoniEqEur = 0;
   let pzBuoniTot = 0;
+  let pzComandoTot = 0;
 
   prodotti.forEach(p => {
-    totaleVendutoClienti += (p.qtaPass * p.p) + (p.qtaPen * p.pen);
+    totaleVendutoClienti += ((p.qtaPass || 0) * p.p) + ((p.qtaPen || 0) * p.pen);
     const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
     totaleBuoniEqEur += ((p.qtaBuo || 0) * przB);
     pzBuoniTot += (p.qtaBuo || 0);
+    pzComandoTot += (p.qtaComando || 0);
   });
 
   const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
@@ -1487,7 +1767,7 @@ function calcolaTotaleCassa() {
   const diff = incassoRealeDichiarato - totaleVendutoComplessivo;
 
   document.getElementById("totaleCassa").textContent = `${totaleVendutoComplessivo.toFixed(2)} €`;
-  document.getElementById("dettaglioIncasso").textContent = `Venduto: €${totaleVendutoClienti.toFixed(2)} | Buoni: €${totaleBuoniEqEur.toFixed(2)} (${pzBuoniTot} pz)`;
+  document.getElementById("dettaglioIncasso").textContent = `Clienti: €${totaleVendutoClienti.toFixed(2)} | B.Equip: €${totaleBuoniEqEur.toFixed(2)} (${pzBuoniTot} pz) | Comando: ${pzComandoTot} pz`;
 
   const boxDiff = document.getElementById("boxPlusAmmanco");
   if (incassoRealeDichiarato > 0 || cash > 0 || pos > 0) {
@@ -1504,20 +1784,23 @@ function calcolaTotaleCassa() {
 }
 
 function filtraProdottiCassa() {
-  const q = document.getElementById("cercaProdottoCassa").value.toLowerCase();
+  const inputEl = document.getElementById("cercaProdottoCassa");
+  if (!inputEl) return;
+  const q = inputEl.value.toLowerCase();
   prodotti.forEach(p => {
     const card = document.getElementById("card_prod_" + p.id);
     if (card) {
-      card.style.display = p.n.toLowerCase().includes(q) ? "block" : "none";
+      card.style.display = p.n.toLowerCase().includes(q) ? (vistaTouchRapida ? "flex" : "block") : "none";
     }
   });
 }
 
 function azzeraQuantitaCassa() {
-  if (confirm("Sei sicuro di voler azzerare le quantità di vendita Correnti?")) {
-    prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; });
+  if (confirm("Sei sicuro di voler azzerare le quantità di vendita correnti?")) {
+    prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; p.qtaComando = 0; });
     document.getElementById("incassoCash").value = "";
     document.getElementById("incassoPos").value = "";
+    document.getElementById("chkGiornoFesta").checked = false;
     generaListaProdottiCassa();
     calcolaTotaleCassa();
     salvaBozzaCassaInTempoReale();
@@ -1526,11 +1809,12 @@ function azzeraQuantitaCassa() {
 
 function salvaGiornataInStorico() {
   const barca = document.getElementById("selectBarca").value;
-  const data = document.getElementById("txtDataCassa").value || "6 Novembre 2026";
+  const data = document.getElementById("txtDataCassa").value || "12 Novembre 2026";
   const op = document.getElementById("txtOperatore").value || "Anonimo";
   const meteo = document.getElementById("selectMeteo").value;
   const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
   const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
+  const festa = document.getElementById("chkGiornoFesta").checked;
 
   let totaleVendutoComplessivo = 0;
   const dettaglioPezzi = [];
@@ -1540,8 +1824,9 @@ function salvaGiornataInStorico() {
 
   prodotti.forEach(p => {
     const qBuo = p.qtaBuo || 0;
-    if (p.qtaPass > 0 || p.qtaPen > 0 || qBuo > 0) {
-      const totPz = p.qtaPass + p.qtaPen + qBuo;
+    const qComando = p.qtaComando || 0;
+    if (p.qtaPass > 0 || p.qtaPen > 0 || qBuo > 0 || qComando > 0) {
+      const totPz = p.qtaPass + p.qtaPen + qBuo + qComando;
       const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
       const incProd = (p.qtaPass * p.p) + (p.qtaPen * p.pen) + (qBuo * przB);
       totaleVendutoComplessivo += incProd;
@@ -1552,6 +1837,7 @@ function salvaGiornataInStorico() {
         pass: p.qtaPass,
         pen: p.qtaPen,
         buo: qBuo,
+        comando: qComando,
         prezzoBuo: przB,
         tot: totPz,
         incasso: incProd
@@ -1560,10 +1846,11 @@ function salvaGiornataInStorico() {
   });
 
   const diff = (cash + pos) - totaleVendutoComplessivo;
+  const totaleGeneraleGiorno = cash + pos;
 
   const record = {
     id: Date.now(),
-    barca, data, op, meteo, cash, pos,
+    barca, data, op, meteo, cash, pos, festa,
     totaleVenduto: totaleVendutoComplessivo, diff, dettaglioPezzi
   };
 
@@ -1576,13 +1863,14 @@ function salvaGiornataInStorico() {
     cash: cash,
     pos: pos,
     diff: diff,
-    festa: false
+    festa: festa
   };
   datiIncassi.unshift(recordIncasso);
 
-  prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; });
+  prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; p.qtaComando = 0; });
   document.getElementById("incassoCash").value = "";
   document.getElementById("incassoPos").value = "";
+  document.getElementById("chkGiornoFesta").checked = false;
 
   salvaBozzaCassaInTempoReale();
   salvaDatiLocali();
@@ -1593,7 +1881,23 @@ function salvaGiornataInStorico() {
   aggiornaReportProdotti();
   renderizzaGrafici();
 
-  alert("Giornata salvata con successo e sincronizzata nell'archivio incassi!");
+  let msgWhatsapp = `Buonasera, incasso giornaliero ${barca} del ${data}:\n\n` +
+                    `Tot Cash: € ${cash.toFixed(2)}\n` +
+                    `Tot Pos: € ${pos.toFixed(2)}\n` +
+                    `Totale: € ${totaleGeneraleGiorno.toFixed(2)}`;
+
+  if (confirm("✅ Giornata chiusa e salvata con successo!\n\nVuoi inoltrare subito il riepilogo su WhatsApp?")) {
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msgWhatsapp)}`, '_blank');
+  }
+}
+
+function inviaWhatsAppDaTabella(barca, data, cash, pos) {
+  const totale = cash + pos;
+  let msg = `Buonasera, incasso giornaliero ${barca} del ${data}:\n\n` +
+            `Tot Cash: € ${cash.toFixed(2)}\n` +
+            `Tot Pos: € ${pos.toFixed(2)}\n` +
+            `Totale: € ${totale.toFixed(2)}`;
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function renderizzaStorici() {
@@ -1602,14 +1906,14 @@ function renderizzaStorici() {
   container.innerHTML = "";
 
   if (storicoGiornate.length === 0) {
-    container.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessuna giornata ancora salvata. Fai una vendita e premi '🔒 Chiudi & Salva Giornata'.</p>";
+    container.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessuna giornata ancora salvata.</p>";
   } else {
     storicoGiornate.forEach(item => {
       const div = document.createElement("div");
       div.className = "storico-card";
       div.innerHTML = `
         <div class="storico-header">
-          <span>${item.barca} - ${item.data}</span>
+          <span>${item.barca} - ${item.data} ${item.festa ? '🎉 (Festa)' : ''}</span>
           <span>${(item.cash + item.pos).toFixed(2)} €</span>
         </div>
         <div class="storico-dettaglio">
@@ -1618,12 +1922,33 @@ function renderizzaStorici() {
           Quadratura: <b style="color:${item.diff >= 0 ? '#34d399' : '#f87171'}">${item.diff >= 0 ? '+' : ''}${item.diff.toFixed(2)} €</b>
         </div>
         <div class="storico-actions">
-          <button type="button" class="btn-edit-item" onclick="riapriEModificaGiornata(${item.id})">✏️ Modifica Giornata</button>
+          <button type="button" class="btn-edit-item" onclick="riapriEModificaGiornata(${item.id})">✏️ Modifica</button>
           <button type="button" class="del-btn" onclick="eliminaStoricoCassa(${item.id})">Elimina</button>
         </div>
       `;
       container.appendChild(div);
     });
+  }
+
+  const containerCarichi = document.getElementById("listaStoricoCarichi");
+  if (containerCarichi) {
+    containerCarichi.innerHTML = "";
+    if (storicoCarichi.length === 0) {
+      containerCarichi.innerHTML = "<p style='font-size:0.75rem; color:var(--text-muted);'>Nessun carico registrato.</p>";
+    } else {
+      storicoCarichi.forEach(c => {
+        const elenco = c.items.map(i => `${i.nome} (+${i.qta})`).join(", ");
+        containerCarichi.innerHTML += `
+          <div class="storico-card">
+            <div class="storico-header">
+              <span>📦 Bolla ${c.numBolla} (${c.barca})</span>
+              <span style="color:#a7f3d0;">${c.data}</span>
+            </div>
+            <div class="storico-dettaglio">Fornitore: <b>${c.fornitore}</b><br>${elenco}</div>
+          </div>
+        `;
+      });
+    }
   }
 
   const containerTransf = document.getElementById("listaStoricoTrasferimenti");
@@ -1693,25 +2018,23 @@ function riapriEModificaGiornata(id) {
     return;
   }
 
-  // 1. Seleziona la barca corrispondente
   document.getElementById("selectBarca").value = record.barca;
   cambiaBarcaCorrente();
 
-  // 2. Ripristina i campi di intestazione
   document.getElementById("txtOperatore").value = record.op || "";
   document.getElementById("txtDataCassa").value = record.data || "";
   document.getElementById("selectMeteo").value = record.meteo || "☀️ Sole / Mare Calmo";
   document.getElementById("incassoCash").value = record.cash !== undefined ? record.cash : "";
   document.getElementById("incassoPos").value = record.pos !== undefined ? record.pos : "";
+  document.getElementById("chkGiornoFesta").checked = record.festa || false;
 
-  // 3. Reset delle quantità correnti prima del caricamento
   prodotti.forEach(p => {
     p.qtaPass = 0;
     p.qtaPen = 0;
     p.qtaBuo = 0;
+    p.qtaComando = 0;
   });
 
-  // 4. Ripristina le quantità vendute dal dettaglio del record
   if (record.dettaglioPezzi && Array.isArray(record.dettaglioPezzi)) {
     record.dettaglioPezzi.forEach(item => {
       const p = prodotti.find(prod => prod.id === item.id);
@@ -1719,16 +2042,15 @@ function riapriEModificaGiornata(id) {
         p.qtaPass = item.pass || 0;
         p.qtaPen = item.pen || 0;
         p.qtaBuo = item.buo || 0;
+        p.qtaComando = item.comando || 0;
         if (item.prezzoBuo !== undefined) p.prezzoBuo = parseFloat(item.prezzoBuo);
       }
     });
   }
 
-  // 5. Rimuove temporaneamente il vecchio record dallo storico per evitare duplicati
   storicoGiornate = storicoGiornate.filter(g => g.id !== id);
   datiIncassi = datiIncassi.filter(d => !(d.data === record.data && d.postazione === record.barca));
 
-  // 6. Aggiorna l'interfaccia e salva la bozza
   salvaBozzaCassaInTempoReale();
   salvaDatiLocali();
   generaListaProdottiCassa();
@@ -1737,9 +2059,8 @@ function riapriEModificaGiornata(id) {
   aggiornaReportProdotti();
   renderizzaStorici();
 
-  // Torna alla scheda Cassa
   cambiaTab('app-cassa');
-  alert(`Giornata del ${record.data} caricata in Cassa! Apporta le modifiche desiderate e premi "🔒 Chiudi & Salva Giornata".`);
+  alert(`Giornata del ${record.data} caricata in Cassa!`);
 }
 
 function eliminaStoricoCassa(id) {
@@ -1760,32 +2081,15 @@ function svuotaStoricoCassa() {
 
 function inviaWhatsApp() {
   const barca = document.getElementById("selectBarca").value;
-  const data = document.getElementById("txtDataCassa").value || "6 Novembre 2026";
-  const op = document.getElementById("txtOperatore").value || "N.D.";
+  const data = document.getElementById("txtDataCassa").value || "12 Novembre 2026";
   const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
   const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
+  const totaleGenerale = cash + pos;
 
-  let totaleVenduto = 0;
-  let testoProdotti = "";
-
-  prodotti.forEach(p => {
-    const qBuo = p.qtaBuo || 0;
-    if (p.qtaPass > 0 || p.qtaPen > 0 || qBuo > 0) {
-      const przB = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
-      const inc = (p.qtaPass * p.p) + (p.qtaPen * p.pen) + (qBuo * przB);
-      totaleVenduto += inc;
-      testoProdotti += `• ${p.n}: Pass ${p.qtaPass} | Pen ${p.qtaPen} | BuoEq ${qBuo} (€${przB.toFixed(2)})\n`;
-    }
-  });
-
-  const diff = (cash + pos) - totaleVenduto;
-
-  let msg = `📊 *REPORT CASSA - ${barca}*\n`;
-  msg += `📅 Data: ${data}\n👤 Addetto: ${op}\n\n`;
-  msg += `💰 *INCASSI:*\n- Cash: €${cash.toFixed(2)}\n- POS: €${pos.toFixed(2)}\n- Tot. Incassato: €${(cash+pos).toFixed(2)}\n\n`;
-  msg += `🛒 *VENDITE TEORICHE TOTALI:* €${totaleVenduto.toFixed(2)}\n`;
-  msg += `${testoProdotti}\n`;
-  msg += `⚖️ *QUADRATURA:* ${diff >= 0 ? '+' : ''}€${diff.toFixed(2)}\n`;
+  let msg = `Buonasera, incasso giornaliero ${barca} del ${data}:\n\n` +
+            `Tot Cash: € ${cash.toFixed(2)}\n` +
+            `Tot Pos: € ${pos.toFixed(2)}\n` +
+            `Totale: € ${totaleGenerale.toFixed(2)}`;
 
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
 }
@@ -2007,7 +2311,6 @@ function aggiornaTabellaIncassi() {
     const quotaFissaGiorno = item.festa ? 0 : 26.00;
     const diffGiorno = item.diff || 0;
 
-    // FORMULA RIGIDA NETTO SPETTANTE: (Incasso * 5%) + 26,00€ fissa
     const nettoGiorno = quota5pGiorno + quotaFissaGiorno;
 
     totIncasso += incassoGiorno;
@@ -2018,14 +2321,16 @@ function aggiornaTabellaIncassi() {
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${item.data}</td>
+      <td>${item.data} ${item.festa ? '🎉' : ''}</td>
       <td><b>${item.postazione}</b></td>
       <td>€${(item.cash || 0).toFixed(2)}</td>
       <td>€${(item.pos || 0).toFixed(2)}</td>
       <td><b>€${incassoGiorno.toFixed(2)}</b></td>
-      <td style="color:${diffGiorno >= 0 ? '#34d399' : '#f87171'}">${diffGiorno >= 0 ? '+' : ''}€${diffGiorno.toFixed(2)}</td>
+      <td>
+        <button type="button" class="btn btn-success" style="font-size:0.68rem; padding:4px 8px; min-height:28px;" onclick="inviaWhatsAppDaTabella('${item.postazione}', '${item.data}', ${item.cash || 0}, ${item.pos || 0})">📱 WhatsApp</button>
+      </td>
       <td>€${quota5pGiorno.toFixed(2)}</td>
-      <td>€${quotaFissaGiorno.toFixed(2)}</td>
+      <td>€${quotaFissaGiorno.toFixed(2)} ${item.festa ? '<span style="color:#c084fc; font-size:0.65rem;">(Festa)</span>' : ''}</td>
       <td><b style="color:#34d399;">€${nettoGiorno.toFixed(2)}</b></td>
       <td><button type="button" class="del-btn" onclick="eliminaRecordIncasso(${index})">X</button></td>
     `;
@@ -2163,6 +2468,7 @@ function aggiornaReportProdotti() {
     let passTot = 0;
     let penTot = 0;
     let buoTot = 0;
+    let comandoTot = 0;
     let incassoBuo = 0;
 
     storicoGiornate.forEach(g => {
@@ -2172,6 +2478,7 @@ function aggiornaReportProdotti() {
           passTot += (itemP.pass || 0);
           penTot += (itemP.pen || 0);
           buoTot += (itemP.buo || 0);
+          comandoTot += (itemP.comando || 0);
           incassoBuo += ((itemP.buo || 0) * (itemP.prezzoBuo !== undefined ? parseFloat(itemP.prezzoBuo) || 0 : 0));
         }
       }
@@ -2180,12 +2487,14 @@ function aggiornaReportProdotti() {
     const qPassCurrent = p.qtaPass || 0;
     const qPenCurrent = p.qtaPen || 0;
     const qBuoCurrent = p.qtaBuo || 0;
+    const qComandoCurrent = p.qtaComando || 0;
     const przBuoCurrent = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) || 0 : 0;
 
     const totalPassVenduti = passTot + qPassCurrent;
     const totalPenVenduti = penTot + qPenCurrent;
     const totalBuoVenduti = buoTot + qBuoCurrent;
-    const sumPezziVenduti = totalPassVenduti + totalPenVenduti + totalBuoVenduti;
+    const totalComandoVenduti = comandoTot + qComandoCurrent;
+    const sumPezziVenduti = totalPassVenduti + totalPenVenduti + totalBuoVenduti + totalComandoVenduti;
 
     const incassoGenerato = (totalPassVenduti * p.p) + (totalPenVenduti * p.pen) + (incassoBuo + (qBuoCurrent * przBuoCurrent));
 
@@ -2330,16 +2639,20 @@ function applicaContaFisicaInventario() {
     p.qtaPass = 0;
     p.qtaPen = 0;
     p.qtaBuo = 0;
+    p.qtaComando = 0;
   });
 
   const inputCash = document.getElementById("incassoCash");
   const inputPos = document.getElementById("incassoPos");
+  const inputFesta = document.getElementById("chkGiornoFesta");
   if (inputCash) inputCash.value = "";
   if (inputPos) inputPos.value = "";
+  if (inputFesta) inputFesta.checked = false;
 
   if (bozzePerBarca[barcaSel]) {
     bozzePerBarca[barcaSel].cash = "";
     bozzePerBarca[barcaSel].pos = "";
+    bozzePerBarca[barcaSel].festa = false;
     bozzePerBarca[barcaSel].quantita = {};
   }
 
@@ -2361,7 +2674,7 @@ function applicaContaFisicaInventario() {
   renderizzaStoricoConteggi();
   calcolaTotaleCassa();
 
-  alert(`✅ Inventario per ${barcaSel} salvato con successo!\nLo stock è stato allineato e l'Incasso Generato azzerato per il nuovo ciclo.`);
+  alert(`✅ Inventario per ${barcaSel} salvato con successo!`);
 }
 
 function renderizzaGrafici() {
@@ -2380,7 +2693,7 @@ function renderizzaGrafici() {
 
   const giornateInvertite = [...datiIncassi].reverse();
   giornateInvertite.forEach(d => {
-    etichetteGiorni.push(d.data.replace(' 2026', ''));
+    etichetteGiorni.push(d.data.replace(' 2026', '') + (d.festa ? ' 🎉' : ''));
     valoriIncassi.push((d.cash || 0) + (d.pos || 0));
   });
 
@@ -2475,7 +2788,7 @@ function importaDatiJSON(event) {
 
       salvaDatiLocali();
       caricaBozzaBarcaCorrente();
-      renderizzaStorici();
+      renderizzaStoricoConteggi();
       aggiornaTabellaIncassi();
       aggiornaListaMesiArchivati();
       aggiornaReportProdotti();
