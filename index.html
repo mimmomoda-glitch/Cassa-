@@ -822,6 +822,24 @@ th {
   font-size: 0.75rem;
   color: #bae6fd;
 }
+.toast-message {
+  position: fixed;
+  bottom: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #818cf8;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  z-index: 100000;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  display: none;
+  max-width: 90vw;
+  text-align: center;
+}
 
 @media print {
   body { background: white; color: black; }
@@ -833,6 +851,7 @@ th {
 <body>
 
 <div id="saveIndicator" class="save-indicator">✓ Salvato</div>
+<div id="toastMsg" class="toast-message"></div>
 
 <!-- SETTORE 1: GESTIONE CASSA TOUCH & VELOCE -->
 <div id="app-cassa" class="app-view active">
@@ -853,7 +872,7 @@ th {
 </div>
 <div class="settings-field">
 <label for="txtDataCassa">Data:</label>
-<input type="text" id="txtDataCassa" placeholder="es. 12 Novembre 2026" oninput="salvaBozzaCassaInTempoReale()">
+<input type="text" id="txtDataCassa" placeholder="es. 19 novembre 2026" oninput="salvaBozzaCassaInTempoReale()">
 </div>
 <div class="settings-field">
 <label for="selectMeteo">Meteo & Mare:</label>
@@ -1160,10 +1179,10 @@ th {
 </div>
 </div>
 
-<!-- MODALI CARICO E TRASFERIMENTO -->
+<!-- MODALE CARICO BOLLA INTELLIGENTE & TRASFERIMENTO -->
 <div id="modalCaricoMerce" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:6px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
-<h3>📦 Carico Merce con Bolla</h3>
+<h3>📦 Carico Bolla Intelligente</h3>
 <div class="settings-grid">
 <div class="settings-field">
 <label>Barca Destinataria:</label>
@@ -1178,15 +1197,30 @@ th {
 <input type="text" id="caricoFornitore" placeholder="es. Deposito">
 </div>
 <div class="settings-field">
-<label>Prodotto:</label>
-<select id="caricoProdotto"></select>
+<label>Prodotto (con giacenza attuale):</label>
+<select id="caricoProdotto" onchange="aggiornaSuggerimentoCarico()"></select>
 </div>
-<div class="settings-field" style="grid-column: span 2;">
+<div class="settings-field">
 <label>Quantità (+):</label>
 <input type="number" id="caricoQta" value="10" min="1">
 </div>
+<div class="settings-field">
+<label>Suggerimento Smart:</label>
+<button type="button" class="btn btn-secondary" id="btnSuggerimentoCarico" style="font-size:0.72rem; padding:6px 8px; min-height:36px;" onclick="applicaSuggerimentoCarico()">💡 Reintegra +0</button>
 </div>
+</div>
+
+<div class="quick-actions-bar" style="margin-bottom:8px;">
+<span style="font-size:0.7rem; font-weight:bold; color:var(--text-muted); display:flex; align-items:center;">⚡ Tagli rapidi:</span>
+<button type="button" class="btn-quick" onclick="aggiungiVoceCaricoRapida(6)">+6 pz</button>
+<button type="button" class="btn-quick" onclick="aggiungiVoceCaricoRapida(12)">+12 pz</button>
+<button type="button" class="btn-quick" onclick="aggiungiVoceCaricoRapida(24)">+24 pz</button>
+<button type="button" class="btn-quick" onclick="riempiSottoScortaInBolla()">🚨 Riempi Sotto Scorta</button>
+</div>
+
 <button type="button" class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="aggiungiVoceCarico()">+ Aggiungi alla Bolla</button>
+
+<div id="riepilogoBollaSmart" style="font-size:0.72rem; color:#a5b4fc; margin-bottom:6px; font-weight:700;">Voci in bolla: 0 | Pezzi totali: 0 pz</div>
 
 <div class="table-responsive" style="margin-bottom:8px;">
 <table id="tabellaCaricoItems">
@@ -1300,6 +1334,53 @@ const prodottiDefault = [
   {id:'orz', n:"Orzo", i:"☕", p:2.5, pen:2.5, qtaPass:0, qtaPen:0, qtaBuo:0, qtaComando:0, prezzoBuo: 1.0, stock: 30}
 ];
 
+function getDataOggiItaliana() {
+  const oggi = new Date();
+  return oggi.toLocaleDateString('it-IT', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+const mesiItalianiMap = {
+  gennaio: 0, febbraio: 1, marzo: 2, aprile: 3, maggio: 4, giugno: 5,
+  luglio: 6, agosto: 7, settembre: 8, ottobre: 9, novembre: 10, dicembre: 11
+};
+
+function parseDataItaliana(strData) {
+  if (!strData) return 0;
+  const pulita = String(strData).trim().toLowerCase();
+
+  const partiTesto = pulita.split(/\s+/);
+  if (partiTesto.length >= 3 && mesiItalianiMap[partiTesto[1]] !== undefined) {
+    const giorno = parseInt(partiTesto[0], 10) || 1;
+    const mese = mesiItalianiMap[partiTesto[1]];
+    const anno = parseInt(partiTesto[2], 10) || new Date().getFullYear();
+    return new Date(anno, mese, giorno).getTime();
+  }
+
+  const partiNum = pulita.split(/[\/\-]/);
+  if (partiNum.length === 3) {
+    const giorno = parseInt(partiNum[0], 10) || 1;
+    const mese = (parseInt(partiNum[1], 10) || 1) - 1;
+    const anno = parseInt(partiNum[2], 10) || new Date().getFullYear();
+    return new Date(anno, mese, giorno).getTime();
+  }
+
+  const parsed = Date.parse(pulita);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+function ordinaIncassiCronologicamente() {
+  datiIncassi.sort((a, b) => {
+    const tA = parseDataItaliana(a.data);
+    const tB = parseDataItaliana(b.data);
+    if (tA !== tB) return tA - tB;
+    return String(a.postazione || '').localeCompare(String(b.postazione || ''));
+  });
+}
+
 const datiPrecaricatiDefault = [
   { mese: "Novembre 2026", data: "1 novembre 2026", postazione: "VESUVIO JET", cash: 125.00, pos: 29.50, diff: 0, festa: false },
   { mese: "Novembre 2026", data: "2 novembre 2026", postazione: "VESUVIO JET", cash: 1.00, pos: 0.00, diff: 0, festa: false }
@@ -1318,11 +1399,23 @@ let storicoConteggi = [];
 let datiIncassi = [...datiPrecaricatiDefault];
 let mesiArchivati = [...mesiArchivatiDefault];
 let timerSalvataggioToast = null;
+let timerToastMsg = null;
 let chartAndamentoInstance = null;
 let chartTopProdottiInstance = null;
 let itemsCaricoMerce = [];
 let vistaTouchRapida = true;
 let tariffaTouchAttiva = 'Pass';
+
+function mostraAvviso(testo) {
+  const el = document.getElementById("toastMsg");
+  if (!el) return;
+  el.textContent = testo;
+  el.style.display = "block";
+  clearTimeout(timerToastMsg);
+  timerToastMsg = setTimeout(() => {
+    el.style.display = "none";
+  }, 2600);
+}
 
 function popolaSelectBarche() {
   const selectCassa = document.getElementById("selectBarca");
@@ -1363,33 +1456,39 @@ function cambiaTab(idApp) {
   } else if (idApp === 'app-grafici') {
     renderizzaGrafici();
   } else if (idApp === 'app-incassi') {
+    ordinaIncassiCronologicamente();
     aggiornaTabellaIncassi();
   }
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-  popolaSelectBarche();
-  caricaDatiLocali();
-  generaListaProdottiCassa();
-  calcolaTotaleCassa();
-  aggiornaTabellaIncassi();
-  aggiornaListaMesiArchivati();
-  aggiornaReportProdotti();
-  renderizzaGrafici();
+  try {
+    popolaSelectBarche();
+    caricaDatiLocali();
+    ordinaIncassiCronologicamente();
+    generaListaProdottiCassa();
+    calcolaTotaleCassa();
+    aggiornaTabellaIncassi();
+    aggiornaListaMesiArchivati();
+    aggiornaReportProdotti();
+    renderizzaGrafici();
 
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(item => {
-    item.addEventListener('click', function(e) {
-      e.preventDefault();
-      const targetApp = this.getAttribute('data-app');
-      cambiaTab(targetApp);
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetApp = this.getAttribute('data-app');
+        cambiaTab(targetApp);
+      });
+      item.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        const targetApp = this.getAttribute('data-app');
+        cambiaTab(targetApp);
+      }, {passive: false});
     });
-    item.addEventListener('touchstart', function(e) {
-      e.preventDefault();
-      const targetApp = this.getAttribute('data-app');
-      cambiaTab(targetApp);
-    }, {passive: false});
-  });
+  } catch (err) {
+    console.error("Errore inizializzazione app:", err);
+  }
 });
 
 function mostraNotificaSalvataggio() {
@@ -1433,6 +1532,7 @@ function toggleVistaCassa() {
 
 function salvaDatiLocali() {
   try {
+    ordinaIncassiCronologicamente();
     localStorage.setItem("cassa_bozze_barche", JSON.stringify(bozzePerBarca));
     localStorage.setItem("cassa_storico_giornate", JSON.stringify(storicoGiornate));
     localStorage.setItem("cassa_storico_trasferimenti", JSON.stringify(storicoTrasferimenti));
@@ -1472,6 +1572,7 @@ function caricaDatiLocali() {
     if (p) prodotti = JSON.parse(p);
   } catch (e) { console.error("Errore caricamento localStorage", e); }
 
+  ordinaIncassiCronologicamente();
   caricaBozzaBarcaCorrente();
   renderizzaStorici();
 }
@@ -1486,9 +1587,10 @@ function cambiaBarcaCorrente() {
 function caricaBozzaBarcaCorrente() {
   const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
   const bozza = bozzePerBarca[barca] || {};
+  const dataOggi = getDataOggiItaliana();
 
   document.getElementById("txtOperatore").value = bozza.operatore || "";
-  document.getElementById("txtDataCassa").value = bozza.data || "12 Novembre 2026";
+  document.getElementById("txtDataCassa").value = bozza.data || dataOggi;
   document.getElementById("selectMeteo").value = bozza.meteo || "☀️ Sole / Mare Calmo";
   document.getElementById("incassoCash").value = bozza.cash || "";
   document.getElementById("incassoPos").value = bozza.pos || "";
@@ -1534,7 +1636,7 @@ function salvaBozzaCassaInTempoReale() {
 
   if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
   bozzePerBarca[barca].operatore = document.getElementById("txtOperatore").value;
-  bozzePerBarca[barca].data = document.getElementById("txtDataCassa").value;
+  bozzePerBarca[barca].data = document.getElementById("txtDataCassa").value || getDataOggiItaliana();
   bozzePerBarca[barca].meteo = document.getElementById("selectMeteo").value;
   bozzePerBarca[barca].cash = document.getElementById("incassoCash").value;
   bozzePerBarca[barca].pos = document.getElementById("incassoPos").value;
@@ -1796,20 +1898,19 @@ function filtraProdottiCassa() {
 }
 
 function azzeraQuantitaCassa() {
-  if (confirm("Sei sicuro di voler azzerare le quantità di vendita correnti?")) {
-    prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; p.qtaComando = 0; });
-    document.getElementById("incassoCash").value = "";
-    document.getElementById("incassoPos").value = "";
-    document.getElementById("chkGiornoFesta").checked = false;
-    generaListaProdottiCassa();
-    calcolaTotaleCassa();
-    salvaBozzaCassaInTempoReale();
-  }
+  prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; p.qtaComando = 0; });
+  document.getElementById("incassoCash").value = "";
+  document.getElementById("incassoPos").value = "";
+  document.getElementById("chkGiornoFesta").checked = false;
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  salvaBozzaCassaInTempoReale();
+  mostraAvviso("Quantità di vendita azzerate.");
 }
 
 function salvaGiornataInStorico() {
   const barca = document.getElementById("selectBarca").value;
-  const data = document.getElementById("txtDataCassa").value || "12 Novembre 2026";
+  const data = document.getElementById("txtDataCassa").value || getDataOggiItaliana();
   const op = document.getElementById("txtOperatore").value || "Anonimo";
   const meteo = document.getElementById("selectMeteo").value;
   const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
@@ -1855,9 +1956,23 @@ function salvaGiornataInStorico() {
   };
 
   storicoGiornate.unshift(record);
+  storicoGiornate.sort((a, b) => parseDataItaliana(b.data) - parseDataItaliana(a.data));
+
+  const tsData = parseDataItaliana(data) || Date.now();
+  const dObj = new Date(tsData);
+  const meseRecord = dObj.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+  const meseFormattato = meseRecord.charAt(0).toUpperCase() + meseRecord.slice(1);
+
+  const selectMese = document.getElementById("selectMeseIncassi");
+  if (selectMese && !Array.from(selectMese.options).some(o => o.value === meseFormattato)) {
+    const opt = document.createElement("option");
+    opt.value = meseFormattato;
+    opt.textContent = meseFormattato;
+    selectMese.insertBefore(opt, selectMese.firstChild);
+  }
 
   const recordIncasso = {
-    mese: "Novembre 2026",
+    mese: meseFormattato,
     data: data,
     postazione: barca,
     cash: cash,
@@ -1865,9 +1980,11 @@ function salvaGiornataInStorico() {
     diff: diff,
     festa: festa
   };
-  datiIncassi.unshift(recordIncasso);
+  datiIncassi.push(recordIncasso);
+  ordinaIncassiCronologicamente();
 
   prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; p.qtaComando = 0; });
+  document.getElementById("txtDataCassa").value = getDataOggiItaliana();
   document.getElementById("incassoCash").value = "";
   document.getElementById("incassoPos").value = "";
   document.getElementById("chkGiornoFesta").checked = false;
@@ -1881,14 +1998,13 @@ function salvaGiornataInStorico() {
   aggiornaReportProdotti();
   renderizzaGrafici();
 
+  mostraAvviso(`✅ Giornata salvata (${barca} - ${data})`);
+
   let msgWhatsapp = `Buonasera, incasso giornaliero ${barca} del ${data}:\n\n` +
                     `Tot Cash: € ${cash.toFixed(2)}\n` +
                     `Tot Pos: € ${pos.toFixed(2)}\n` +
                     `Totale: € ${totaleGeneraleGiorno.toFixed(2)}`;
-
-  if (confirm("✅ Giornata chiusa e salvata con successo!\n\nVuoi inoltrare subito il riepilogo su WhatsApp?")) {
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msgWhatsapp)}`, '_blank');
-  }
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msgWhatsapp)}`, '_blank');
 }
 
 function inviaWhatsAppDaTabella(barca, data, cash, pos) {
@@ -2003,20 +2119,15 @@ function renderizzaStoricoConteggi() {
 }
 
 function svuotaStoricoConteggi() {
-  if (confirm("Cancellare il registro dei conteggi inventario?")) {
-    storicoConteggi = [];
-    salvaDatiLocali();
-    renderizzaStoricoConteggi();
-  }
+  storicoConteggi = [];
+  salvaDatiLocali();
+  renderizzaStoricoConteggi();
+  mostraAvviso("Registro conteggi svuotato.");
 }
 
 function riapriEModificaGiornata(id) {
   const record = storicoGiornate.find(g => g.id === id);
   if (!record) return;
-
-  if (!confirm(`Vuoi caricare la giornata del ${record.data} (${record.barca}) in Cassa per modificarla?`)) {
-    return;
-  }
 
   document.getElementById("selectBarca").value = record.barca;
   cambiaBarcaCorrente();
@@ -2050,6 +2161,7 @@ function riapriEModificaGiornata(id) {
 
   storicoGiornate = storicoGiornate.filter(g => g.id !== id);
   datiIncassi = datiIncassi.filter(d => !(d.data === record.data && d.postazione === record.barca));
+  ordinaIncassiCronologicamente();
 
   salvaBozzaCassaInTempoReale();
   salvaDatiLocali();
@@ -2060,28 +2172,26 @@ function riapriEModificaGiornata(id) {
   renderizzaStorici();
 
   cambiaTab('app-cassa');
-  alert(`Giornata del ${record.data} caricata in Cassa!`);
+  mostraAvviso(`Giornata del ${record.data} caricata in Cassa.`);
 }
 
 function eliminaStoricoCassa(id) {
-  if (confirm("Vuoi davvero eliminare questa giornata dallo storico?")) {
-    storicoGiornate = storicoGiornate.filter(i => i.id !== id);
-    salvaDatiLocali();
-    renderizzaStorici();
-  }
+  storicoGiornate = storicoGiornate.filter(i => i.id !== id);
+  salvaDatiLocali();
+  renderizzaStorici();
+  mostraAvviso("Giornata eliminata dallo storico.");
 }
 
 function svuotaStoricoCassa() {
-  if (confirm("Vuoi cancellare l'intero storico delle giornate salvate?")) {
-    storicoGiornate = [];
-    salvaDatiLocali();
-    renderizzaStorici();
-  }
+  storicoGiornate = [];
+  salvaDatiLocali();
+  renderizzaStorici();
+  mostraAvviso("Storico giornate svuotato.");
 }
 
 function inviaWhatsApp() {
   const barca = document.getElementById("selectBarca").value;
-  const data = document.getElementById("txtDataCassa").value || "12 Novembre 2026";
+  const data = document.getElementById("txtDataCassa").value || getDataOggiItaliana();
   const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
   const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
   const totaleGenerale = cash + pos;
@@ -2094,34 +2204,115 @@ function inviaWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
+/* CARICO BOLLA INTELLIGENTE */
 function apriModalCaricoMerce() {
-  document.getElementById("caricoBarcaDest").value = document.getElementById("selectBarca").value;
+  const barcaDest = document.getElementById("selectBarca").value;
+  document.getElementById("caricoBarcaDest").value = barcaDest;
+  if (!document.getElementById("caricoNumBolla").value) {
+    const sig = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+    document.getElementById("caricoNumBolla").value = `BOL-${sig}`;
+  }
   const selectProd = document.getElementById("caricoProdotto");
   selectProd.innerHTML = "";
+  const stockMap = (bozzePerBarca[barcaDest] && bozzePerBarca[barcaDest].stock) ? bozzePerBarca[barcaDest].stock : {};
+
   prodotti.forEach(p => {
-    selectProd.innerHTML += `<option value="${p.id}">${p.n}</option>`;
+    const st = stockMap[p.id] !== undefined ? stockMap[p.id] : p.stock;
+    selectProd.innerHTML += `<option value="${p.id}">${p.i} ${p.n} (Stock: ${st} pz)</option>`;
   });
   itemsCaricoMerce = [];
+  aggiornaSuggerimentoCarico();
   aggiornaTabellaCaricoItems();
   document.getElementById("modalCaricoMerce").style.display = "flex";
 }
-function chiudiModalCaricoMerce() { document.getElementById("modalCaricoMerce").style.display = "none"; }
+
+function chiudiModalCaricoMerce() {
+  document.getElementById("modalCaricoMerce").style.display = "none";
+}
+
+function calcolaSuggerimentoReintegro(idP, barcaDest) {
+  const prodDefault = prodottiDefault.find(d => d.id === idP);
+  const targetScorta = prodDefault ? prodDefault.stock : 24;
+  const stockMap = (bozzePerBarca[barcaDest] && bozzePerBarca[barcaDest].stock) ? bozzePerBarca[barcaDest].stock : {};
+  const p = prodotti.find(x => x.id === idP);
+  const stockAttuale = stockMap[idP] !== undefined ? stockMap[idP] : (p ? p.stock : 0);
+  return Math.max(1, targetScorta - stockAttuale);
+}
+
+function aggiornaSuggerimentoCarico() {
+  const idP = document.getElementById("caricoProdotto").value;
+  const barcaDest = document.getElementById("caricoBarcaDest").value;
+  const btnSug = document.getElementById("btnSuggerimentoCarico");
+  if (!btnSug || !idP) return;
+  const sugg = calcolaSuggerimentoReintegro(idP, barcaDest);
+  btnSug.textContent = `💡 Reintegra +${sugg}`;
+  btnSug.setAttribute("data-qta", sugg);
+}
+
+function applicaSuggerimentoCarico() {
+  const btnSug = document.getElementById("btnSuggerimentoCarico");
+  const sugg = parseInt(btnSug?.getAttribute("data-qta") || "10", 10);
+  document.getElementById("caricoQta").value = sugg;
+  aggiungiVoceCarico();
+}
+
+function aggiungiVoceCaricoRapida(qtaRapida) {
+  document.getElementById("caricoQta").value = qtaRapida;
+  aggiungiVoceCarico();
+}
+
+function riempiSottoScortaInBolla() {
+  const barcaDest = document.getElementById("caricoBarcaDest").value;
+  const stockMap = (bozzePerBarca[barcaDest] && bozzePerBarca[barcaDest].stock) ? bozzePerBarca[barcaDest].stock : {};
+  let aggiunti = 0;
+
+  prodotti.forEach(p => {
+    const st = stockMap[p.id] !== undefined ? stockMap[p.id] : p.stock;
+    if (st <= 5) {
+      const qtaReintegro = calcolaSuggerimentoReintegro(p.id, barcaDest);
+      inserisciOUnificaVoceBolla(p.id, p.n, qtaReintegro);
+      aggiunti++;
+    }
+  });
+
+  if (aggiunti === 0) {
+    mostraAvviso("Nessun prodotto sotto scorta (≤ 5 pz) su questa barca.");
+    return;
+  }
+  aggiornaTabellaCaricoItems();
+  mostraAvviso(`Aggiunti ${aggiunti} prodotti sotto scorta in bolla.`);
+}
+
+function inserisciOUnificaVoceBolla(idP, nomeP, qta) {
+  const esistente = itemsCaricoMerce.find(item => item.id === idP);
+  if (esistente) {
+    esistente.qta += qta;
+  } else {
+    itemsCaricoMerce.push({ id: idP, nome: nomeP, qta: qta });
+  }
+}
 
 function aggiungiVoceCarico() {
   const idP = document.getElementById("caricoProdotto").value;
   const qta = parseInt(document.getElementById("caricoQta").value) || 0;
   const p = prodotti.find(x => x.id === idP);
   if (!p || qta <= 0) return;
-  itemsCaricoMerce.push({ id: p.id, nome: p.n, qta: qta });
+  inserisciOUnificaVoceBolla(p.id, p.n, qta);
   aggiornaTabellaCaricoItems();
 }
 
 function aggiornaTabellaCaricoItems() {
   const tbody = document.querySelector("#tabellaCaricoItems tbody");
   tbody.innerHTML = "";
+  let totPezzi = 0;
   itemsCaricoMerce.forEach((item, index) => {
+    totPezzi += item.qta;
     tbody.innerHTML += `<tr><td>${item.nome}</td><td>+${item.qta}</td><td><button type="button" class="del-btn" onclick="itemsCaricoMerce.splice(${index},1); aggiornaTabellaCaricoItems();">X</button></td></tr>`;
   });
+  const riepilogo = document.getElementById("riepilogoBollaSmart");
+  if (riepilogo) {
+    riepilogo.textContent = `Voci in bolla: ${itemsCaricoMerce.length} | Pezzi totali: ${totPezzi} pz`;
+  }
 }
 
 function confermaEStampaCarico() {
@@ -2130,7 +2321,7 @@ function confermaEStampaCarico() {
   const fornitore = document.getElementById("caricoFornitore").value || "N.D.";
 
   if (itemsCaricoMerce.length === 0) {
-    alert("Aggiungi almeno un prodotto alla bolla!");
+    mostraAvviso("Aggiungi almeno un prodotto alla bolla.");
     return;
   }
 
@@ -2155,7 +2346,7 @@ function confermaEStampaCarico() {
   caricaBozzaBarcaCorrente();
   renderizzaStorici();
   chiudiModalCaricoMerce();
-  alert("Carico registrato e magazzino aggiornato!");
+  mostraAvviso("Carico registrato e magazzino aggiornato.");
 }
 
 function apriModalTrasferimento() {
@@ -2204,13 +2395,13 @@ function confermaTrasferimentoMerci() {
   const qta = parseInt(document.getElementById("transfQta").value) || 0;
 
   if (daBarca === aBarca) {
-    alert("Seleziona due barche diverse!");
+    mostraAvviso("Seleziona due barche diverse.");
     return;
   }
 
   const p = prodotti.find(x => x.id === idP);
   if (!p || qta <= 0) {
-    alert("Quantità non valida!");
+    mostraAvviso("Quantità non valida.");
     return;
   }
 
@@ -2228,12 +2419,6 @@ function confermaTrasferimentoMerci() {
 
   const stockDa = bozzePerBarca[daBarca].stock[idP] !== undefined ? bozzePerBarca[daBarca].stock[idP] : p.stock;
   const stockA = bozzePerBarca[aBarca].stock[idP] !== undefined ? bozzePerBarca[aBarca].stock[idP] : p.stock;
-
-  if (stockDa < qta) {
-    if (!confirm(`La barca d'origine (${daBarca}) ha solo ${stockDa} pezzi. Procedere comunque?`)) {
-      return;
-    }
-  }
 
   const nuovoStockDa = Math.max(0, stockDa - qta);
   const nuovoStockA = stockA + qta;
@@ -2262,17 +2447,18 @@ function confermaTrasferimentoMerci() {
   caricaBozzaBarcaCorrente();
   renderizzaStorici();
   chiudiModalTrasferimento();
-  alert("Spostamento completato!");
+  mostraAvviso("Spostamento completato.");
 }
 
-function svuotaStoricoCarichi() { storicoCarichi = []; salvaDatiLocali(); renderizzaStorici(); }
-function svuotaStoricoTrasferimenti() { storicoTrasferimenti = []; salvaDatiLocali(); renderizzaStorici(); }
+function svuotaStoricoCarichi() { storicoCarichi = []; salvaDatiLocali(); renderizzaStorici(); mostraAvviso("Registro carichi svuotato."); }
+function svuotaStoricoTrasferimenti() { storicoTrasferimenti = []; salvaDatiLocali(); renderizzaStorici(); mostraAvviso("Registro spostamenti svuotato."); }
 
 function cambiaMeseCorrente() {
   aggiornaTabellaIncassi();
 }
 
 function aggiornaTabellaIncassi() {
+  ordinaIncassiCronologicamente();
   const meseSelezionato = document.getElementById("selectMeseIncassi").value;
   const filtro = document.getElementById("txtFiltro").value.toLowerCase();
   const tbody = document.querySelector("#tabellaIncassi tbody");
@@ -2293,11 +2479,13 @@ function aggiornaTabellaIncassi() {
     return;
   }
 
-  const datiFiltrati = datiIncassi.filter(d => {
-    const matchMese = d.mese === meseSelezionato;
-    const matchFiltro = d.data.toLowerCase().includes(filtro) || d.postazione.toLowerCase().includes(filtro);
-    return matchMese && matchFiltro;
-  });
+  const datiFiltrati = datiIncassi
+    .map((item, realIndex) => ({ item, realIndex }))
+    .filter(({ item }) => {
+      const matchMese = item.mese === meseSelezionato;
+      const matchFiltro = item.data.toLowerCase().includes(filtro) || item.postazione.toLowerCase().includes(filtro);
+      return matchMese && matchFiltro;
+    });
 
   let totIncasso = 0;
   let tot5p = 0;
@@ -2305,7 +2493,7 @@ function aggiornaTabellaIncassi() {
   let totDiff = 0;
   let totNetto = 0;
 
-  datiFiltrati.forEach((item, index) => {
+  datiFiltrati.forEach(({ item, realIndex }) => {
     const incassoGiorno = (item.cash || 0) + (item.pos || 0);
     const quota5pGiorno = incassoGiorno * 0.05;
     const quotaFissaGiorno = item.festa ? 0 : 26.00;
@@ -2332,7 +2520,7 @@ function aggiornaTabellaIncassi() {
       <td>€${quota5pGiorno.toFixed(2)}</td>
       <td>€${quotaFissaGiorno.toFixed(2)} ${item.festa ? '<span style="color:#c084fc; font-size:0.65rem;">(Festa)</span>' : ''}</td>
       <td><b style="color:#34d399;">€${nettoGiorno.toFixed(2)}</b></td>
-      <td><button type="button" class="del-btn" onclick="eliminaRecordIncasso(${index})">X</button></td>
+      <td><button type="button" class="del-btn" onclick="eliminaRecordIncasso(${realIndex})">X</button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -2346,24 +2534,25 @@ function aggiornaTabellaIncassi() {
 }
 
 function eliminaRecordIncasso(idx) {
-  if (confirm("Vuoi eliminare questa voce?")) {
-    datiIncassi.splice(idx, 1);
-    salvaDatiLocali();
-    aggiornaTabellaIncassi();
-  }
+  datiIncassi.splice(idx, 1);
+  ordinaIncassiCronologicamente();
+  salvaDatiLocali();
+  aggiornaTabellaIncassi();
+  renderizzaGrafici();
+  mostraAvviso("Voce incasso eliminata.");
 }
 
 function chiudiEArchiviaMeseCorrente() {
   const meseSelezionato = document.getElementById("selectMeseIncassi").value;
 
   if (mesiArchivati.some(m => m.mese === meseSelezionato)) {
-    alert("Mese già archiviato!");
+    mostraAvviso("Mese già archiviato.");
     return;
   }
 
   const datiMese = datiIncassi.filter(d => d.mese === meseSelezionato);
   if (datiMese.length === 0) {
-    alert("Nessun dato presente!");
+    mostraAvviso("Nessun dato presente per il mese selezionato.");
     return;
   }
 
@@ -2400,7 +2589,7 @@ function chiudiEArchiviaMeseCorrente() {
   salvaDatiLocali();
   aggiornaListaMesiArchivati();
   aggiornaTabellaIncassi();
-  alert(`Mese archiviato! Netto: €${totNetto.toFixed(2)}`);
+  mostraAvviso(`Mese archiviato. Netto: €${totNetto.toFixed(2)}`);
 }
 
 function aggiornaListaMesiArchivati() {
@@ -2443,13 +2632,14 @@ function aggiungiNuovoMeseCustom() {
 }
 
 function ripristinaDefaultIncassi() {
-  if (confirm("Ripristinare i dati predefiniti?")) {
-    datiIncassi = [...datiPrecaricatiDefault];
-    mesiArchivati = [...mesiArchivatiDefault];
-    salvaDatiLocali();
-    aggiornaTabellaIncassi();
-    aggiornaListaMesiArchivati();
-  }
+  datiIncassi = [...datiPrecaricatiDefault];
+  mesiArchivati = [...mesiArchivatiDefault];
+  ordinaIncassiCronologicamente();
+  salvaDatiLocali();
+  aggiornaTabellaIncassi();
+  aggiornaListaMesiArchivati();
+  renderizzaGrafici();
+  mostraAvviso("Incassi ripristinati ai valori predefiniti.");
 }
 
 function aggiornaReportProdotti() {
@@ -2607,11 +2797,7 @@ function ricalcolaAmmancoSingolo(idProd, stockTeorico, prezzoUnitario) {
 function applicaContaFisicaInventario() {
   const barcaSel = document.getElementById("filtroBarcaProdotti").value;
   if (!barcaSel) {
-    alert("Seleziona prima una barca valida!");
-    return;
-  }
-
-  if (!confirm(`Vuoi aggiornare ufficialmente lo stock della barca ${barcaSel} con i valori inseriti, azzerare l'Incasso Generato e ripartire da un ciclo pulito?`)) {
+    mostraAvviso("Seleziona prima una barca valida.");
     return;
   }
 
@@ -2674,10 +2860,11 @@ function applicaContaFisicaInventario() {
   renderizzaStoricoConteggi();
   calcolaTotaleCassa();
 
-  alert(`✅ Inventario per ${barcaSel} salvato con successo!`);
+  mostraAvviso(`✅ Inventario per ${barcaSel} allineato.`);
 }
 
 function renderizzaGrafici() {
+  ordinaIncassiCronologicamente();
   const el1 = document.getElementById('chartAndamentoIncassi');
   const el2 = document.getElementById('chartTopProdotti');
   if(!el1 || !el2) return;
@@ -2691,9 +2878,8 @@ function renderizzaGrafici() {
   const etichetteGiorni = [];
   const valoriIncassi = [];
 
-  const giornateInvertite = [...datiIncassi].reverse();
-  giornateInvertite.forEach(d => {
-    etichetteGiorni.push(d.data.replace(' 2026', '') + (d.festa ? ' 🎉' : ''));
+  datiIncassi.forEach(d => {
+    etichetteGiorni.push(d.data.replace(/ \d{4}$/, '') + (d.festa ? ' 🎉' : ''));
     valoriIncassi.push((d.cash || 0) + (d.pos || 0));
   });
 
@@ -2786,6 +2972,7 @@ function importaDatiJSON(event) {
       if (data.mesiArchivati) mesiArchivati = data.mesiArchivati;
       if (data.prodotti) prodotti = data.prodotti;
 
+      ordinaIncassiCronologicamente();
       salvaDatiLocali();
       caricaBozzaBarcaCorrente();
       renderizzaStoricoConteggi();
@@ -2793,8 +2980,8 @@ function importaDatiJSON(event) {
       aggiornaListaMesiArchivati();
       aggiornaReportProdotti();
       renderizzaGrafici();
-      alert("Dati importati con successo!");
-    } catch (err) { alert("File JSON non valido!"); }
+      mostraAvviso("Dati importati con successo.");
+    } catch (err) { mostraAvviso("File JSON non valido."); }
   };
   reader.readAsText(file);
 }
