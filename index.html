@@ -1083,7 +1083,7 @@ th {
 <div class="settings-grid" style="margin-bottom: 8px;">
 <div class="settings-field" style="grid-column: span 2;">
 <label for="filtroBarcaProdotti">Seleziona Barca da Contare:</label>
-<select id="filtroBarcaProdotti" onchange="aggiornaReportProdotti()"></select>
+<select id="filtroBarcaProdotti" onchange="cambiaBarcaDaReport()"></select>
 </div>
 </div>
 
@@ -1417,6 +1417,24 @@ function mostraAvviso(testo) {
   }, 2600);
 }
 
+function getBarcaSalvata() {
+  try {
+    const salvata = localStorage.getItem("cassa_barca_attiva");
+    if (salvata && listaBarche.includes(salvata)) {
+      return salvata;
+    }
+  } catch (e) {}
+  return "VESUVIO JET";
+}
+
+function salvaBarcaAttiva(nomeBarca) {
+  try {
+    if (nomeBarca && listaBarche.includes(nomeBarca)) {
+      localStorage.setItem("cassa_barca_attiva", nomeBarca);
+    }
+  } catch (e) {}
+}
+
 function popolaSelectBarche() {
   const selectCassa = document.getElementById("selectBarca");
   const selectFiltroProdotti = document.getElementById("filtroBarcaProdotti");
@@ -1435,8 +1453,9 @@ function popolaSelectBarche() {
     selectFiltroProdotti.appendChild(opt3);
   });
 
-  selectCassa.value = "VESUVIO JET";
-  selectFiltroProdotti.value = "VESUVIO JET";
+  const barcaIniziale = getBarcaSalvata();
+  selectCassa.value = barcaIniziale;
+  selectFiltroProdotti.value = barcaIniziale;
 }
 
 function cambiaTab(idApp) {
@@ -1533,6 +1552,9 @@ function toggleVistaCassa() {
 function salvaDatiLocali() {
   try {
     ordinaIncassiCronologicamente();
+    const barcaCorrente = document.getElementById("selectBarca")?.value;
+    if (barcaCorrente) salvaBarcaAttiva(barcaCorrente);
+
     localStorage.setItem("cassa_bozze_barche", JSON.stringify(bozzePerBarca));
     localStorage.setItem("cassa_storico_giornate", JSON.stringify(storicoGiornate));
     localStorage.setItem("cassa_storico_trasferimenti", JSON.stringify(storicoTrasferimenti));
@@ -1579,13 +1601,24 @@ function caricaDatiLocali() {
 
 function cambiaBarcaCorrente() {
   const b = document.getElementById("selectBarca").value;
+  salvaBarcaAttiva(b);
   document.getElementById("filtroBarcaProdotti").value = b;
   caricaBozzaBarcaCorrente();
   aggiornaReportProdotti();
+  mostraNotificaSalvataggio();
+}
+
+function cambiaBarcaDaReport() {
+  const b = document.getElementById("filtroBarcaProdotti").value;
+  salvaBarcaAttiva(b);
+  document.getElementById("selectBarca").value = b;
+  caricaBozzaBarcaCorrente();
+  aggiornaReportProdotti();
+  mostraNotificaSalvataggio();
 }
 
 function caricaBozzaBarcaCorrente() {
-  const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
+  const barca = document.getElementById("selectBarca").value || getBarcaSalvata();
   const bozza = bozzePerBarca[barca] || {};
   const dataOggi = getDataOggiItaliana();
 
@@ -1620,7 +1653,8 @@ function caricaBozzaBarcaCorrente() {
 }
 
 function salvaBozzaCassaInTempoReale() {
-  const barca = document.getElementById("selectBarca").value || "VESUVIO JET";
+  const barca = document.getElementById("selectBarca").value || getBarcaSalvata();
+  salvaBarcaAttiva(barca);
   const quantitaObj = {};
   const prezziBuoObj = {};
   const stockObj = {};
@@ -2356,7 +2390,7 @@ function apriModalTrasferimento() {
     selectDa.innerHTML += `<option value="${b}">${b}</option>`;
   });
 
-  const barcaAttiva = document.getElementById("selectBarca").value || "VESUVIO JET";
+  const barcaAttiva = document.getElementById("selectBarca").value || getBarcaSalvata();
   selectDa.value = barcaAttiva;
 
   aggiornaBarcheDestinazioneModal();
@@ -2643,7 +2677,7 @@ function ripristinaDefaultIncassi() {
 }
 
 function aggiornaReportProdotti() {
-  const barcaSel = document.getElementById("filtroBarcaProdotti").value || "VESUVIO JET";
+  const barcaSel = document.getElementById("filtroBarcaProdotti").value || getBarcaSalvata();
   const tbody = document.querySelector("#tabellaReportProdotti tbody");
   if(!tbody) return;
   tbody.innerHTML = "";
@@ -2723,7 +2757,7 @@ function aggiornaReportProdotti() {
     }
   });
 
-  const barcaAttivaCassa = document.getElementById("selectBarca") ? document.getElementById("selectBarca").value : "VESUVIO JET";
+  const barcaAttivaCassa = document.getElementById("selectBarca") ? document.getElementById("selectBarca").value : getBarcaSalvata();
   if (barcaSel === barcaAttivaCassa) {
     const cashCurrent = parseFloat(document.getElementById("incassoCash")?.value) || 0;
     const posCurrent = parseFloat(document.getElementById("incassoPos")?.value) || 0;
@@ -2946,6 +2980,7 @@ function renderizzaGrafici() {
 
 function esportaDatiJSON() {
   const backupData = {
+    barcaAttiva: getBarcaSalvata(),
     bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoCarichi, storicoConteggi, datiIncassi, mesiArchivati, prodotti
   };
   const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -2963,6 +2998,11 @@ function importaDatiJSON(event) {
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
+      if (data.barcaAttiva && listaBarche.includes(data.barcaAttiva)) {
+        salvaBarcaAttiva(data.barcaAttiva);
+        document.getElementById("selectBarca").value = data.barcaAttiva;
+        document.getElementById("filtroBarcaProdotti").value = data.barcaAttiva;
+      }
       if (data.bozzePerBarca) bozzePerBarca = data.bozzePerBarca;
       if (data.storicoGiornate) storicoGiornate = data.storicoGiornate;
       if (data.storicoTrasferimenti) storicoTrasferimenti = data.storicoTrasferimenti;
@@ -2987,4 +3027,4 @@ function importaDatiJSON(event) {
 }
 </script>
 </body>
-</html>
+  </html>
