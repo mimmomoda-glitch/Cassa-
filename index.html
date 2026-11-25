@@ -606,6 +606,18 @@ input:focus, select:focus {
   border: 2px solid #38bdf8;
   border-radius: 8px;
 }
+.input-prezzo-edit {
+  width: 68px !important;
+  height: 34px !important;
+  padding: 2px 4px !important;
+  text-align: center;
+  font-size: 0.85rem !important;
+  font-weight: 800;
+  background: #0f172a;
+  color: #34d399;
+  border: 1px solid #34d399;
+  border-radius: 6px;
+}
 .actions-box {
   display: grid;
   grid-template-columns: 1fr;
@@ -822,6 +834,29 @@ th {
   font-size: 0.75rem;
   color: #bae6fd;
 }
+.sub-tabs-report {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.sub-tab-btn {
+  background: var(--subcard-bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.sub-tab-btn.active {
+  background: var(--primary);
+  border-color: #818cf8;
+  color: white;
+}
 .toast-message {
   position: fixed;
   bottom: 74px;
@@ -843,7 +878,7 @@ th {
 
 @media print {
   body { background: white; color: black; }
-  .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar, .tariffa-selector-grid { display: none !important; }
+  .bottom-nav, .actions-box, .backup-section, .month-selector-bar, .del-btn, .btn, .quick-actions-bar, .tariffa-selector-grid, .sub-tabs-report { display: none !important; }
   .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
 }
 </style>
@@ -871,8 +906,8 @@ th {
 <input type="text" id="txtOperatore" placeholder="es. Marco" oninput="salvaBozzaCassaInTempoReale()">
 </div>
 <div class="settings-field">
-<label for="txtDataCassa">Data:</label>
-<input type="text" id="txtDataCassa" placeholder="es. 19 novembre 2026" oninput="salvaBozzaCassaInTempoReale()">
+<label for="txtDataCassa">Data (Avanza auto al salvataggio):</label>
+<input type="text" id="txtDataCassa" placeholder="es. 19 novembre 2026" oninput="aggiornaDataGlobale(this.value)">
 </div>
 <div class="settings-field">
 <label for="selectMeteo">Meteo & Mare:</label>
@@ -992,7 +1027,7 @@ th {
 <h1>
 <span>Gestione Incassi</span>
 <div style="display: flex; gap: 4px;">
-<button type="button" class="btn btn-secondary" onclick="aggiungiNuovoMeseCustom()" style="font-size: 0.68rem; padding: 2px 6px; min-height: 26px; width: auto;">+ Mese</button>
+<button type="button" class="btn btn-secondary" onclick="apriModalNuovoMese()" style="font-size: 0.68rem; padding: 2px 6px; min-height: 26px; width: auto;">+ Mese</button>
 <button type="button" class="btn btn-secondary" onclick="ripristinaDefaultIncassi()" style="font-size: 0.68rem; padding: 2px 6px; min-height: 26px; width: auto;">Reset</button>
 </div>
 </h1>
@@ -1068,99 +1103,170 @@ th {
 </div>
 </div>
 
-<!-- SETTORE 3: INVENTARIO FISICO & CONTA RIMANENZE -->
+<!-- SETTORE 3: REPORT INVENTARIO & SCHEDA PRODOTTO -->
 <div id="app-report-prodotti" class="app-view">
 <div class="container">
-<h2 class="title-centered">📋 Conteggio Fisico Inventario</h2>
+<h2 class="title-centered">📦 Report & Scheda Prodotto</h2>
 
-<div class="info-box-inventario">
-📌 <b>Come fare la conta del magazzino:</b><br>
-1. Seleziona la <b>Barca</b>.<br>
-2. Inserisci in <b>Conta Reale (Fisica)</b> i pezzi effettivi a bordo.<br>
-3. Premi <b>"💾 Salva Conta Inventario & Allinea Magazzino"</b> per registrare la rettifica e azzerare l'Incasso Generato.
-</div>
-
-<div class="settings-grid" style="margin-bottom: 8px;">
-<div class="settings-field" style="grid-column: span 2;">
-<label for="filtroBarcaProdotti">Seleziona Barca da Contare:</label>
-<select id="filtroBarcaProdotti" onchange="cambiaBarcaDaReport()"></select>
-</div>
+<!-- SOTTO-NAVIGAZIONE TRA CONTA INVENTARIO E LISTINO PREZZI -->
+<div class="sub-tabs-report">
+  <button type="button" class="sub-tab-btn active" id="btnSubInventario" onclick="cambiaSubTabReport('inventario')">📋 Conta Inventario</button>
+  <button type="button" class="sub-tab-btn" id="btnSubListino" onclick="cambiaSubTabReport('listino')">🏷️ Scheda Prodotto & Prezzi</button>
 </div>
 
-<div class="kpi-container">
-<div class="kpi-box">
-<span>Tot. Pezzi Scaricati</span>
-<strong id="kpiPezziTotali">0 pz</strong>
-</div>
-<div class="kpi-box">
-<span>Incasso Generato</span>
-<strong id="kpiIncassoProdotti">€ 0,00</strong>
-</div>
-<div class="kpi-box">
-<span>Plus / Ammanco</span>
-<strong id="kpiDiffQuadratura">€ 0,00</strong>
-</div>
-<div class="kpi-box" style="background: rgba(16, 185, 129, 0.15); border-color: #10b981;">
-<span>Rimanenza a Bordo</span>
-<strong id="kpiValoreMagazzino" style="color: #34d399;">€ 0,00</strong>
-</div>
+<!-- VISTA 3A: CONTEGGIO FISICO INVENTARIO -->
+<div id="view-sub-inventario">
+  <div class="info-box-inventario">
+  📌 <b>Come fare la conta del magazzino:</b><br>
+  1. Seleziona la <b>Barca</b>.<br>
+  2. Inserisci in <b>Conta Reale (Fisica)</b> i pezzi effettivi a bordo.<br>
+  3. Premi <b>"💾 Salva Conta Inventario & Allinea Magazzino"</b> per registrare la rettifica.
+  </div>
+
+  <div class="settings-grid" style="margin-bottom: 8px;">
+  <div class="settings-field" style="grid-column: span 2;">
+  <label for="filtroBarcaProdotti">Seleziona Barca da Contare:</label>
+  <select id="filtroBarcaProdotti" onchange="cambiaBarcaDaReport()"></select>
+  </div>
+  </div>
+
+  <div class="kpi-container">
+  <div class="kpi-box">
+  <span>Tot. Pezzi Scaricati</span>
+  <strong id="kpiPezziTotali">0 pz</strong>
+  </div>
+  <div class="kpi-box">
+  <span>Incasso Generato</span>
+  <strong id="kpiIncassoProdotti">€ 0,00</strong>
+  </div>
+  <div class="kpi-box">
+  <span>Plus / Ammanco</span>
+  <strong id="kpiDiffQuadratura">€ 0,00</strong>
+  </div>
+  <div class="kpi-box" style="background: rgba(16, 185, 129, 0.15); border-color: #10b981;">
+  <span>Rimanenza a Bordo</span>
+  <strong id="kpiValoreMagazzino" style="color: #34d399;">€ 0,00</strong>
+  </div>
+  </div>
+
+  <div class="table-responsive">
+  <table id="tabellaReportProdotti">
+  <thead>
+  <tr>
+  <th>Prodotto</th>
+  <th>Prezzo</th>
+  <th>Giacenza Teorica</th>
+  <th>Conta Reale</th>
+  <th>Diff. (pz)</th>
+  <th>Ammanco/Plus</th>
+  <th>Valore Stock</th>
+  <th>Incasso Gen.</th>
+  </tr>
+  </thead>
+  <tbody></tbody>
+  </table>
+  </div>
+
+  <div style="margin-top: 8px;">
+  <button type="button" class="btn btn-primary btn-full" onclick="applicaContaFisicaInventario()">💾 Salva Conta Inventario & Allinea Magazzino</button>
+  </div>
+
+  <div class="storico-section" style="margin-top: 12px; background: rgba(30, 41, 59, 0.9);">
+  <h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato</h3>
+  <div class="table-responsive">
+  <table style="min-width: 100%;">
+  <thead>
+  <tr>
+  <th>Valore Caricato (€)</th>
+  <th>- Incasso Realizzato (€)</th>
+  <th>= Rimanenza Teorica (€)</th>
+  <th>Rimanenza Reale (€)</th>
+  <th>Stato Quadratura</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td id="cellValoreCaricatoTotale" style="font-weight:bold; color:white;">€ 0.00</td>
+  <td id="cellIncassoDefalcato" style="font-weight:bold; color:#38bdf8;">€ 0.00</td>
+  <td id="cellRimanenzaTeorica" style="font-weight:bold; color:#38bdf8;">= € 0.00</td>
+  <td id="cellRimanenzaReale" style="font-weight:bold; color:#34d399;">€ 0.00</td>
+  <td id="cellStatoQuadratura"><span class="badge-diff badge-ok">Allineato</span></td>
+  </tr>
+  </tbody>
+  </table>
+  </div>
+  </div>
+
+  <div class="storico-section">
+  <h3 style="font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+  <span>📋 Registro Conteggi Fisici</span>
+  <button type="button" class="btn btn-secondary" onclick="svuotaStoricoConteggi()" style="font-size: 0.65rem; padding: 2px 6px; min-height: 24px; width: auto;">Svuota</button>
+  </h3>
+  <div id="listaStoricoConteggi"></div>
+  </div>
 </div>
 
-<div class="table-responsive">
-<table id="tabellaReportProdotti">
-<thead>
-<tr>
-<th>Prodotto</th>
-<th>Prezzo</th>
-<th>Giacenza Teorica</th>
-<th>Conta Reale</th>
-<th>Diff. (pz)</th>
-<th>Ammanco/Plus</th>
-<th>Valore Stock</th>
-<th>Incasso Gen.</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+<!-- VISTA 3B: SCHEDA PRODOTTO & MODIFICA PREZZI -->
+<div id="view-sub-listino" style="display: none;">
+  <div class="info-box-inventario" style="border-color: #c084fc; background: rgba(192, 132, 252, 0.12); color: #f3e8ff;">
+  🏷️ <b>Scheda Prodotto & Listino Prezzi:</b><br>
+  Modifica qui i prezzi di <b>Passeggeri</b>, <b>Pendolari</b> e <b>Buono Equipaggio</b> (oppure aggiungi un nuovo prodotto). Ogni modifica aggiorna istantaneamente la Cassa su tutte le barche.
+  </div>
+
+  <!-- Form Aggiungi Nuovo Prodotto -->
+  <div class="storico-section" style="margin-top: 0; margin-bottom: 10px;">
+    <h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #34d399;">➕ Aggiungi Nuovo Prodotto al Listino</h3>
+    <div class="settings-grid" style="margin-bottom: 6px;">
+      <div class="settings-field">
+        <label>Icona (Emoji):</label>
+        <input type="text" id="newProdIcon" value="📦" maxlength="4">
+      </div>
+      <div class="settings-field">
+        <label>Nome Prodotto:</label>
+        <input type="text" id="newProdNome" placeholder="es. Cornetto">
+      </div>
+      <div class="settings-field">
+        <label>Prezzo Pass (€):</label>
+        <input type="number" id="newProdPass" value="2.50" step="0.10" min="0">
+      </div>
+      <div class="settings-field">
+        <label>Prezzo Pendolari (€):</label>
+        <input type="number" id="newProdPen" value="1.50" step="0.10" min="0">
+      </div>
+      <div class="settings-field">
+        <label>Prezzo Equipaggio (€):</label>
+        <input type="number" id="newProdBuo" value="1.00" step="0.10" min="0">
+      </div>
+      <div class="settings-field">
+        <label>Scorta Iniziale (pz):</label>
+        <input type="number" id="newProdStock" value="24" min="0">
+      </div>
+    </div>
+    <button type="button" class="btn btn-success btn-full" onclick="aggiungiNuovoProdottoListino()">+ Inserisci Prodotto</button>
+  </div>
+
+  <div style="margin-bottom: 8px; display: flex; gap: 6px;">
+    <input type="text" id="cercaProdottoListino" placeholder="🔍 Filtra prodotto nel listino..." oninput="filtraTabellaListino()">
+    <button type="button" class="btn btn-secondary" onclick="ripristinaPrezziDefault()" style="width: auto; white-space: nowrap; font-size: 0.72rem;">Reset Prezzi</button>
+  </div>
+
+  <div class="table-responsive">
+    <table id="tabellaSchedaProdotti">
+      <thead>
+        <tr>
+          <th>Icona</th>
+          <th>Nome Prodotto</th>
+          <th>Pass (€)</th>
+          <th>Pendolari (€)</th>
+          <th>Equipaggio (€)</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
-<div style="margin-top: 8px;">
-<button type="button" class="btn btn-primary btn-full" onclick="applicaContaFisicaInventario()">💾 Salva Conta Inventario & Allinea Magazzino</button>
-</div>
-
-<div class="storico-section" style="margin-top: 12px; background: rgba(30, 41, 59, 0.9);">
-<h3 style="font-size: 0.85rem; margin-bottom: 6px; color: #818cf8;">⚖️ Quadratura Valore Caricato</h3>
-<div class="table-responsive">
-<table style="min-width: 100%;">
-<thead>
-<tr>
-<th>Valore Caricato (€)</th>
-<th>- Incasso Realizzato (€)</th>
-<th>= Rimanenza Teorica (€)</th>
-<th>Rimanenza Reale (€)</th>
-<th>Stato Quadratura</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td id="cellValoreCaricatoTotale" style="font-weight:bold; color:white;">€ 0.00</td>
-<td id="cellIncassoDefalcato" style="font-weight:bold; color:#38bdf8;">€ 0.00</td>
-<td id="cellRimanenzaTeorica" style="font-weight:bold; color:#38bdf8;">= € 0.00</td>
-<td id="cellRimanenzaReale" style="font-weight:bold; color:#34d399;">€ 0.00</td>
-<td id="cellStatoQuadratura"><span class="badge-diff badge-ok">Allineato</span></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-
-<div class="storico-section">
-<h3 style="font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-<span>📋 Registro Conteggi Fisici</span>
-<button type="button" class="btn btn-secondary" onclick="svuotaStoricoConteggi()" style="font-size: 0.65rem; padding: 2px 6px; min-height: 24px; width: auto;">Svuota</button>
-</h3>
-<div id="listaStoricoConteggi"></div>
-</div>
 </div>
 </div>
 
@@ -1179,7 +1285,7 @@ th {
 </div>
 </div>
 
-<!-- MODALE CARICO BOLLA INTELLIGENTE & TRASFERIMENTO -->
+<!-- MODALE CARICO BOLLA INTELLIGENTE -->
 <div id="modalCaricoMerce" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:6px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>📦 Carico Bolla Intelligente</h3>
@@ -1236,6 +1342,7 @@ th {
 </div>
 </div>
 
+<!-- MODALE TRASFERIMENTO MERCI -->
 <div id="modalTrasferimento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:6px;">
 <div class="container" style="max-height:90vh; overflow-y:auto; margin:0; width:100%;">
 <h3>🔄 Spostamento Merci</h3>
@@ -1260,6 +1367,21 @@ th {
 <div style="display:flex; gap:6px; margin-top:8px;">
 <button type="button" class="btn btn-success" style="flex:1;" onclick="confermaTrasferimentoMerci()">Conferma</button>
 <button type="button" class="btn btn-secondary" onclick="chiudiModalTrasferimento()" style="width:auto;">Annulla</button>
+</div>
+</div>
+</div>
+
+<!-- MODALE AGGIUNGI NUOVO MESE (SENZA PROMPT) -->
+<div id="modalNuovoMese" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; padding:6px;">
+<div class="container" style="max-width:400px; margin:0; width:100%;">
+<h3>📅 Aggiungi Nuovo Mese</h3>
+<div class="settings-field" style="margin-bottom: 10px;">
+  <label for="inputNuovoMeseNome">Nome Mese e Anno (es. Dicembre 2026):</label>
+  <input type="text" id="inputNuovoMeseNome" placeholder="es. Dicembre 2026">
+</div>
+<div style="display:flex; gap:6px;">
+  <button type="button" class="btn btn-success" style="flex:1;" onclick="confermaNuovoMese()">Aggiungi</button>
+  <button type="button" class="btn btn-secondary" style="width:auto;" onclick="chiudiModalNuovoMese()">Annulla</button>
 </div>
 </div>
 </div>
@@ -1372,6 +1494,18 @@ function parseDataItaliana(strData) {
   return isNaN(parsed) ? 0 : parsed;
 }
 
+/* Funzione che calcola il giorno successivo (+1 giorno) mantenendo il formato italiano */
+function calcolaGiornoSuccessivoItaliano(strData) {
+  const ts = parseDataItaliana(strData);
+  const baseDate = ts > 0 ? new Date(ts) : new Date();
+  baseDate.setDate(baseDate.getDate() + 1);
+  return baseDate.toLocaleDateString('it-IT', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
 function ordinaIncassiCronologicamente() {
   datiIncassi.sort((a, b) => {
     const tA = parseDataItaliana(a.data);
@@ -1392,6 +1526,7 @@ const mesiArchivatiDefault = [
 
 let prodotti = JSON.parse(JSON.stringify(prodottiDefault));
 let bozzePerBarca = {};
+let dataGlobaleCassa = ""; // Data condivisa e sincronizzata tra tutte le barche
 let storicoGiornate = [];
 let storicoTrasferimenti = [];
 let storicoCarichi = [];
@@ -1472,11 +1607,34 @@ function cambiaTab(idApp) {
 
   if (idApp === 'app-report-prodotti') {
     aggiornaReportProdotti();
+    renderizzaSchedaProdotti();
   } else if (idApp === 'app-grafici') {
     renderizzaGrafici();
   } else if (idApp === 'app-incassi') {
     ordinaIncassiCronologicamente();
     aggiornaTabellaIncassi();
+  }
+}
+
+/* Sotto-tab nella scheda Report: Inventario vs Scheda Prodotto */
+function cambiaSubTabReport(sub) {
+  const viewInv = document.getElementById("view-sub-inventario");
+  const viewList = document.getElementById("view-sub-listino");
+  const btnInv = document.getElementById("btnSubInventario");
+  const btnList = document.getElementById("btnSubListino");
+
+  if (sub === 'inventario') {
+    viewInv.style.display = "block";
+    viewList.style.display = "none";
+    btnInv.classList.add("active");
+    btnList.classList.remove("active");
+    aggiornaReportProdotti();
+  } else {
+    viewInv.style.display = "none";
+    viewList.style.display = "block";
+    btnInv.classList.remove("active");
+    btnList.classList.add("active");
+    renderizzaSchedaProdotti();
   }
 }
 
@@ -1490,6 +1648,7 @@ document.addEventListener("DOMContentLoaded", function() {
     aggiornaTabellaIncassi();
     aggiornaListaMesiArchivati();
     aggiornaReportProdotti();
+    renderizzaSchedaProdotti();
     renderizzaGrafici();
 
     const navItems = document.querySelectorAll('.nav-item');
@@ -1555,6 +1714,7 @@ function salvaDatiLocali() {
     const barcaCorrente = document.getElementById("selectBarca")?.value;
     if (barcaCorrente) salvaBarcaAttiva(barcaCorrente);
 
+    localStorage.setItem("cassa_data_globale", dataGlobaleCassa);
     localStorage.setItem("cassa_bozze_barche", JSON.stringify(bozzePerBarca));
     localStorage.setItem("cassa_storico_giornate", JSON.stringify(storicoGiornate));
     localStorage.setItem("cassa_storico_trasferimenti", JSON.stringify(storicoTrasferimenti));
@@ -1569,6 +1729,9 @@ function salvaDatiLocali() {
 
 function caricaDatiLocali() {
   try {
+    const dg = localStorage.getItem("cassa_data_globale");
+    if (dg) dataGlobaleCassa = dg;
+
     const b = localStorage.getItem("cassa_bozze_barche");
     if (b) bozzePerBarca = JSON.parse(b);
 
@@ -1594,9 +1757,23 @@ function caricaDatiLocali() {
     if (p) prodotti = JSON.parse(p);
   } catch (e) { console.error("Errore caricamento localStorage", e); }
 
+  if (!dataGlobaleCassa) {
+    dataGlobaleCassa = getDataOggiItaliana();
+  }
+
   ordinaIncassiCronologicamente();
   caricaBozzaBarcaCorrente();
   renderizzaStorici();
+}
+
+/* Sincronizza la data su tutte le barche quando viene modificata */
+function aggiornaDataGlobale(nuovaData) {
+  dataGlobaleCassa = nuovaData;
+  listaBarche.forEach(b => {
+    if (!bozzePerBarca[b]) bozzePerBarca[b] = {};
+    bozzePerBarca[b].data = dataGlobaleCassa;
+  });
+  salvaBozzaCassaInTempoReale();
 }
 
 function cambiaBarcaCorrente() {
@@ -1620,10 +1797,10 @@ function cambiaBarcaDaReport() {
 function caricaBozzaBarcaCorrente() {
   const barca = document.getElementById("selectBarca").value || getBarcaSalvata();
   const bozza = bozzePerBarca[barca] || {};
-  const dataOggi = getDataOggiItaliana();
+  const dataAttiva = dataGlobaleCassa || bozza.data || getDataOggiItaliana();
 
   document.getElementById("txtOperatore").value = bozza.operatore || "";
-  document.getElementById("txtDataCassa").value = bozza.data || dataOggi;
+  document.getElementById("txtDataCassa").value = dataAttiva;
   document.getElementById("selectMeteo").value = bozza.meteo || "☀️ Sole / Mare Calmo";
   document.getElementById("incassoCash").value = bozza.cash || "";
   document.getElementById("incassoPos").value = bozza.pos || "";
@@ -1638,13 +1815,15 @@ function caricaBozzaBarcaCorrente() {
     p.qtaPen = qtaSaved[p.id + '_pen'] || 0;
     p.qtaBuo = qtaSaved[p.id + '_buo'] || 0;
     p.qtaComando = qtaSaved[p.id + '_comando'] || 0;
-    p.prezzoBuo = prezziBuoSaved[p.id] !== undefined ? parseFloat(prezziBuoSaved[p.id]) : (p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) : (prodottiDefault.find(d=>d.id===p.id)?.prezzoBuo || 1.0));
+    // Il prezzo buono default del listino ha la priorità se non sovrascritto manualmente
+    const defaultBuo = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) : 1.0;
+    p.prezzoBuo = prezziBuoSaved[p.id] !== undefined ? parseFloat(prezziBuoSaved[p.id]) : defaultBuo;
 
     if (stockSaved[p.id] !== undefined) {
       p.stock = stockSaved[p.id];
     } else {
       const defP = prodottiDefault.find(d => d.id === p.id);
-      p.stock = defP ? defP.stock : 50;
+      p.stock = defP ? defP.stock : (p.stock || 24);
     }
   });
 
@@ -1668,9 +1847,12 @@ function salvaBozzaCassaInTempoReale() {
     stockObj[p.id] = p.stock !== undefined ? p.stock : 50;
   });
 
+  const dataCorrenteInput = document.getElementById("txtDataCassa").value || dataGlobaleCassa || getDataOggiItaliana();
+  dataGlobaleCassa = dataCorrenteInput;
+
   if (!bozzePerBarca[barca]) bozzePerBarca[barca] = {};
   bozzePerBarca[barca].operatore = document.getElementById("txtOperatore").value;
-  bozzePerBarca[barca].data = document.getElementById("txtDataCassa").value || getDataOggiItaliana();
+  bozzePerBarca[barca].data = dataGlobaleCassa;
   bozzePerBarca[barca].meteo = document.getElementById("selectMeteo").value;
   bozzePerBarca[barca].cash = document.getElementById("incassoCash").value;
   bozzePerBarca[barca].pos = document.getElementById("incassoPos").value;
@@ -1944,7 +2126,7 @@ function azzeraQuantitaCassa() {
 
 function salvaGiornataInStorico() {
   const barca = document.getElementById("selectBarca").value;
-  const data = document.getElementById("txtDataCassa").value || getDataOggiItaliana();
+  const data = document.getElementById("txtDataCassa").value || dataGlobaleCassa || getDataOggiItaliana();
   const op = document.getElementById("txtOperatore").value || "Anonimo";
   const meteo = document.getElementById("selectMeteo").value;
   const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
@@ -2017,8 +2199,17 @@ function salvaGiornataInStorico() {
   datiIncassi.push(recordIncasso);
   ordinaIncassiCronologicamente();
 
+  /* Avanza automaticamente la data al giorno successivo (+1 giorno) e sincronizzala su tutte le barche */
+  const dataGiornoSuccessivo = calcolaGiornoSuccessivoItaliano(data);
+  dataGlobaleCassa = dataGiornoSuccessivo;
+
+  listaBarche.forEach(b => {
+    if (!bozzePerBarca[b]) bozzePerBarca[b] = {};
+    bozzePerBarca[b].data = dataGiornoSuccessivo;
+  });
+
   prodotti.forEach(p => { p.qtaPass = 0; p.qtaPen = 0; p.qtaBuo = 0; p.qtaComando = 0; });
-  document.getElementById("txtDataCassa").value = getDataOggiItaliana();
+  document.getElementById("txtDataCassa").value = dataGiornoSuccessivo;
   document.getElementById("incassoCash").value = "";
   document.getElementById("incassoPos").value = "";
   document.getElementById("chkGiornoFesta").checked = false;
@@ -2032,7 +2223,7 @@ function salvaGiornataInStorico() {
   aggiornaReportProdotti();
   renderizzaGrafici();
 
-  mostraAvviso(`✅ Giornata salvata (${barca} - ${data})`);
+  mostraAvviso(`✅ Giornata salvata! Nuova data attiva: ${dataGiornoSuccessivo}`);
 
   let msgWhatsapp = `Buonasera, incasso giornaliero ${barca} del ${data}:\n\n` +
                     `Tot Cash: € ${cash.toFixed(2)}\n` +
@@ -2168,6 +2359,7 @@ function riapriEModificaGiornata(id) {
 
   document.getElementById("txtOperatore").value = record.op || "";
   document.getElementById("txtDataCassa").value = record.data || "";
+  dataGlobaleCassa = record.data || dataGlobaleCassa;
   document.getElementById("selectMeteo").value = record.meteo || "☀️ Sole / Mare Calmo";
   document.getElementById("incassoCash").value = record.cash !== undefined ? record.cash : "";
   document.getElementById("incassoPos").value = record.pos !== undefined ? record.pos : "";
@@ -2225,7 +2417,7 @@ function svuotaStoricoCassa() {
 
 function inviaWhatsApp() {
   const barca = document.getElementById("selectBarca").value;
-  const data = document.getElementById("txtDataCassa").value || getDataOggiItaliana();
+  const data = document.getElementById("txtDataCassa").value || dataGlobaleCassa || getDataOggiItaliana();
   const cash = parseFloat(document.getElementById("incassoCash").value) || 0;
   const pos = parseFloat(document.getElementById("incassoPos").value) || 0;
   const totaleGenerale = cash + pos;
@@ -2652,17 +2844,32 @@ function aggiornaListaMesiArchivati() {
   });
 }
 
-function aggiungiNuovoMeseCustom() {
-  const nome = prompt("Nome del nuovo mese (es. Dicembre 2026):");
-  if (nome) {
-    const select = document.getElementById("selectMeseIncassi");
+function apriModalNuovoMese() {
+  document.getElementById("inputNuovoMeseNome").value = "";
+  document.getElementById("modalNuovoMese").style.display = "flex";
+}
+
+function chiudiModalNuovoMese() {
+  document.getElementById("modalNuovoMese").style.display = "none";
+}
+
+function confermaNuovoMese() {
+  const nome = document.getElementById("inputNuovoMeseNome").value.trim();
+  if (!nome) {
+    mostraAvviso("Inserisci un nome valido per il mese.");
+    return;
+  }
+  const select = document.getElementById("selectMeseIncassi");
+  if (!Array.from(select.options).some(o => o.value === nome)) {
     const opt = document.createElement("option");
     opt.value = nome;
     opt.textContent = nome;
-    select.appendChild(opt);
-    select.value = nome;
-    aggiornaTabellaIncassi();
+    select.insertBefore(opt, select.firstChild);
   }
+  select.value = nome;
+  chiudiModalNuovoMese();
+  aggiornaTabellaIncassi();
+  mostraAvviso(`Mese "${nome}" selezionato.`);
 }
 
 function ripristinaDefaultIncassi() {
@@ -2674,6 +2881,177 @@ function ripristinaDefaultIncassi() {
   aggiornaListaMesiArchivati();
   renderizzaGrafici();
   mostraAvviso("Incassi ripristinati ai valori predefiniti.");
+}
+
+/* =========================================================
+   SCHEDA PRODOTTO & MODIFICA PREZZI IN REPORT
+   ========================================================= */
+function renderizzaSchedaProdotti() {
+  const tbody = document.querySelector("#tabellaSchedaProdotti tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  prodotti.forEach(p => {
+    const przBuo = p.prezzoBuo !== undefined ? parseFloat(p.prezzoBuo) : 1.0;
+    const tr = document.createElement("tr");
+    tr.id = "row_listino_" + p.id;
+    tr.innerHTML = `
+      <td>
+        <input type="text" class="input-prezzo-edit" style="width:42px !important; color:white; border-color:#64748b;" value="${p.i}" maxlength="4" onchange="modificaCampoProdotto('${p.id}', 'i', this.value)">
+      </td>
+      <td>
+        <input type="text" style="padding:4px 6px; font-size:0.8rem; font-weight:700; min-width:120px;" value="${p.n}" onchange="modificaCampoProdotto('${p.id}', 'n', this.value)">
+      </td>
+      <td>
+        <input type="number" class="input-prezzo-edit" value="${p.p.toFixed(2)}" step="0.10" min="0" onchange="modificaCampoProdotto('${p.id}', 'p', this.value)">
+      </td>
+      <td>
+        <input type="number" class="input-prezzo-edit" style="color:#fb923c; border-color:#fb923c;" value="${p.pen.toFixed(2)}" step="0.10" min="0" onchange="modificaCampoProdotto('${p.id}', 'pen', this.value)">
+      </td>
+      <td>
+        <input type="number" class="input-prezzo-edit" style="color:#c084fc; border-color:#c084fc;" value="${przBuo.toFixed(2)}" step="0.10" min="0" onchange="modificaCampoProdotto('${p.id}', 'prezzoBuo', this.value)">
+      </td>
+      <td>
+        <button type="button" class="del-btn" style="padding:4px 8px;" onclick="eliminaProdottoListino('${p.id}')">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  filtraTabellaListino();
+}
+
+function modificaCampoProdotto(idProd, campo, valore) {
+  const prod = prodotti.find(p => p.id === idProd);
+  if (!prod) return;
+
+  if (campo === 'n' || campo === 'i') {
+    const pulito = String(valore).trim();
+    if (!pulito) return;
+    prod[campo] = pulito;
+  } else {
+    const num = Math.max(0, parseFloat(valore) || 0);
+    prod[campo] = num;
+
+    // Se modifico il prezzo Buono Equipaggio dal listino, aggiorno anche le bozze attive sulle barche
+    if (campo === 'prezzoBuo') {
+      listaBarche.forEach(b => {
+        if (bozzePerBarca[b] && bozzePerBarca[b].prezziBuo) {
+          bozzePerBarca[b].prezziBuo[idProd] = num;
+        }
+      });
+    }
+  }
+
+  salvaDatiLocali();
+  generaListaProdottiCassa();
+  filtraProdottiCassa();
+  calcolaTotaleCassa();
+  aggiornaReportProdotti();
+  mostraAvviso(`✅ Prezzo/scheda aggiornata per "${prod.n}".`);
+}
+
+function aggiungiNuovoProdottoListino() {
+  const icona = document.getElementById("newProdIcon").value.trim() || "📦";
+  const nome = document.getElementById("newProdNome").value.trim();
+  const pass = Math.max(0, parseFloat(document.getElementById("newProdPass").value) || 0);
+  const pen = Math.max(0, parseFloat(document.getElementById("newProdPen").value) || 0);
+  const buo = Math.max(0, parseFloat(document.getElementById("newProdBuo").value) || 0);
+  const stockInit = Math.max(0, parseInt(document.getElementById("newProdStock").value, 10) || 0);
+
+  if (!nome) {
+    mostraAvviso("Inserisci il nome del prodotto.");
+    return;
+  }
+
+  const nuovoId = 'prd_' + Date.now().toString(36);
+  const nuovoProdotto = {
+    id: nuovoId,
+    n: nome,
+    i: icona,
+    p: pass,
+    pen: pen,
+    qtaPass: 0,
+    qtaPen: 0,
+    qtaBuo: 0,
+    qtaComando: 0,
+    prezzoBuo: buo,
+    stock: stockInit
+  };
+
+  prodotti.push(nuovoProdotto);
+  prodotti.sort((a, b) => a.n.localeCompare(b.n));
+
+  listaBarche.forEach(b => {
+    if (!bozzePerBarca[b]) bozzePerBarca[b] = {};
+    if (!bozzePerBarca[b].stock) bozzePerBarca[b].stock = {};
+    bozzePerBarca[b].stock[nuovoId] = stockInit;
+  });
+
+  document.getElementById("newProdNome").value = "";
+
+  salvaDatiLocali();
+  renderizzaSchedaProdotti();
+  generaListaProdottiCassa();
+  aggiornaReportProdotti();
+  mostraAvviso(`✅ Prodotto "${nome}" aggiunto al listino!`);
+}
+
+function eliminaProdottoListino(idProd) {
+  const prod = prodotti.find(p => p.id === idProd);
+  if (!prod) return;
+  const nomeEliminato = prod.n;
+  prodotti = prodotti.filter(p => p.id !== idProd);
+
+  salvaDatiLocali();
+  renderizzaSchedaProdotti();
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  aggiornaReportProdotti();
+  mostraAvviso(`Prodotto "${nomeEliminato}" rimosso dal listino.`);
+}
+
+function filtraTabellaListino() {
+  const input = document.getElementById("cercaProdottoListino");
+  if (!input) return;
+  const q = input.value.toLowerCase();
+  prodotti.forEach(p => {
+    const tr = document.getElementById("row_listino_" + p.id);
+    if (tr) {
+      tr.style.display = p.n.toLowerCase().includes(q) ? "" : "none";
+    }
+  });
+}
+
+function ripristinaPrezziDefault() {
+  prodottiDefault.forEach(def => {
+    const esistente = prodotti.find(p => p.id === def.id);
+    if (esistente) {
+      esistente.p = def.p;
+      esistente.pen = def.pen;
+      esistente.prezzoBuo = def.prezzoBuo;
+      esistente.n = def.n;
+      esistente.i = def.i;
+    } else {
+      prodotti.push(JSON.parse(JSON.stringify(def)));
+    }
+  });
+  prodotti.sort((a, b) => a.n.localeCompare(b.n));
+
+  listaBarche.forEach(b => {
+    if (bozzePerBarca[b] && bozzePerBarca[b].prezziBuo) {
+      prodotti.forEach(p => {
+        bozzePerBarca[b].prezziBuo[p.id] = p.prezzoBuo;
+      });
+    }
+  });
+
+  salvaDatiLocali();
+  renderizzaSchedaProdotti();
+  generaListaProdottiCassa();
+  calcolaTotaleCassa();
+  aggiornaReportProdotti();
+  mostraAvviso("Prezzi ripristinati ai valori originali.");
 }
 
 function aggiornaReportProdotti() {
@@ -2981,6 +3359,7 @@ function renderizzaGrafici() {
 function esportaDatiJSON() {
   const backupData = {
     barcaAttiva: getBarcaSalvata(),
+    dataGlobaleCassa,
     bozzePerBarca, storicoGiornate, storicoTrasferimenti, storicoCarichi, storicoConteggi, datiIncassi, mesiArchivati, prodotti
   };
   const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -3003,6 +3382,7 @@ function importaDatiJSON(event) {
         document.getElementById("selectBarca").value = data.barcaAttiva;
         document.getElementById("filtroBarcaProdotti").value = data.barcaAttiva;
       }
+      if (data.dataGlobaleCassa) dataGlobaleCassa = data.dataGlobaleCassa;
       if (data.bozzePerBarca) bozzePerBarca = data.bozzePerBarca;
       if (data.storicoGiornate) storicoGiornate = data.storicoGiornate;
       if (data.storicoTrasferimenti) storicoTrasferimenti = data.storicoTrasferimenti;
@@ -3016,6 +3396,7 @@ function importaDatiJSON(event) {
       salvaDatiLocali();
       caricaBozzaBarcaCorrente();
       renderizzaStoricoConteggi();
+      renderizzaSchedaProdotti();
       aggiornaTabellaIncassi();
       aggiornaListaMesiArchivati();
       aggiornaReportProdotti();
@@ -3027,4 +3408,4 @@ function importaDatiJSON(event) {
 }
 </script>
 </body>
-  </html>
+</html>
